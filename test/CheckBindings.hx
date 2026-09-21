@@ -523,6 +523,218 @@ class CheckBindings {
 		target.release();
 	}
 
+	// --- values with arithmetic behind them ---------------------------------
+
+	static function checkColor():Void {
+		final c = Color.rgba(10, 20, 30, 40);
+		eq(c.red, 10, "red comes back out");
+		eq(c.green, 20, "green comes back out");
+		eq(c.blue, 30, "blue comes back out — the channels are not rotated");
+		eq(c.alpha, 40, "alpha comes back out");
+		eq((c : Int), 0x0A141E28, "and the packing is 0xRRGGBBAA");
+
+		// out of range saturates; it must not wrap into the neighbouring channel
+		final hot = Color.rgba(300, -5, 128, 255);
+		eq(hot.red, 255, "an over-range component saturates");
+		eq(hot.green, 0, "an under-range one saturates the other way");
+		eq(hot.blue, 128, "and the neighbour is untouched");
+
+		eq((Color.rgbaf(1, 0, 0, 1) : Int), (Color.rgba(255, 0, 0, 255) : Int),
+			"the float constructor agrees with the integer one");
+
+		eq((c.withAlpha(255) : Int), (Color.rgba(10, 20, 30, 255) : Int), "withAlpha changes only alpha");
+
+		final black:Color = Color.rgba(0, 0, 0, 255);
+		final white:Color = Color.rgba(255, 255, 255, 255);
+		eq((black.lerp(white, 0) : Int), (black : Int), "lerp at 0 is the start");
+		eq((white.lerp(black, 0) : Int), (white : Int), "and reads the arguments in that order");
+		eq((black.lerp(white, 1) : Int), (white : Int), "lerp at 1 is the end");
+		eq(black.lerp(white, 0.5).red, 128, "and halfway rounds up, not down");
+		eq((black.lerp(white, 5) : Int), (white : Int), "t is clamped, not extrapolated");
+	}
+
+	static function checkHandleKind():Void {
+		// a handle knows what it is, which is what a pick result needs
+		eq(scene.hovered.isNone, true, "the none handle is none");
+		eq((Handle.NONE : Handle).kind, HandleKind.None, "and its kind is None");
+
+		final m = new Model(Mesh.cube(1, 1, 1));
+		eq(((m : Handle)).kind, HandleKind.Model, "a model handle knows it is a model");
+		final t = Texture.defaultTexture;
+		eq(((t : Handle)).kind, HandleKind.Texture, "a texture handle knows it is a texture");
+		eq(((camera : Handle)).kind, HandleKind.Camera3D, "a camera handle knows it is a camera");
+		eq(((scene : Handle)).kind, HandleKind.Scene, "a scene handle knows it is a scene");
+		m.destroy();
+	}
+
+	static function checkSprite2D():Void {
+		final s = new Sprite2D(Texture.defaultTexture);
+		check(!s.isNone, "a sprite2d is created");
+		eq(((s : Handle)).kind, HandleKind.Sprite2D, "and its handle says so");
+
+		s.position = new Vec2(10, 20);
+		s.rotation = 0.5;
+		s.scale = new Vec2(2, 3);
+		s.tint = Color.GOLD;
+
+		check(s.visible && s.pickable && s.enabled, "a new sprite2d is visible, pickable, enabled");
+		s.visible = false;
+		s.pickable = false;
+		s.enabled = false;
+		check(!s.visible && !s.pickable && !s.enabled, "every sprite2d flag round-trips false");
+		s.visible = true;
+
+		eq(s.alphaMode, AlphaMode.Blend, "a sprite2d blends by default");
+		check(s.setAlphaMode(Add), "alpha mode set to additive");
+		eq(s.alphaMode, AlphaMode.Add, "and reads back as the enum");
+
+		check(s.setSize(64, 32), "an on-screen size is accepted");
+		check(s.setSource(0, 0, 16, 16), "a source region is accepted");
+		check(s.setPivot(0, 0), "a pivot is a fraction of the sprite");
+		check(s.setNineSlice(4, 4, 4, 4), "a nine-slice is accepted");
+		check(s.setNineSlice(0, 0, 0, 0), "and all zero turns it off");
+		check(s.setPickAlphaTest(true, 0.25), "pick alpha test enabled");
+
+		check(s.getMaterial().isNone, "a new sprite2d is on the built-in shader");
+		check(scene.add(s, 5), "a sprite2d is a scene member");
+		check(scene.remove(s), "and comes back out");
+		s.destroy();
+	}
+
+	static function checkInput():Void {
+		// headless reports no devices, so these assert shape rather than values
+		final p = Input.mousePosition;
+		check(p.x == p.x && p.y == p.y, "a mouse position is two real numbers");
+		final d = Input.mouseDelta;
+		near(d.x, 0, "nothing moved the mouse");
+		near(d.y, 0, "on either axis");
+		near(Input.mouseWheel, 0, "nor the wheel");
+		near(Input.mouseWheelX, 0, "nor sideways");
+
+		eq(Input.getMouseButton(Left), ButtonState.Up, "no mouse button is down");
+		check(!Input.isMouseButtonPressed(Left), "none was pressed");
+		check(!Input.isMouseButtonDown(Right), "none is held");
+		check(!Input.isMouseButtonReleased(Middle), "none was released");
+
+		eq(Input.touchCount, 0, "nothing is touching the screen");
+
+		check(!Input.isGamepadConnected(0), "no gamepad in headless");
+		eq(Input.getGamepadName(0), "", "so slot 0 has no name");
+		eq(Input.getGamepadButton(0, South), ButtonState.Up, "and no button is down");
+		near(Input.getGamepadAxis(0, LeftX), 0, "and no axis is off centre");
+		check(Input.setGamepadDeadzone(0.2), "a deadzone in range is accepted");
+
+		check(!Input.pointerCaptured, "nothing has captured the pointer");
+		Input.pointerCaptured = true;
+		check(Input.pointerCaptured, "a UI can claim it");
+		Input.pointerCaptured = false;
+		check(!Input.keyboardCaptured, "nothing has captured the keyboard");
+		Input.keyboardCaptured = true;
+		check(Input.keyboardCaptured, "a UI can claim that too");
+		Input.keyboardCaptured = false;
+	}
+
+	static function checkWindowAndRuntime():Void {
+		check(Wgr.isInitialized, "the runtime says it is initialised");
+		eq(Wgr.renderer, "headless", "and names the backend it chose");
+		// has_threads is a fact about the build, not something to assert a value for
+		check(Wgr.hasThreads || !Wgr.hasThreads, "hasThreads answers without throwing");
+
+		final size = Window.getScreenSize();
+		check(size.x > 0 && size.y > 0, "the window has a size");
+		near(Window.screenSize.x, size.x, "the property and the function agree");
+		check(!Window.closeRequested, "nobody has asked to close it");
+		check(Window.monitorCount >= 0, "monitors can be counted");
+
+		Window.title = "check";
+		Window.visible = Window.visible; // whatever it is, setting it back is legal
+
+		eq(Version.label(), "dev", "this build is labelled dev");
+		check(Version.number() > 0, "and packs a version number");
+	}
+
+	static function checkSoundAndAsset():Void {
+		final audio = Audio.create("no/such.wav");
+		final sound = new Sound(audio);
+		check(!sound.isPlaying, "a new sound is not playing");
+		sound.volume = 0.5;
+		sound.pitch = 1.5;
+		sound.pan = -1;
+		sound.loop = true;
+		check(!sound.isPlaying, "setting properties does not start it");
+		sound.stop();
+		sound.pause();
+		sound.resume();
+		sound.destroy();
+		audio.release();
+
+		// the host round-trips, and putting it back leaves the later checks alone
+		final was = Asset.host;
+		Asset.host = "examples/assets";
+		eq(Asset.host, "examples/assets", "the asset host round-trips");
+		Asset.host = was;
+
+		check(Asset.addRedirect("textures/", "mods/hd/textures/"), "a path redirect is added");
+		Asset.clearRedirects();
+		check(!Asset.addRedirect("", "somewhere/"), "an empty prefix is refused");
+		Asset.clearRedirects();
+
+		Asset.uploadBudget = 8;
+		check(Asset.setCacheDir(".wgr-cache"), "a cache directory is accepted");
+
+		final group = Asset.createGroup();
+		check(!group.isNone, "an asset group is created");
+		eq(((group : Handle)).kind, HandleKind.AssetTask, "and it is a task handle");
+		check(!Asset.groupAdd(group, group), "a group cannot contain itself");
+		near(Asset.getProgress(group), 0, "an empty group has made no progress");
+	}
+
+	static function checkEvents():Void {
+		eq(Event.listenerCount("check/ping"), 0, "nothing is listening yet");
+
+		// listening needs a C function pointer, so the bus is hxcpp only; offAll and
+		// listenerCount above work on both, which is why they sit outside the guard
+		#if cpp
+
+		var heard = 0;
+		final token = Event.on("check/ping", (_) -> heard++);
+		check(!token.isNone, "on returns a token");
+		eq(Event.listenerCount("check/ping"), 1, "and the listener is registered");
+		eq(Event.emit("check/ping"), 1, "emitting reaches it");
+		eq(heard, 1, "and the Haxe closure ran");
+
+		// once goes away by itself; the plain listener does not
+		Event.once("check/ping", (_) -> heard++);
+		eq(Event.listenerCount("check/ping"), 2, "a once listener is registered too");
+		Event.emit("check/ping");
+		eq(heard, 3, "both ran");
+		eq(Event.listenerCount("check/ping"), 1, "and the once listener dropped itself");
+
+		check(Event.off(token), "off takes the token back");
+		eq(Event.listenerCount("check/ping"), 0, "and the listener is gone");
+		check(!Event.off(token), "a token cannot be used twice");
+		Event.emit("check/ping");
+		eq(heard, 3, "nothing ran after that");
+
+		Event.on("check/other", (_) -> heard++);
+		eq(Event.offAll("check/other"), 1, "offAll drops what is there");
+		eq(Event.listenerCount("check/other"), 0, "leaving nothing");
+		#end
+	}
+
+	static function checkPick():Void {
+		Pick.resetStats();
+		final before = Pick.getStats();
+		eq(before.broadphaseTests, 0, "stats reset to zero");
+		eq(before.narrowphaseHits, 0, "on both phases");
+
+		// nothing is on screen in headless, so this misses rather than hits
+		final m = new Model(Mesh.cube(1, 1, 1));
+		final r = Pick.object(m, 10, 10);
+		check(!r.hit || r.hit, "picking one object answers without throwing");
+		m.destroy();
+	}
+
 	// --- lifecycle ----------------------------------------------------------
 
 	static function onInit():Void {
@@ -543,6 +755,14 @@ class CheckBindings {
 		checkMeshes();
 		checkSprite3D();
 		checkSceneState();
+		checkColor();
+		checkHandleKind();
+		checkSprite2D();
+		checkInput();
+		checkWindowAndRuntime();
+		checkSoundAndAsset();
+		checkEvents();
+		checkPick();
 	}
 
 	static function onFrame(dt:Float, tickFraction:Float):Void {
