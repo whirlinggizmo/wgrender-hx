@@ -53,7 +53,7 @@ other route" below.
 | C (wgrender's example) |    690,116 |   292,002 | 1.00x |    64,910 |   23,186 |
 | Nim                    |    713,584 |   301,782 | 1.03x |    65,138 |   23,280 |
 | Beef                   |    846,131 |   368,843 | 1.23x |    66,674 |   23,985 |
-| Haxe (this)            |  1,674,379 |   454,053 | 2.43x |    69,587 |   25,048 |
+| Haxe (this)            |  1,685,600 |   458,622 | 2.44x |    69,587 |   25,048 |
 
 Roughly a megabyte of wasm over C, 162 KB of it after gzip. Almost all of it is the
 hxcpp runtime rather than anything this example does: a Haxe hello-world through the
@@ -233,6 +233,34 @@ raw C type, and one named function per property accessor.
 single untyped `RLHandle` for everything. This one follows the Nim binding instead: a
 distinct type per handle kind, methods and properties on it, and vectors grouped into
 values. Nothing here depends on that choice; it's the part worth comparing.
+
+## Exceptions have to be caught at the callback edge
+
+wgrender owns the loop (`sapp_run`), so your code runs as its callbacks. An exception
+that escapes one of those unwinds into C frames that can't handle it, and the report
+gets worse the further it goes. Measured, with a callback that throws on frame 30:
+
+| build          | what happens                                                              |
+|----------------|---------------------------------------------------------------------------|
+| hxcpp native   | message printed, unwinds out of `main`, exit 255                          |
+| hxcpp web      | **page freezes; `Uncaught [object WebAssembly.Exception]`, message gone**  |
+| via JS externs | page freezes, but with a readable JS error                                |
+
+Frozen means frozen: the frame counter stopped at 30 and was still 30 four seconds
+later. So `wgr.Wgr` catches in every trampoline — init, frame, and the asset
+callbacks — and logs through wgrender's logger instead. A bad frame stays a bad
+frame, and the message survives:
+
+```
+[ERROR] uncaught exception in the frame callback: boom from the Haxe frame callback
+```
+
+It logs `e.message`, not `e.details()`: hxcpp has no stack to add unless the build
+defines `HXCPP_STACK_TRACE`, so `details()` says the same thing for 57 KB more wasm.
+The guard as it stands costs 11 KB (4.5 KB gzipped), which is in the table above.
+
+Anything driving wgrender from JS externs instead would need the same guard, for the
+same reason — it's a property of sokol_app owning the loop, not of hxcpp.
 
 ## Two things that needed working around
 
