@@ -12,7 +12,7 @@
 #include <wgr/MouseState.h>
 #endif
 
-HX_LOCAL_STACK_FRAME(_hx_pos_e0dd3200f9647556_1349_getMouseState,"wgr.Input","getMouseState",0xbe52b252,"wgr.Input.getMouseState","wgr/Wgr.hx",1349,0xbf765109)
+HX_LOCAL_STACK_FRAME(_hx_pos_9813934b156b5bf4_6_getMouseState,"wgr.Input","getMouseState",0xbe52b252,"wgr.Input.getMouseState","wgr/Input.hx",6,0x653aa1a1)
 namespace wgr{
 
 void Input_obj::__construct() { }
@@ -33,9 +33,9 @@ bool Input_obj::_hx_isInstanceOf(int inClassId) {
 }
 
  ::wgr::MouseState Input_obj::getMouseState(){
-            	HX_GC_STACKFRAME(&_hx_pos_e0dd3200f9647556_1349_getMouseState)
-HXLINE(1351)		 wgr_mouse_state_t m = wgr_input_get_mouse_state();
-HXLINE(1352)		return  ::wgr::MouseState_obj::__alloc( HX_CTX ,m.x,m.y,( (Float)(m.wheel) ),( (Float)(m.wheel_x) ),m.left,m.right,m.middle,::Array_obj< int >::__new(3)->init(0,m.buttons[0])->init(1,m.buttons[1])->init(2,m.buttons[2]),m.dx,m.dy);
+            	HX_GC_STACKFRAME(&_hx_pos_9813934b156b5bf4_6_getMouseState)
+HXLINE(   9)		 wgr_mouse_state_t m = wgr_input_get_mouse_state();
+HXLINE(  10)		return  ::wgr::MouseState_obj::__alloc( HX_CTX ,m.x,m.y,( (Float)(m.wheel) ),( (Float)(m.wheel_x) ),m.left,m.right,m.middle,::Array_obj< int >::__new(3)->init(0,m.buttons[0])->init(1,m.buttons[1])->init(2,m.buttons[2]),m.dx,m.dy);
             	}
 
 

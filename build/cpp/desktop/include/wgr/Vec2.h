@@ -6,7 +6,7 @@
 #include <hxcpp.h>
 #endif
 
-HX_DECLARE_STACK_FRAME(_hx_pos_fed6d911efa2c570_181_new)
+HX_DECLARE_STACK_FRAME(_hx_pos_1e21d21cf7373008_10_new)
 HX_DECLARE_CLASS1(wgr,Vec2)
 
 namespace wgr{
@@ -40,9 +40,9 @@ class HXCPP_CLASS_ATTRIBUTES Vec2_obj : public ::hx::Object
 {
             		Float x = __o_x.Default(0);
             		Float y = __o_y.Default(0);
-            	HX_STACKFRAME(&_hx_pos_fed6d911efa2c570_181_new)
-HXLINE( 182)		( ( ::wgr::Vec2)(__this) )->x = x;
-HXLINE( 183)		( ( ::wgr::Vec2)(__this) )->y = y;
+            	HX_STACKFRAME(&_hx_pos_1e21d21cf7373008_10_new)
+HXLINE(  11)		( ( ::wgr::Vec2)(__this) )->x = x;
+HXLINE(  12)		( ( ::wgr::Vec2)(__this) )->y = y;
             	}
 		
 			return __this;

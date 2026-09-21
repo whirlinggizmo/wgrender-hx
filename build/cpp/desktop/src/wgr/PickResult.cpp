@@ -8,18 +8,18 @@
 #include <wgr/Vec3.h>
 #endif
 
-HX_DEFINE_STACK_FRAME(_hx_pos_65f6ee12b7c095f4_251_new,"wgr.PickResult","new",0x0d258d3c,"wgr.PickResult.new","wgr/Wgr.hx",251,0xbf765109)
+HX_DEFINE_STACK_FRAME(_hx_pos_3046a8cec36b1c02_20_new,"wgr.PickResult","new",0x0d258d3c,"wgr.PickResult.new","wgr/PickResult.hx",20,0x269c4113)
 namespace wgr{
 
 void PickResult_obj::__construct(bool hit,int handle,Float distance, ::wgr::Vec3 pointLocal, ::wgr::Vec3 pointWorld, ::wgr::Vec3 normalLocal, ::wgr::Vec3 normalWorld){
-            	HX_STACKFRAME(&_hx_pos_65f6ee12b7c095f4_251_new)
-HXLINE( 252)		this->hit = hit;
-HXLINE( 253)		this->handle = handle;
-HXLINE( 254)		this->distance = distance;
-HXLINE( 255)		this->pointLocal = pointLocal;
-HXLINE( 256)		this->pointWorld = pointWorld;
-HXLINE( 257)		this->normalLocal = normalLocal;
-HXLINE( 258)		this->normalWorld = normalWorld;
+            	HX_STACKFRAME(&_hx_pos_3046a8cec36b1c02_20_new)
+HXLINE(  21)		this->hit = hit;
+HXLINE(  22)		this->handle = handle;
+HXLINE(  23)		this->distance = distance;
+HXLINE(  24)		this->pointLocal = pointLocal;
+HXLINE(  25)		this->pointWorld = pointWorld;
+HXLINE(  26)		this->normalLocal = normalLocal;
+HXLINE(  27)		this->normalWorld = normalWorld;
             	}
 
 Dynamic PickResult_obj::__CreateEmpty() { return new PickResult_obj; }

@@ -5,17 +5,17 @@
 #include <wgr/Vec3.h>
 #endif
 
-HX_DEFINE_STACK_FRAME(_hx_pos_023619541c12e735_196_new,"wgr.Vec3","new",0xa26d7b7d,"wgr.Vec3.new","wgr/Wgr.hx",196,0xbf765109)
+HX_DEFINE_STACK_FRAME(_hx_pos_93a4c74a4eba5276_11_new,"wgr.Vec3","new",0xa26d7b7d,"wgr.Vec3.new","wgr/Vec3.hx",11,0x31e3b4b2)
 namespace wgr{
 
 void Vec3_obj::__construct(::hx::Null< Float >  __o_x,::hx::Null< Float >  __o_y,::hx::Null< Float >  __o_z){
             		Float x = __o_x.Default(0);
             		Float y = __o_y.Default(0);
             		Float z = __o_z.Default(0);
-            	HX_STACKFRAME(&_hx_pos_023619541c12e735_196_new)
-HXLINE( 197)		this->x = x;
-HXLINE( 198)		this->y = y;
-HXLINE( 199)		this->z = z;
+            	HX_STACKFRAME(&_hx_pos_93a4c74a4eba5276_11_new)
+HXLINE(  12)		this->x = x;
+HXLINE(  13)		this->y = y;
+HXLINE(  14)		this->z = z;
             	}
 
 Dynamic Vec3_obj::__CreateEmpty() { return new Vec3_obj; }

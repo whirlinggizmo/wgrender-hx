@@ -12,8 +12,16 @@ const char *__hxcpp_all_files[] = {
 "?",
 "Defines.hx",
 "Guest.hx",
+"wgr/Camera3D.hx",
 "wgr/GuestAbi.cpp.hx",
-"wgr/Wgr.hx",
+"wgr/Handle.hx",
+"wgr/Input.hx",
+"wgr/MouseState.hx",
+"wgr/PickResult.hx",
+"wgr/Scene.hx",
+"wgr/Transform.hx",
+"wgr/Vec2.hx",
+"wgr/Vec3.hx",
 #endif
  0 };
 
@@ -27,30 +35,37 @@ const char *__hxcpp_all_files_fullpath[] = {
 "/home/rknopf/projects/haxe/simple-js/?",
 "/home/rknopf/projects/haxe/simple-js/src/Defines.hx",
 "/home/rknopf/projects/haxe/simple-js/src/Guest.hx",
+"/home/rknopf/projects/haxe/simple-js/src/wgr/Camera3D.hx",
 "/home/rknopf/projects/haxe/simple-js/wgr/GuestAbi.cpp.hx",
-"/home/rknopf/projects/haxe/simple-js/src/wgr/Wgr.hx",
+"/home/rknopf/projects/haxe/simple-js/src/wgr/Handle.hx",
+"/home/rknopf/projects/haxe/simple-js/src/wgr/Input.hx",
+"/home/rknopf/projects/haxe/simple-js/src/wgr/MouseState.hx",
+"/home/rknopf/projects/haxe/simple-js/src/wgr/PickResult.hx",
+"/home/rknopf/projects/haxe/simple-js/src/wgr/Scene.hx",
+"/home/rknopf/projects/haxe/simple-js/src/wgr/Transform.hx",
+"/home/rknopf/projects/haxe/simple-js/src/wgr/Vec2.hx",
+"/home/rknopf/projects/haxe/simple-js/src/wgr/Vec3.hx",
 #endif
  0 };
 
 const char *__hxcpp_all_classes[] = {
 #ifdef HXCPP_DEBUGGER
-"wgr._Wgr.Handle_Impl_",
+"wgr._Handle.Handle_Impl_",
 "Guest",
 "Std",
 "haxe.Exception",
 "haxe.NativeStackTrace",
 "haxe.ValueException",
 "haxe.iterators.ArrayIterator",
-"wgr.GuestAbi",
-"wgr.Vec2",
 "wgr.Vec3",
+"wgr.Camera3DDefaults",
+"wgr.GuestAbi",
+"wgr.Input",
 "wgr.MouseState",
 "wgr.PickResult",
-"wgr.KeyCheck",
+"wgr._Scene.Scene_Impl_",
 "wgr.Transform",
-"wgr.Camera3DDefaults",
-"wgr._Wgr.Scene_Impl_",
-"wgr.Input",
+"wgr.Vec2",
 #endif
  0 };
 } // namespace hx

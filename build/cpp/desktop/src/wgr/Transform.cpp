@@ -8,8 +8,8 @@
 #include <wgr/Vec3.h>
 #endif
 
-HX_LOCAL_STACK_FRAME(_hx_pos_94f48cb013b25104_817_boot,"wgr.Transform","boot",0x006aff20,"wgr.Transform.boot","wgr/Wgr.hx",817,0xbf765109)
-HX_LOCAL_STACK_FRAME(_hx_pos_94f48cb013b25104_818_boot,"wgr.Transform","boot",0x006aff20,"wgr.Transform.boot","wgr/Wgr.hx",818,0xbf765109)
+HX_LOCAL_STACK_FRAME(_hx_pos_0767f20d8bff1535_8_boot,"wgr.Transform","boot",0x006aff20,"wgr.Transform.boot","wgr/Transform.hx",8,0x0ea61bff)
+HX_LOCAL_STACK_FRAME(_hx_pos_0767f20d8bff1535_9_boot,"wgr.Transform","boot",0x006aff20,"wgr.Transform.boot","wgr/Transform.hx",9,0x0ea61bff)
 namespace wgr{
 
 void Transform_obj::__construct() { }
@@ -122,12 +122,12 @@ void Transform_obj::__register()
 void Transform_obj::__boot()
 {
 {
-            	HX_GC_STACKFRAME(&_hx_pos_94f48cb013b25104_817_boot)
-HXDLIN( 817)		NO_ROTATION =  ::wgr::Vec3_obj::__alloc( HX_CTX ,0,0,0);
+            	HX_GC_STACKFRAME(&_hx_pos_0767f20d8bff1535_8_boot)
+HXDLIN(   8)		NO_ROTATION =  ::wgr::Vec3_obj::__alloc( HX_CTX ,0,0,0);
             	}
 {
-            	HX_GC_STACKFRAME(&_hx_pos_94f48cb013b25104_818_boot)
-HXDLIN( 818)		UNIT_SCALE =  ::wgr::Vec3_obj::__alloc( HX_CTX ,1,1,1);
+            	HX_GC_STACKFRAME(&_hx_pos_0767f20d8bff1535_9_boot)
+HXDLIN(   9)		UNIT_SCALE =  ::wgr::Vec3_obj::__alloc( HX_CTX ,1,1,1);
             	}
 }
 

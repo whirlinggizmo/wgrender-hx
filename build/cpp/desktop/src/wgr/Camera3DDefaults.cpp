@@ -8,7 +8,7 @@
 #include <wgr/Vec3.h>
 #endif
 
-HX_LOCAL_STACK_FRAME(_hx_pos_76ff56b31f4528d1_1203_boot,"wgr.Camera3DDefaults","boot",0x03ede1ec,"wgr.Camera3DDefaults.boot","wgr/Wgr.hx",1203,0xbf765109)
+HX_LOCAL_STACK_FRAME(_hx_pos_f5a3ee7e8adc85b3_31_boot,"wgr.Camera3DDefaults","boot",0x03ede1ec,"wgr.Camera3DDefaults.boot","wgr/Camera3D.hx",31,0x8661475b)
 namespace wgr{
 
 void Camera3DDefaults_obj::__construct() { }
@@ -109,8 +109,8 @@ void Camera3DDefaults_obj::__register()
 void Camera3DDefaults_obj::__boot()
 {
 {
-            	HX_GC_STACKFRAME(&_hx_pos_76ff56b31f4528d1_1203_boot)
-HXDLIN(1203)		UP =  ::wgr::Vec3_obj::__alloc( HX_CTX ,0,1,0);
+            	HX_GC_STACKFRAME(&_hx_pos_f5a3ee7e8adc85b3_31_boot)
+HXDLIN(  31)		UP =  ::wgr::Vec3_obj::__alloc( HX_CTX ,0,1,0);
             	}
 }
 

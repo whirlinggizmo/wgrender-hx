@@ -43,11 +43,11 @@
 #ifndef INCLUDED_wgr_Vec3
 #include <wgr/Vec3.h>
 #endif
-#ifndef INCLUDED_wgr__Wgr_Handle_Impl_
-#include <wgr/_Wgr/Handle_Impl_.h>
+#ifndef INCLUDED_wgr__Handle_Handle_Impl_
+#include <wgr/_Handle/Handle_Impl_.h>
 #endif
-#ifndef INCLUDED_wgr__Wgr_Scene_Impl_
-#include <wgr/_Wgr/Scene_Impl_.h>
+#ifndef INCLUDED_wgr__Scene_Scene_Impl_
+#include <wgr/_Scene/Scene_Impl_.h>
 #endif
 
 HX_LOCAL_STACK_FRAME(_hx_pos_3e40763dac58a534_64_main,"Guest","main",0x22325daf,"Guest.main","Guest.hx",64,0xc43d1706)
@@ -359,7 +359,7 @@ STATIC_HX_DEFINE_DYNAMIC_FUNC1(Guest_obj,update,(void))
 
 void Guest_obj::updatePickMessage( ::wgr::MouseState mouse){
             	HX_STACKFRAME(&_hx_pos_3e40763dac58a534_171_updatePickMessage)
-HXLINE( 172)		 ::wgr::PickResult pick = ::wgr::_Wgr::Scene_Impl__obj::toPickResult(wgr_scene_pick(( (unsigned int)(::Guest_obj::scene) ),( (unsigned int)(0) ),( (float)(( (Float)(mouse->x) )) ),( (float)(( (Float)(mouse->y) )) )));
+HXLINE( 172)		 ::wgr::PickResult pick = ::wgr::_Scene::Scene_Impl__obj::toPickResult(wgr_scene_pick(( (unsigned int)(::Guest_obj::scene) ),( (unsigned int)(0) ),( (float)(( (Float)(mouse->x) )) ),( (float)(( (Float)(mouse->y) )) )));
 HXLINE( 173)		::String what;
 HXDLIN( 173)		if (!(pick->hit)) {
 HXLINE( 173)			what = HX_("",00,00,00,00);
@@ -856,7 +856,7 @@ HXDLIN(  45)		countdownTimer = ((Float)0.0);
             	}
 {
             	HX_STACKFRAME(&_hx_pos_3e40763dac58a534_46_boot)
-HXDLIN(  46)		debugFont = ::wgr::_Wgr::Handle_Impl__obj::NONE;
+HXDLIN(  46)		debugFont = ::wgr::_Handle::Handle_Impl__obj::NONE;
             	}
 {
             	HX_STACKFRAME(&_hx_pos_3e40763dac58a534_47_boot)
@@ -864,27 +864,27 @@ HXDLIN(  47)		greyAlpha = 255;
             	}
 {
             	HX_STACKFRAME(&_hx_pos_3e40763dac58a534_48_boot)
-HXDLIN(  48)		komikaFont = ::wgr::_Wgr::Handle_Impl__obj::NONE;
+HXDLIN(  48)		komikaFont = ::wgr::_Handle::Handle_Impl__obj::NONE;
             	}
 {
             	HX_STACKFRAME(&_hx_pos_3e40763dac58a534_49_boot)
-HXDLIN(  49)		sprite = ::wgr::_Wgr::Handle_Impl__obj::NONE;
+HXDLIN(  49)		sprite = ::wgr::_Handle::Handle_Impl__obj::NONE;
             	}
 {
             	HX_STACKFRAME(&_hx_pos_3e40763dac58a534_50_boot)
-HXDLIN(  50)		model = ::wgr::_Wgr::Handle_Impl__obj::NONE;
+HXDLIN(  50)		model = ::wgr::_Handle::Handle_Impl__obj::NONE;
             	}
 {
             	HX_STACKFRAME(&_hx_pos_3e40763dac58a534_51_boot)
-HXDLIN(  51)		bgm = ::wgr::_Wgr::Handle_Impl__obj::NONE;
+HXDLIN(  51)		bgm = ::wgr::_Handle::Handle_Impl__obj::NONE;
             	}
 {
             	HX_STACKFRAME(&_hx_pos_3e40763dac58a534_52_boot)
-HXDLIN(  52)		camera = ::wgr::_Wgr::Handle_Impl__obj::NONE;
+HXDLIN(  52)		camera = ::wgr::_Handle::Handle_Impl__obj::NONE;
             	}
 {
             	HX_STACKFRAME(&_hx_pos_3e40763dac58a534_53_boot)
-HXDLIN(  53)		scene = ::wgr::_Wgr::Handle_Impl__obj::NONE;
+HXDLIN(  53)		scene = ::wgr::_Handle::Handle_Impl__obj::NONE;
             	}
 {
             	HX_STACKFRAME(&_hx_pos_3e40763dac58a534_54_boot)

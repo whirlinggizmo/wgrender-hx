@@ -7,7 +7,7 @@
 // edges is the same, against the same wgr.Wgr layer.
 import wgr.GuestAbi;
 import wgr.Raw;
-import wgr.Wgr;
+import wgr.*;
 
 @:expose("WgrGuest")
 class Guest {
@@ -75,7 +75,7 @@ class Guest {
 		GuestAbi.attach(host);
 		GuestAbi.register(onInit, (dt, _) -> onFrame(dt), onAsset);
 		GuestAbi.start(SCREEN_WIDTH, SCREEN_HEIGHT, "simple (wgrender host, Haxe guest)",
-			(Msaa4x | Resizable : Int));
+			((Msaa4x | Resizable : WindowFlag) : Int));
 	}
 
 	static function load(path:String, id:Int):Void {

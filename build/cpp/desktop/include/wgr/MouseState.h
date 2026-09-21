@@ -6,7 +6,7 @@
 #include <hxcpp.h>
 #endif
 
-HX_DECLARE_STACK_FRAME(_hx_pos_69614c0f27333819_222_new)
+HX_DECLARE_STACK_FRAME(_hx_pos_e2ded2f4948b5dce_21_new)
 HX_DECLARE_CLASS1(wgr,MouseState)
 
 namespace wgr{
@@ -38,17 +38,17 @@ class HXCPP_CLASS_ATTRIBUTES MouseState_obj : public ::hx::Object
 			MouseState_obj *__this = (MouseState_obj*)(::hx::Ctx::alloc(_hx_ctx, sizeof(MouseState_obj), true, "wgr.MouseState"));
 			*(void **)__this = MouseState_obj::_hx_vtable;
 {
-            	HX_STACKFRAME(&_hx_pos_69614c0f27333819_222_new)
-HXLINE( 223)		( ( ::wgr::MouseState)(__this) )->x = x;
-HXLINE( 224)		( ( ::wgr::MouseState)(__this) )->y = y;
-HXLINE( 225)		( ( ::wgr::MouseState)(__this) )->wheel = wheel;
-HXLINE( 226)		( ( ::wgr::MouseState)(__this) )->wheelX = wheelX;
-HXLINE( 227)		( ( ::wgr::MouseState)(__this) )->left = left;
-HXLINE( 228)		( ( ::wgr::MouseState)(__this) )->right = right;
-HXLINE( 229)		( ( ::wgr::MouseState)(__this) )->middle = middle;
-HXLINE( 230)		( ( ::wgr::MouseState)(__this) )->buttons = buttons;
-HXLINE( 231)		( ( ::wgr::MouseState)(__this) )->dx = dx;
-HXLINE( 232)		( ( ::wgr::MouseState)(__this) )->dy = dy;
+            	HX_STACKFRAME(&_hx_pos_e2ded2f4948b5dce_21_new)
+HXLINE(  22)		( ( ::wgr::MouseState)(__this) )->x = x;
+HXLINE(  23)		( ( ::wgr::MouseState)(__this) )->y = y;
+HXLINE(  24)		( ( ::wgr::MouseState)(__this) )->wheel = wheel;
+HXLINE(  25)		( ( ::wgr::MouseState)(__this) )->wheelX = wheelX;
+HXLINE(  26)		( ( ::wgr::MouseState)(__this) )->left = left;
+HXLINE(  27)		( ( ::wgr::MouseState)(__this) )->right = right;
+HXLINE(  28)		( ( ::wgr::MouseState)(__this) )->middle = middle;
+HXLINE(  29)		( ( ::wgr::MouseState)(__this) )->buttons = buttons;
+HXLINE(  30)		( ( ::wgr::MouseState)(__this) )->dx = dx;
+HXLINE(  31)		( ( ::wgr::MouseState)(__this) )->dy = dy;
             	}
 		
 			return __this;

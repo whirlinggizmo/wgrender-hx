@@ -5,21 +5,21 @@
 #include <wgr/MouseState.h>
 #endif
 
-HX_DEFINE_STACK_FRAME(_hx_pos_69614c0f27333819_222_new,"wgr.MouseState","new",0x07f4714a,"wgr.MouseState.new","wgr/Wgr.hx",222,0xbf765109)
+HX_DEFINE_STACK_FRAME(_hx_pos_e2ded2f4948b5dce_21_new,"wgr.MouseState","new",0x07f4714a,"wgr.MouseState.new","wgr/MouseState.hx",21,0x4fea18c5)
 namespace wgr{
 
 void MouseState_obj::__construct(int x,int y,Float wheel,Float wheelX,int left,int right,int middle,::Array< int > buttons,int dx,int dy){
-            	HX_STACKFRAME(&_hx_pos_69614c0f27333819_222_new)
-HXLINE( 223)		this->x = x;
-HXLINE( 224)		this->y = y;
-HXLINE( 225)		this->wheel = wheel;
-HXLINE( 226)		this->wheelX = wheelX;
-HXLINE( 227)		this->left = left;
-HXLINE( 228)		this->right = right;
-HXLINE( 229)		this->middle = middle;
-HXLINE( 230)		this->buttons = buttons;
-HXLINE( 231)		this->dx = dx;
-HXLINE( 232)		this->dy = dy;
+            	HX_STACKFRAME(&_hx_pos_e2ded2f4948b5dce_21_new)
+HXLINE(  22)		this->x = x;
+HXLINE(  23)		this->y = y;
+HXLINE(  24)		this->wheel = wheel;
+HXLINE(  25)		this->wheelX = wheelX;
+HXLINE(  26)		this->left = left;
+HXLINE(  27)		this->right = right;
+HXLINE(  28)		this->middle = middle;
+HXLINE(  29)		this->buttons = buttons;
+HXLINE(  30)		this->dx = dx;
+HXLINE(  31)		this->dy = dy;
             	}
 
 Dynamic MouseState_obj::__CreateEmpty() { return new MouseState_obj; }

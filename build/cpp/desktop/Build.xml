@@ -2,25 +2,17 @@
 <set name="HXCPP_API_LEVEL" value="430" />
 <files id="haxe">
 <compilerflag value="-Iinclude"/>
-  <file name="src/wgr/Input.cpp" >
-   <depend name="include/wgr/Input.h"/>
-   <depend name="include/wgr/MouseState.h"/>
-  </file>
-  <file name="src/wgr/_Wgr/Scene_Impl_.cpp" >
-   <depend name="include/wgr/PickResult.h"/>
-   <depend name="include/wgr/Vec3.h"/>
-   <depend name="include/wgr/_Wgr/Scene_Impl_.h"/>
-  </file>
-  <file name="src/wgr/Camera3DDefaults.cpp" >
-   <depend name="include/wgr/Camera3DDefaults.h"/>
-   <depend name="include/wgr/Vec3.h"/>
+  <file name="src/wgr/Vec2.cpp" >
+   <depend name="include/wgr/Vec2.h"/>
   </file>
   <file name="src/wgr/Transform.cpp" >
    <depend name="include/wgr/Transform.h"/>
    <depend name="include/wgr/Vec3.h"/>
   </file>
-  <file name="src/wgr/KeyCheck.cpp" >
-   <depend name="include/wgr/KeyCheck.h"/>
+  <file name="src/wgr/_Scene/Scene_Impl_.cpp" >
+   <depend name="include/wgr/PickResult.h"/>
+   <depend name="include/wgr/Vec3.h"/>
+   <depend name="include/wgr/_Scene/Scene_Impl_.h"/>
   </file>
   <file name="src/wgr/PickResult.cpp" >
    <depend name="include/wgr/PickResult.h"/>
@@ -29,15 +21,20 @@
   <file name="src/wgr/MouseState.cpp" >
    <depend name="include/wgr/MouseState.h"/>
   </file>
-  <file name="src/wgr/Vec3.cpp" >
-   <depend name="include/wgr/Vec3.h"/>
-  </file>
-  <file name="src/wgr/Vec2.cpp" >
-   <depend name="include/wgr/Vec2.h"/>
+  <file name="src/wgr/Input.cpp" >
+   <depend name="include/wgr/Input.h"/>
+   <depend name="include/wgr/MouseState.h"/>
   </file>
   <file name="src/wgr/GuestAbi.cpp" >
    <depend name="include/haxe/Exception.h"/>
    <depend name="include/wgr/GuestAbi.h"/>
+  </file>
+  <file name="src/wgr/Camera3DDefaults.cpp" >
+   <depend name="include/wgr/Camera3DDefaults.h"/>
+   <depend name="include/wgr/Vec3.h"/>
+  </file>
+  <file name="src/wgr/Vec3.cpp" >
+   <depend name="include/wgr/Vec3.h"/>
   </file>
   <file name="src/haxe/iterators/ArrayIterator.cpp" >
    <depend name="include/haxe/iterators/ArrayIterator.h"/>
@@ -70,17 +67,17 @@
    <depend name="include/wgr/Transform.h"/>
    <depend name="include/wgr/Vec2.h"/>
    <depend name="include/wgr/Vec3.h"/>
-   <depend name="include/wgr/_Wgr/Handle_Impl_.h"/>
-   <depend name="include/wgr/_Wgr/Scene_Impl_.h"/>
+   <depend name="include/wgr/_Handle/Handle_Impl_.h"/>
+   <depend name="include/wgr/_Scene/Scene_Impl_.h"/>
   </file>
-  <file name="src/wgr/_Wgr/Handle_Impl_.cpp" >
-   <depend name="include/wgr/_Wgr/Handle_Impl_.h"/>
+  <file name="src/wgr/_Handle/Handle_Impl_.cpp" >
+   <depend name="include/wgr/_Handle/Handle_Impl_.h"/>
   </file>
   <file name="src/__boot__.cpp" >
-   <depend name="include/wgr/Camera3DDefaults.h"/>
    <depend name="include/wgr/Transform.h"/>
+   <depend name="include/wgr/Camera3DDefaults.h"/>
    <depend name="include/Guest.h"/>
-   <depend name="include/wgr/_Wgr/Handle_Impl_.h"/>
+   <depend name="include/wgr/_Handle/Handle_Impl_.h"/>
   </file>
   <file name="src/__files__.cpp" if='HXCPP_DEBUGGER'>
   </file>

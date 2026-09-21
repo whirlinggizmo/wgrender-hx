@@ -5,15 +5,15 @@
 #include <wgr/Vec2.h>
 #endif
 
-HX_DEFINE_STACK_FRAME(_hx_pos_fed6d911efa2c570_181_new,"wgr.Vec2","new",0x0f06e6fc,"wgr.Vec2.new","wgr/Wgr.hx",181,0xbf765109)
+HX_DEFINE_STACK_FRAME(_hx_pos_1e21d21cf7373008_10_new,"wgr.Vec2","new",0x0f06e6fc,"wgr.Vec2.new","wgr/Vec2.hx",10,0x313a7e13)
 namespace wgr{
 
 void Vec2_obj::__construct(::hx::Null< Float >  __o_x,::hx::Null< Float >  __o_y){
             		Float x = __o_x.Default(0);
             		Float y = __o_y.Default(0);
-            	HX_STACKFRAME(&_hx_pos_fed6d911efa2c570_181_new)
-HXLINE( 182)		this->x = x;
-HXLINE( 183)		this->y = y;
+            	HX_STACKFRAME(&_hx_pos_1e21d21cf7373008_10_new)
+HXLINE(  11)		this->x = x;
+HXLINE(  12)		this->y = y;
             	}
 
 Dynamic Vec2_obj::__CreateEmpty() { return new Vec2_obj; }

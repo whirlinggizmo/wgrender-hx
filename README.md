@@ -112,10 +112,22 @@ the warm numbers.
 
 ### How much of the binding was reusable
 
-The whole point of the two-layer split. `src/wgr/Wgr.hx` is `../simple`'s file with
-target guards: **37 guard lines and 27 real edits, 3.9% of 1,373 lines**. Everything
-structural — the handle abstracts, properties, enums, flags, `Vec2`/`Vec3`,
-`PickResult` — carried over untouched.
+The whole point of the two-layer split. `src/wgr/` is `../simple`'s modules with
+target guards applied, and since the split into one module per wgrender header the
+answer is visible per file: **15 of 39 modules carry a guard, 24 carry none.**
+
+| guarded | why |
+|---|---|
+| `Wgr`, `Native` | entering the loop and hxcpp's pointer plumbing — the guest ABI's job here |
+| `Asset`, `AssetTask` | the guest gets an id back, not a closure (`Asset.setHost` is shared) |
+| `Input`, `KeyboardState` | the mouse struct is read differently; the 512-int keyboard struct isn't marshalled yet |
+| `Scene`, `Text` | struct converters: hxcpp unpacks a C struct, the JS layer returns the value |
+| `AlignX`, `AlignY`, `Key`, `LightKind`, `LogLevel`, `Projection`, `SpriteFacing` | one `@:to` cast each, only to satisfy C++'s enum parameters |
+
+Everything else — `Model`, `Mesh`, `Sprite3D`, `Texture`, `Font`, `Text2D`, `Text3D`,
+`Camera3D`, `Light`, `Sound`, `Audio`, `Render`, `Window`, `Color`, `Handle`, `Vec2`,
+`Vec3`, `PickResult`, `MouseState`, `SceneMember`, `Transform` and the flag enums —
+compiles for both targets untouched.
 
 What needed guarding was exactly what the host/guest model replaces or what hxcpp
 needs specifically:
