@@ -22,6 +22,12 @@
     <set name="WGRENDER" value="${haxelib:wgrender-hx}/project/lib/wgrender-c" />
     <set name="WGRHX" value="${haxelib:wgrender-hx}" />
 
+    <!-- hxcpp reads <error> in its top-level parser, not inside <target>, so this
+         has to sit out here to fire at all. MSVC is hxcpp's default on Windows and
+         is the one combination that cannot work, so say why before the link does. -->
+    <error value="wgrender has no MSVC build: its Makefile cross-compiles Windows with MinGW, and link.exe cannot use those objects (they need GCC runtime symbols such as __chkstk_ms). Build wgrender with MinGW and compile with -D mingw -D HXCPP_M64 so both halves match, or cross-compile from Linux with -D windows -D HXCPP_M64."
+           if="windows" unless="mingw" />
+
     <files id="haxe">
         <compilerflag value="-I${WGRENDER}/include" />
         <compilerflag value="-I${WGRHX}/host" />
@@ -93,9 +99,6 @@
                     <lib name="-lole32" />
                     <lib name="-lshell32" />
                     <lib name="-lwinmm" />
-                </section>
-                <section unless="mingw">
-                    <error value="wgrender has no MSVC build. Its Makefile cross-compiles Windows with MinGW only, and link.exe cannot use those objects: they pull in GCC runtime symbols (__chkstk_ms, __imp__assert) that MSVC does not provide. Build with MinGW instead (-D mingw -D HXCPP_M64), or build wgrender with MSVC and point WGR_BUILD_XML at it." />
                 </section>
             </section>
 
