@@ -1,26 +1,37 @@
 #!/usr/bin/env python3
-"""Build and check every example here.
+"""Build and check the examples here.
 
-    examples/build.py all        build each one (web and native)
-    examples/build.py web        the web build only
-    examples/build.py drive      run each web build in a headless browser
-    examples/build.py site       collect every web build into out/www with a picker
-    examples/build.py serve      build the site and serve it on :8000
-    examples/build.py serve --tls cert.pem key.pem      the same over https, on :8443
-    examples/build.py compare    sizes against wgrender's own C build of each
-    examples/build.py bench      frame cost, Haxe against C, for each
-    examples/build.py clean
+    examples/build.py <command> [example ...]
+
+Naming examples limits the command to those; naming none means all of them.
+
+    all        build it: the guest, the wasm host, and the native binary
+    guest      the Haxe-to-JS half only
+    host       the wasm host only (reads the built guest to know what to export)
+    desktop    the native binary only
+    web        everything a browser needs
+    drive      run each web build in a headless browser and fail on a console error
+    site       collect every web build into out/www with a page that lists them
+    serve      build that site and serve it (--tls cert key for https on 8443)
+    sizes      what each web build weighs
+    compare    those sizes against wgrender's own C build of the same example
+    bench      frame cost, Haxe against C
+    list       the examples, and what each one is
+    clean      remove out/ and build/
+
+So `examples/build.py desktop` builds every example's native binary, and
+`examples/build.py all simple` builds one example every way.
 
 Each example owns its build.py; this runs them, so there is one command to say
-"everything still works" after a change to the binding. The library's own checks are
+whether a change to the binding broke any of them. The library's own checks are
 test/check.py at the root -- they are not an example's business and run on their own.
 
 Python rather than a Makefile: nothing else in wgrender-hx uses make, and wgrender's
-own tools (serve.py, webdeploy.py) are Python and get shelled out to from here, so
-this adds no dependency that building already needed.
+own tools that this shells out to are Python already, so it adds no dependency the
+build did not have.
 
-    WGRENDER_DIR   where wgrender-c is
-    ONLY=name,name limit it to those examples
+    WGRENDER_DIR   build against a wgrender of your own
+    TLS_CERT/TLS_KEY   serve https without passing --tls
 """
 import os
 import pathlib
@@ -48,10 +59,22 @@ C_BUILD = WGRENDER / 'examples/build/webgl2-nothreads'
 GUESTS = ['hello3d', 'particles', 'simple']
 OTHERS = ['simple-hxcpp']
 
+WHAT = {
+    'hello3d': 'an orbiting camera over immediate-mode 3D; loads nothing, so it is '
+               'the size floor',
+    'particles': 'five emitters, 2D and 3D, with a click to burst confetti',
+    'simple': 'a glTF model, a sprite, text, audio and picking',
+    'simple-hxcpp': 'the same scene the other way: Haxe through hxcpp into one wasm, '
+                    'for the size comparison',
+}
 
-def wanted(names):
-    only = os.environ.get('ONLY')
-    return [n for n in names if not only or n in only.split(',')]
+
+def wanted(names, chosen=()):
+    picked = [n for n in names if not chosen or n in chosen]
+    if chosen and not picked and set(chosen) - set(GUESTS + OTHERS):
+        sys.exit(f'no such example: {", ".join(sorted(set(chosen) - set(GUESTS + OTHERS)))}\n'
+                 f'  have: {", ".join(GUESTS + OTHERS)}')
+    return picked
 
 
 def run(cmd, cwd, **kw):
@@ -59,23 +82,23 @@ def run(cmd, cwd, **kw):
     subprocess.run([str(c) for c in cmd], check=True, cwd=cwd, **kw)
 
 
-def each(command, names=None):
-    for name in wanted(names or GUESTS + OTHERS):
+def each(command, names=None, chosen=()):
+    for name in wanted(names or GUESTS + OTHERS, chosen):
         run(['./build.py', command], HERE / name)
 
 
-def drive():
-    for name in wanted(GUESTS):
+def drive(chosen=()):
+    for name in wanted(GUESTS, chosen):
         run(['node', 'tools/drive.mjs'], HERE / name)
-    if 'simple-hxcpp' in wanted(OTHERS):
+    if 'simple-hxcpp' in wanted(OTHERS, chosen):
         run(['node', 'check_web.mjs'], HERE / 'simple-hxcpp')
 
 
-def bench():
+def bench(chosen=()):
     if not C_BUILD.exists():
         sys.exit(f'no C builds at {C_BUILD}\n'
                  f'  make -C {WGRENDER} wasm-all WEB_THREADS=0')
-    for name in wanted(GUESTS):
+    for name in wanted(GUESTS, chosen):
         for args in ([f'--site={C_BUILD}', f'--url=/?ex={name}', '--probe=examples.json',
                       f'--label={name}-c'],
                      [f'--site={HERE / name / "out/web"}', f'--label={name}-haxe']):
@@ -117,7 +140,7 @@ guest. The same sources build native through hxcpp.</p>
 """
 
 
-def site():
+def site(chosen=()):
     """Every built example under one directory, with a page that lists them.
 
     Each example already generates a working page into its own out/web, so this
@@ -130,7 +153,7 @@ def site():
     shutil.rmtree(out, ignore_errors=True)
     out.mkdir(parents=True)
     links, built = [], []
-    for name in wanted(GUESTS):
+    for name in wanted(GUESTS, chosen):
         src = HERE / name / 'out/web'
         if not (src / 'index.html').exists():
             print(f'{name}: not built, skipping (./build.py all)', file=sys.stderr)
@@ -174,7 +197,7 @@ def size_table(names):
             '<th>vs C</th></tr>' + ''.join(rows) + '</table>')
 
 
-def serve(args):
+def serve(args, chosen=()):
     """Build the site and serve it with wgrender's own dev server.
 
     Plain HTTP on 8000 by default. --tls (or TLS_CERT/TLS_KEY in the environment,
@@ -197,7 +220,7 @@ def serve(args):
     if (cert is None) != (key is None):
         sys.exit('TLS needs both a certificate and a key')
 
-    out = site()
+    out = site(chosen)
     cmd = ['python3', str(WGRENDER / 'tools/serve.py'), port, str(out)]
     if cert:
         cmd += ['--tls', cert, key]
@@ -208,31 +231,44 @@ def serve(args):
     subprocess.run(cmd, check=False)
 
 
+def listing():
+    for name in GUESTS + OTHERS:
+        kind = 'guest' if name in GUESTS else 'all-in-one'
+        print(f'  {name:<13} {kind:<11} {WHAT.get(name, "")}')
+
+
 def main():
-    command = sys.argv[1] if len(sys.argv) > 1 else ''
-    if command == 'all':
-        each('all')
-    elif command in ('web', 'guest', 'host', 'desktop', 'sizes', 'clean'):
-        # the guests take host/guest/desktop; simple-hxcpp takes web/desktop
-        if command in ('guest', 'host'):
-            each(command, GUESTS)
-        elif command == 'web':
-            each('all', GUESTS)
-            each('web', OTHERS)
-        else:
-            each(command)
+    args = sys.argv[1:]
+    command = args[0] if args else ''
+    rest = args[1:]
+    # anything that is not a flag and names no file is an example to limit this to
+    chosen = tuple(a for a in rest if not a.startswith('-') and not a.endswith('.pem')
+                   and not a.isdigit())
+
+    if command == 'list':
+        listing()
+    elif command == 'all':
+        each('all', chosen=chosen)
+    elif command in ('guest', 'host'):
+        each(command, GUESTS, chosen)
+    elif command == 'web':
+        each('all', GUESTS, chosen)
+        each('web', OTHERS, chosen)
+    elif command in ('desktop', 'sizes', 'clean'):
+        each(command, chosen=chosen)
     elif command == 'drive':
-        drive()
+        drive(chosen)
     elif command == 'site':
-        site()
+        site(chosen)
     elif command == 'serve':
-        serve(sys.argv[2:])
+        serve(rest, chosen)
     elif command == 'compare':
         # compare.py prints what is missing and why; a traceback on top of that adds
         # a stack trace to a message that was already the answer.
-        return subprocess.run([str(LIB / 'tools/compare.py')]).returncode
+        return subprocess.run([str(LIB / 'tools/compare.py')]
+                              + [str(HERE / n) for n in chosen]).returncode
     elif command == 'bench':
-        bench()
+        bench(chosen)
     else:
         sys.exit(__doc__)
 

@@ -24,7 +24,9 @@ import sys
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 from wgrpath import find  # noqa: E402
 LIB = pathlib.Path(__file__).resolve().parent.parent
-WGRENDER = find()
+# argv here is example directories, so wgrender comes from the environment or
+# the usual places -- not from a positional that means something else.
+WGRENDER = find(argv=[])
 C_BUILD = WGRENDER / 'examples/build/webgl2-nothreads'
 
 
