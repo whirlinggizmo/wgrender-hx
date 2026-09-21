@@ -6,6 +6,7 @@
     examples/build.py drive      run each web build in a headless browser
     examples/build.py site       collect every web build into out/www with a picker
     examples/build.py serve      build the site and serve it on :8000
+    examples/build.py serve --tls cert.pem key.pem      the same over https, on :8443
     examples/build.py compare    sizes against wgrender's own C build of each
     examples/build.py bench      frame cost, Haxe against C, for each
     examples/build.py clean
@@ -173,9 +174,38 @@ def size_table(names):
             '<th>vs C</th></tr>' + ''.join(rows) + '</table>')
 
 
-def serve():
+def serve(args):
+    """Build the site and serve it with wgrender's own dev server.
+
+    Plain HTTP on 8000 by default. --tls (or TLS_CERT/TLS_KEY in the environment,
+    as wgrender's own serve-tls target takes them) serves HTTPS on 8443 instead.
+
+    That matters for another device: localhost counts as a secure context whatever
+    the scheme, but a phone on the LAN does not, and a threaded build needs a secure
+    page for SharedArrayBuffer. The certificate has to name this machine's LAN
+    address, which is why nothing here invents one.
+    """
+    cert = os.environ.get('TLS_CERT')
+    key = os.environ.get('TLS_KEY')
+    if '--tls' in args:
+        i = args.index('--tls')
+        if len(args) < i + 3:
+            sys.exit('--tls takes a certificate and a key: ./build.py serve --tls cert.pem key.pem')
+        cert, key = args[i + 1], args[i + 2]
+        args = args[:i] + args[i + 3:]
+    port = next((a for a in args if a.isdigit()), '8443' if cert else '8000')
+    if (cert is None) != (key is None):
+        sys.exit('TLS needs both a certificate and a key')
+
     out = site()
-    subprocess.run(['python3', str(WGRENDER / 'tools/serve.py'), '8000', str(out)], check=False)
+    cmd = ['python3', str(WGRENDER / 'tools/serve.py'), port, str(out)]
+    if cert:
+        cmd += ['--tls', cert, key]
+    scheme = 'https' if cert else 'http'
+    print(f'\n{scheme}://localhost:{port}/')
+    if not cert:
+        print('  another device on the LAN needs https: ./build.py serve --tls cert.pem key.pem')
+    subprocess.run(cmd, check=False)
 
 
 def main():
@@ -196,7 +226,7 @@ def main():
     elif command == 'site':
         site()
     elif command == 'serve':
-        serve()
+        serve(sys.argv[2:])
     elif command == 'compare':
         # compare.py prints what is missing and why; a traceback on top of that adds
         # a stack trace to a message that was already the answer.
