@@ -117,5 +117,14 @@ GUEST_EXPORT int wgr_guest_start(int width, int height, const char *title, uint3
     return wgr_run();
 }
 
-/* Emscripten still wants an entry point; the guest starts the host, not main(). */
+/* Who calls main() is where the two platforms genuinely differ.
+ *
+ * On the web the guest is JS, so nothing in this module can be the entry point:
+ * Emscripten wants one anyway, and the page's boot script is what actually registers
+ * the guest and calls wgr_guest_start.
+ *
+ * On desktop the guest is compiled in, and its own runtime supplies main() — hxcpp's
+ * here. Defining one as well is a duplicate symbol at link time. */
+#ifdef __EMSCRIPTEN__
 int main(void) { return 0; }
+#endif

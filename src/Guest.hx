@@ -5,13 +5,19 @@
 // entered (the guest ABI, not wgr_set_init/wgr_set_frame), and how assets are
 // requested (an id the host hands back, not a closure). The scene code between those
 // edges is the same, against the same wgr.Wgr layer.
+import wgr.GuestAbi;
 import wgr.Raw;
 import wgr.Wgr;
 
 @:expose("WgrGuest")
 class Guest {
-	// The served origin; wgrender's tools/serve.py mounts examples/assets at /assets.
+	// Web: the served origin (wgrender's tools/serve.py mounts examples/assets at
+	// /assets). Desktop: build.py points this at wgrender's examples/assets.
+	#if js
 	static inline final ASSET_BASE = "/assets";
+	#else
+	static final ASSET_BASE = Defines.value("wgrAssetBase", "assets");
+	#end
 
 	static inline final DEBUG_FONT_PATH = "fonts/JetBrainsMono/JetBrainsMono-Regular.ttf";
 	static inline final KOMIKA_FONT_PATH = "fonts/Komika/KOMIKAH_.ttf";
@@ -49,46 +55,31 @@ class Guest {
 	static var message = "";
 	static var platformText = "";
 
-	/** Nothing to do at load: web/boot.js loads the host first, then calls `start`. **/
-	static function main():Void {}
+	/**
+		On desktop this is the entry point and `autostart` runs the guest now; on the
+		web the page owns startup, so `autostart` does nothing and web/boot.js calls
+		`start` once the host module has loaded.
+	**/
+	static function main():Void {
+		GuestAbi.autostart(start);
+	}
 
 	// --- the guest ABI (host/wgr_guest.h) ---
 
 	/**
-		Register the ops, then start the host. Each op is wrapped so that it owns two
-		things the C side can't do for us: it catches, because an exception escaping
-		into the host's frames freezes the page on an opaque WebAssembly.Exception;
-		and it releases the scratch arena, because Haxe has no `finally` and the
-		marshalling layer allocates strings and struct slots on the wasm stack.
+		Register the ops, then start the host. `wgr.GuestAbi` is per-target — the JS
+		one installs them through `addFunction` on the Emscripten module, the hxcpp one
+		through plain function pointers — so nothing below this line is target-specific.
 	**/
 	public static function start(host:Dynamic):Void {
-		Raw.attach(host);
-		host._wgr_guest_register(op("init", "i", () -> onInit()),
-			op("frame", "ifi", (dt:Float, frameId:Int) -> onFrame(dt)),
-			op("asset", "iiii", (id:Int, path:Int, ok:Int) -> onAsset(id, Raw.str(path), ok != 0)), 0);
-		final mark = Raw.stackMark();
-		host._wgr_guest_start(SCREEN_WIDTH, SCREEN_HEIGHT, Raw.cstr("simple (wgrender host, Haxe guest)"),
+		GuestAbi.attach(host);
+		GuestAbi.register(onInit, (dt, _) -> onFrame(dt), onAsset);
+		GuestAbi.start(SCREEN_WIDTH, SCREEN_HEIGHT, "simple (wgrender host, Haxe guest)",
 			(Msaa4x | Resizable : Int));
-		Raw.stackRelease(mark);
-	}
-
-	static function op(name:String, signature:String, body:Dynamic):Int {
-		return Raw.host.addFunction(Reflect.makeVarArgs(args -> {
-			final mark = Raw.stackMark();
-			var code = 0;
-			try
-				Reflect.callMethod(null, body, args)
-			catch (e:haxe.Exception) {
-				Log.error('guest: uncaught exception in $name: ${e.message}');
-				code = 1;
-			}
-			Raw.stackRelease(mark);
-			return code;
-		}), signature);
 	}
 
 	static function load(path:String, id:Int):Void {
-		if (!Raw.wgr_guest_asset_load(path, id))
+		if (!GuestAbi.loadAsset(path, id))
 			Log.error('failed to queue asset: $path');
 	}
 

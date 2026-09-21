@@ -151,6 +151,54 @@ Three measured hazards, all handled in one place:
   with a standalone test before trusting it: `vec2_t` and a 36-byte struct both came
   back through a first-argument pointer.
 
+## Desktop: the same guest, native
+
+`./build.py desktop` builds `Guest.hx` through hxcpp instead of to JS. There is no
+wasm and no host module: hxcpp compiles `host/wgr_guest.c` and links wgrender straight
+into the binary, so the guest ABI is a set of plain function pointers. Verified
+running the same scene with `Platform: desktop`.
+
+The per-target split is `wgr.GuestAbi`, which Haxe picks by target the same way it
+picks `Raw`:
+
+| | lines | conditional lines |
+|---|---:|---:|
+| `src/Guest.hx` — the game | 231 | **3** |
+| `src/wgr/GuestAbi.js.hx` | 68 | 0 |
+| `src/wgr/GuestAbi.cpp.hx` | 83 | 0 |
+| `src/wgr/Raw.js.hx` | 412 | 0 |
+| `src/wgr/Raw.cpp.hx` | 373 | 0 |
+| `src/wgr/Wgr.hx` — shared | 1,380 | 40 |
+| `host/wgr_guest.c` | 131 | 1 |
+
+The game itself has three conditional lines, and they are all the asset base: a served
+origin on the web, a directory on desktop. Everything else — registering the ops,
+catching at the edge, the scratch arena, asset loading — is behind `GuestAbi`, so
+`Guest.hx` never mentions a target.
+
+### Where the two platforms actually differ
+
+Three places, and no more:
+
+- **Who calls `main`.** On the web nothing in the module can be the entry point, so
+  Emscripten gets a stub and the page's boot script registers the guest and calls
+  `wgr_guest_start`. On desktop the guest is compiled in and hxcpp supplies `main`, so
+  the glue's stub is a duplicate symbol — `host/wgr_guest.c`'s one line of `#ifdef`.
+  `GuestAbi.autostart` is the Haxe side of the same fact.
+- **How an op becomes a function pointer.** `addFunction` on a JS function, against
+  `cpp.Callable.fromStaticFunction` on a static one.
+- **Marshalling.** `Raw.js.hx` copies strings into the wasm stack and reads struct
+  returns out of the heap; `Raw.cpp.hx` passes them directly. Hence the scratch arena
+  on one side and nothing on the other.
+
+Both ops still catch — the reason differs (a frozen page against an exit 255) but the
+rule doesn't.
+
+One wrinkle worth recording: the `@:buildXml` that tells hxcpp where wgrender is rides
+on `wgr.GuestAbi` here, not on `wgr.Wgr` as it does in `../simple`. This guest never
+calls `Wgr`'s lifecycle functions, so `-dce full` strips the class and the metadata
+goes with it. Whatever carries the build config has to be something the build keeps.
+
 ### Known gaps
 
 - `KeyboardState` isn't marshalled (the other input paths are)

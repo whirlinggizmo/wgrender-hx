@@ -1,0 +1,111 @@
+<xml>
+<set name="HXCPP_API_LEVEL" value="430" />
+<files id="haxe">
+<compilerflag value="-Iinclude"/>
+  <file name="src/wgr/Input.cpp" >
+   <depend name="include/wgr/Input.h"/>
+   <depend name="include/wgr/MouseState.h"/>
+  </file>
+  <file name="src/wgr/_Wgr/Scene_Impl_.cpp" >
+   <depend name="include/wgr/PickResult.h"/>
+   <depend name="include/wgr/Vec3.h"/>
+   <depend name="include/wgr/_Wgr/Scene_Impl_.h"/>
+  </file>
+  <file name="src/wgr/Camera3DDefaults.cpp" >
+   <depend name="include/wgr/Camera3DDefaults.h"/>
+   <depend name="include/wgr/Vec3.h"/>
+  </file>
+  <file name="src/wgr/Transform.cpp" >
+   <depend name="include/wgr/Transform.h"/>
+   <depend name="include/wgr/Vec3.h"/>
+  </file>
+  <file name="src/wgr/KeyCheck.cpp" >
+   <depend name="include/wgr/KeyCheck.h"/>
+  </file>
+  <file name="src/wgr/PickResult.cpp" >
+   <depend name="include/wgr/PickResult.h"/>
+   <depend name="include/wgr/Vec3.h"/>
+  </file>
+  <file name="src/wgr/MouseState.cpp" >
+   <depend name="include/wgr/MouseState.h"/>
+  </file>
+  <file name="src/wgr/Vec3.cpp" >
+   <depend name="include/wgr/Vec3.h"/>
+  </file>
+  <file name="src/wgr/Vec2.cpp" >
+   <depend name="include/wgr/Vec2.h"/>
+  </file>
+  <file name="src/wgr/GuestAbi.cpp" >
+   <depend name="include/haxe/Exception.h"/>
+   <depend name="include/wgr/GuestAbi.h"/>
+  </file>
+  <file name="src/haxe/iterators/ArrayIterator.cpp" >
+   <depend name="include/haxe/iterators/ArrayIterator.h"/>
+  </file>
+  <file name="src/haxe/ValueException.cpp" >
+   <depend name="include/Std.h"/>
+   <depend name="include/haxe/Exception.h"/>
+   <depend name="include/haxe/ValueException.h"/>
+  </file>
+  <file name="src/haxe/NativeStackTrace.cpp" >
+   <depend name="include/haxe/NativeStackTrace.h"/>
+  </file>
+  <file name="src/haxe/Exception.cpp" >
+   <depend name="include/Std.h"/>
+   <depend name="include/haxe/Exception.h"/>
+   <depend name="include/haxe/NativeStackTrace.h"/>
+   <depend name="include/haxe/ValueException.h"/>
+  </file>
+  <file name="src/Std.cpp" >
+   <depend name="include/Std.h"/>
+  </file>
+  <file name="src/Guest.cpp" >
+   <depend name="include/Guest.h"/>
+   <depend name="include/Std.h"/>
+   <depend name="include/wgr/Camera3DDefaults.h"/>
+   <depend name="include/wgr/GuestAbi.h"/>
+   <depend name="include/wgr/Input.h"/>
+   <depend name="include/wgr/MouseState.h"/>
+   <depend name="include/wgr/PickResult.h"/>
+   <depend name="include/wgr/Transform.h"/>
+   <depend name="include/wgr/Vec2.h"/>
+   <depend name="include/wgr/Vec3.h"/>
+   <depend name="include/wgr/_Wgr/Handle_Impl_.h"/>
+   <depend name="include/wgr/_Wgr/Scene_Impl_.h"/>
+  </file>
+  <file name="src/wgr/_Wgr/Handle_Impl_.cpp" >
+   <depend name="include/wgr/_Wgr/Handle_Impl_.h"/>
+  </file>
+  <file name="src/__boot__.cpp" >
+   <depend name="include/wgr/Camera3DDefaults.h"/>
+   <depend name="include/wgr/Transform.h"/>
+   <depend name="include/Guest.h"/>
+   <depend name="include/wgr/_Wgr/Handle_Impl_.h"/>
+  </file>
+  <file name="src/__files__.cpp" if='HXCPP_DEBUGGER'>
+  </file>
+   <file name="${HXCPP}/src/hx/NoFiles.cpp" unless="HXCPP_DEBUGGER" />
+  <file name="src/__resources__.cpp" >
+  </file>
+</files>
+<files id="__lib__">
+<compilerflag value="-Iinclude"/>
+  <file name="src/__lib__.cpp" >
+   <depend name="include/Guest.h"/>
+  </file>
+</files>
+<files id="__main__">
+<compilerflag value="-Iinclude"/>
+  <file name="src/__main__.cpp" >
+   <depend name="include/Guest.h"/>
+  </file>
+</files>
+<files id="__resources__">
+</files>
+<files id="__externs__">
+</files>
+<set name="HAXE_OUTPUT" value="Guest" />
+<include name="${HXCPP}/build-tool/BuildCommon.xml"/>
+<include name="${WGR_BUILD_XML}" />
+<error value="Hxcpp is out of date - please update" unlessApi="430" />
+</xml>

@@ -24,11 +24,9 @@ import wgr.Raw;
 
 	`wgr.Raw` has the same slice of the C API as is, for anything not wrapped here.
 **/
-#if cpp
-// build.py writes this file: where wgrender's headers and library are on this
-// machine, and the emcc flags the web library was built with.
-@:buildXml('<include name="${WGR_BUILD_XML}" />')
-#end
+// NOTE: ../simple carries an @:buildXml here. It is on wgr.GuestAbi instead in this
+// project: this guest never calls Wgr's lifecycle, so -dce full strips the class and
+// the metadata would go with it. Something that survives DCE has to carry it.
 class Wgr {
 #if cpp
 	// --- lifecycle ---
