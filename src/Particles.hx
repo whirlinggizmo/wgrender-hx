@@ -98,7 +98,7 @@ class Particles {
 
 	static function makeFountain(texture:Texture):Void {
 		fountain = new Emitter3D(texture);
-		fountain.max = 4096;
+		fountain.setMax(4096);
 		fountain.rate = 1200;
 		fountain.setLife(1.4, 1.9);
 		fountain.setPosition(new Vec3(0, 0.2, 0));
@@ -114,7 +114,7 @@ class Particles {
 
 	static function makeSparks(texture:Texture):Void {
 		sparks = new Emitter3D(texture);
-		sparks.max = 2048;
+		sparks.setMax(2048);
 		sparks.rate = 600;
 		sparks.setLife(0.5, 1.2);
 		sparks.setVelocity(new Vec3(0, 4, 0), 1.2, 0.6);
@@ -130,7 +130,7 @@ class Particles {
 
 	static function makeSmoke(texture:Texture):Void {
 		smoke = new Emitter3D(texture);
-		smoke.max = 512;
+		smoke.setMax(512);
 		smoke.rate = 30;
 		smoke.setLife(3.0, 4.5);
 		smoke.setPosition(new Vec3(-5, 1.5, -2)); // above the fire
@@ -180,7 +180,7 @@ class Particles {
 	static function makeConfetti(texture:Texture):Void {
 		confetti = new Emitter2D(texture);
 		confetti.setSource(24, 24, 16, 16); // the dot's solid middle: squares
-		confetti.max = 4096;
+		confetti.setMax(4096);
 		confetti.setLife(1.2, 2.2);
 		confetti.setVelocity(new Vec2(0, -420), 1.3, 0.7);
 		confetti.setGravity(new Vec2(0, 700));
