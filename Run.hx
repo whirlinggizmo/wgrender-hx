@@ -1,14 +1,18 @@
 /**
 	`haxelib run wgrender-hx <command>`.
 
-	An installed wgrender-hx carries wgrender as a submodule under project/lib but not
-	a built one: wgrender is C, and its own Makefile is what packs the shaders and
-	vendors sokol. So there is one step between installing this and building against
-	it, and this is it.
+	An installed wgrender-hx carries wgrender as a submodule under project/lib, and
+	`haxelib git` fetches it along with everything else. For a native target there is
+	nothing to build here: hxcpp compiles wgrender's sources with the same toolchain
+	it compiles your program with, which is what lets Windows work at all.
 
-	    haxelib run wgrender-hx setup          fetch the submodule and build wgrender
-	    haxelib run wgrender-hx setup web      the same, plus the Emscripten library
-	    haxelib run wgrender-hx where          print where the submodule and library are
+	The web target is different. There wgrender is a wasm *host* the page loads and
+	the game is a JS guest on top of it, so the host is an emcc link that wgrender's
+	own Makefile does.
+
+	    haxelib run wgrender-hx setup          fetch the wgrender submodule
+	    haxelib run wgrender-hx setup web      also build the Emscripten host library
+	    haxelib run wgrender-hx where          print where wgrender is
 
 	Nothing here is needed in a checkout of this repo: the examples and test/check.py
 	define WGR_BUILD_XML and point at whatever wgrender they are working against.
@@ -48,34 +52,27 @@ class Run {
 			Sys.println("fetching the wgrender submodule");
 			shell("git", ["submodule", "update", "--init", "--recursive"], root);
 		}
-		if (!sys.FileSystem.exists(haxe.io.Path.join([dir, "Makefile"]))) {
+		if (!sys.FileSystem.exists(haxe.io.Path.join([dir, "include/wgr.h"]))) {
 			Sys.println('no wgrender under $dir.\n'
 				+ "If this is a source checkout rather than a haxelib install, there is\n"
 				+ "nothing to set up: point -D WGR_BUILD_XML at your own wgrender instead.");
 			Sys.exit(1);
 		}
-		if (Sys.systemName() == "Windows") {
-			// wgrender is built by a Unix Makefile, and its Windows target
-			// cross-compiles with MinGW rather than building natively. Saying so
-			// beats `'make' is not recognized as an internal or external command`.
-			Sys.println('wgrender is here, but this cannot build it on Windows:\n'
-				+ '  $dir\n\n'
-				+ "Its build is a Unix Makefile, and its Windows target cross-compiles\n"
-				+ "with MinGW (x86_64-w64-mingw32) rather than building in place. Two\n"
-				+ "ways to get a library:\n\n"
-				+ "  - build it under MSYS2 or WSL:  make -C <that directory> windows\n"
-				+ "    then compile with -D mingw -D HXCPP_M64, so hxcpp and wgrender\n"
-				+ "    come from the same toolchain\n"
-				+ "  - or cross-compile the whole program from Linux: hxcpp targets\n"
-				+ "    Windows with -D windows -D HXCPP_M64\n\n"
-				+ "hxcpp defaults to MSVC on Windows, and MSVC cannot link MinGW\n"
-				+ "objects: they need GCC runtime symbols it does not provide.");
-			Sys.exit(1);
-		}
-		Sys.println("building wgrender (native)");
-		shell("make", ["-C", dir, "all"], root);
+		Sys.println('wgrender is here: $dir');
+		Sys.println("Nothing to build. hxcpp compiles wgrender's sources with your own\n"
+			+ "toolchain when you build, so a native target needs no library from here.");
+
 		if (web) {
-			Sys.println("building wgrender (web, no threads)");
+			// The web target is the exception. There the game is a JS guest on a
+			// wgrender wasm *host*, and that host is an emcc link rather than
+			// anything hxcpp does, so it is wgrender's own Makefile that builds it.
+			if (Sys.systemName() == "Windows") {
+				Sys.println('\nThe web library needs `make` and Emscripten, and wgrender\'s\n'
+					+ "build is a Unix Makefile. Build it under MSYS2 or WSL:\n"
+					+ '  make -C "$dir" web WEB_THREADS=0');
+				Sys.exit(1);
+			}
+			Sys.println("\nbuilding wgrender (web, no threads)");
 			shell("make", ["-C", dir, "web", "WEB_THREADS=0"], root);
 		}
 		where();
@@ -83,11 +80,11 @@ class Run {
 
 	static function where():Void {
 		final dir = wgrender();
+		final have = sys.FileSystem.exists(haxe.io.Path.join([dir, "include/wgr.h"]));
 		Sys.println('wgrender:  $dir');
-		for (name in ["build/desktop/libwgrender.a", "build/webgl2-nothreads/libwgrender.a"]) {
-			final path = haxe.io.Path.join([dir, name]);
-			Sys.println('  ${sys.FileSystem.exists(path) ? "built  " : "missing"}  $name');
-		}
+		Sys.println('  sources  ${have ? "present" : "MISSING -- run setup"}');
+		final web = haxe.io.Path.join([dir, "build/webgl2-nothreads/libwgrender.a"]);
+		Sys.println('  web lib  ${sys.FileSystem.exists(web) ? "built" : "not built (setup web)"}');
 	}
 
 	static function shell(command:String, args:Array<String>, cwd:String):Void {

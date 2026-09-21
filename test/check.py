@@ -19,6 +19,8 @@ the binding can be wrong without failing to compile:
   coverage   a stale omissions list hides a decision as a to-do
   setters    wgrender's headers name every value a setter refuses, and this fails if
              one of those sentences is not repeated in the binding's own docs
+  sources    project/wgrender.xml lists wgrender's C files for an installed copy to
+             compile, and this fails when wgrender gains or loses one
 
 Then it builds the suite twice: native, where it runs, and against the js binding,
 where there is no host loop but a wrapper that exists only on hxcpp fails here rather
@@ -44,7 +46,7 @@ def run(cmd, **kw):
 
 
 def main():
-    for tool in ('gen_raw.py', 'coverage.py', 'setters.py'):
+    for tool in ('gen_raw.py', 'coverage.py', 'setters.py', 'gen_sources.py'):
         run([ROOT / 'tools' / tool, '--check', WGRENDER])
 
     print('wgrender (headless)')
