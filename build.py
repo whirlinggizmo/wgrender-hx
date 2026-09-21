@@ -150,7 +150,7 @@ def sizes():
         print(f'{"total":<12} {total:>10,} bytes')
     other = HXCPP_PORT / 'out/web/simple.wasm'
     if other.exists():
-        print(f'{"(hxcpp)":<12} {other.stat().st_size:>10,} bytes of wasm in ../simple')
+        print(f'{"(hxcpp)":<12} {other.stat().st_size:>10,} bytes of wasm in ../simple-hxcpp')
 
 
 def clean():
