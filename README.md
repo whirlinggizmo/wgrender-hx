@@ -1,7 +1,9 @@
-# simple — wgrender in Haxe
+# simple-hxcpp — wgrender in Haxe, compiled into the wasm
 
 A port of wgrender's `examples/simple.c` to Haxe, alongside the same example in
-[Nim](../../nim/simple) and [Beef](../../beef/simple). Same scene in all four: an
+[Nim](../../nim/simple) and [Beef](../../beef/simple). The binding itself is the
+[wgrender-hx](../../github/whirlinggizmo/wgrender-hx) haxelib, shared with
+[../simple](../simple), which runs the same scene as a guest module instead. Same scene in all four: an
 animated model, a bobbing 3D sprite, looping music, two TTF fonts, a centred message
 that reports what the mouse is over (scene picking), and a debug overlay with timers,
 mouse state and the platform name.
@@ -174,7 +176,8 @@ desktop build, so "one source, JS for web and native for desktop" is still a cla
 
 ## The bindings
 
-`src/wgr/` is one module per wgrender public header, over a flat per-target C surface
+The binding lives in the wgrender-hx haxelib; this project is the example and its
+build. There, `src/wgr/` is one module per wgrender public header, over a flat per-target C surface
 — the shape librl's Haxe bindings use (`rl/Model.hx`, `rl/Asset.hx`, … over one
 `rl/impl/RLImpl.<target>.hx`). Files, not directories: `wgr/Model.hx`, not `wgr/Model/`.
 The C surface lives under `wgr/impl/`, as librl's does, so `import wgr.*;` gives a

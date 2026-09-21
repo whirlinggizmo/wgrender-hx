@@ -12,6 +12,9 @@
     ./build.py compare     the same, next to wgrender's C example and the Nim and Beef ports
     ./build.py clean       remove out/ and build/
 
+The wgr binding is the wgrender-hx haxelib (haxelib dev wgrender-hx <path>), shared
+with the guest ports; this project only carries the example and its build.
+
 Each build first writes build/<target>.hxml and build/<target>.xml: where wgrender is
 on this machine, and the compile/link flags to use it. build/<target>.xml is hxcpp
 build-tool XML, pulled in by the @:buildXml on wgr.Wgr. Afterwards `haxe build.hxml`

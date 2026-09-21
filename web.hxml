@@ -6,6 +6,7 @@
 build/web.hxml
 
 -cp src
+-lib wgrender-hx
 --main Simple
 --cpp build/cpp/web
 

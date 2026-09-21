@@ -4,6 +4,7 @@
 build/desktop.hxml
 
 -cp src
+-lib wgrender-hx
 -cp test
 --main CheckBindings
 --cpp build/cpp/check
