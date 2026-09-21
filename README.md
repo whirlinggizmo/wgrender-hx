@@ -30,8 +30,8 @@ src/wgr/impl/         the C surface and the guest ABI, chosen by target
   Raw.js.hx             calls the host module's exports, and marshals
   GuestAbi.{cpp,js}.hx  installing the guest's ops, per target
 host/wgr_guest.{c,h}  the guest ABI: wgrender as a host, four ops
+tools/gen_raw.py      writes BOTH impl/Raw.*.hx whole, from wgrender's include/*.h
 tools/gen_keys.py     regenerates wgr.Key from wgrender's wgr_keys.h
-tools/gen_raw_js.py   regenerates the mechanical half of Raw.js.hx from Raw.cpp.hx
 ```
 
 Every handle kind is an `abstract` over `Int` and every method is `inline`, so the API
@@ -79,13 +79,40 @@ Nim and Beef ports).
 
 ## Status
 
-A spike, not a release. It covers what the `simple` and `particles` examples use —
-not 2D sprites, materials, custom shaders, the environment, events or gamepads, and
-only the grid from `wgr_shape3d.h`. `KeyboardState` is unmarshalled on js.
+A spike, not a release. `wgr.impl.Raw` now covers essentially all of wgrender (456 of
+466 calls), but the hand-written API layer above it — the handle abstracts and their
+methods — still only wraps what the `simple` and `particles` examples use. Everything
+else is reachable through `Raw` today and wants wrapping.
+`KeyboardState` is unmarshalled on js.
 
-Of wgrender's 466 public functions, a header parser could render about 90%
-mechanically; the rest fall into three patterns this already implements by hand (a
-`C<Enum>` extern plus a `@:to` cast, a scratch read for a struct return, and the
-callback/`void*` calls the guest ABI replaces). Generating the whole surface from the
-headers is the obvious next step. The guest fault policy
+## Regenerating the C surface
+
+`tools/gen_raw.py` reads wgrender's `include/*.h` and writes **both** `impl/Raw.cpp.hx`
+and `impl/Raw.js.hx` whole — neither is ever patched, so the answer to an API change is
+to run it and read what it says:
+
+```
+$ tools/gen_raw.py
+wgrender-c: 466 functions, 18 enums, 11 structs
+  Raw.cpp.hx  456 externs
+  Raw.js.hx   449 wrappers
+```
+
+It derives the enum cast types, the struct externs and the struct-return heap reads
+from the headers. It needs help for three things, declared in the tool's `SPEC` rather
+than edited into its output: which C callback typedefs map to which Haxe function type,
+which returned structs map to which public value class (whose constructor must take the
+C fields in order), and which functions to skip. Anything it can't map is left out and
+**listed**, so a gap is reported rather than silent — today that is the event and fetch
+callbacks, three small structs nothing wraps yet, and the varargs logger.
+
+`wgr_set_init`, `wgr_set_frame`, `wgr_set_tick`, `wgr_set_cleanup` and
+`wgr_asset_add_task` are hxcpp-only: they take C function pointers, and the guest ABI
+replaces them on js.
+
+Because the binding now declares wgrender's whole API, an app's build derives the
+host's `EXPORTED_FUNCTIONS` from the calls its *compiled guest* makes rather than from
+the binding — Emscripten cannot strip what is exported, and exporting everything cost
+75 KB. The particles example exports 66 and its host wasm is 402 KB against simple's
+689 KB, because it links no model, glTF or audio code at all. The guest fault policy
 defaults to log-and-continue.
