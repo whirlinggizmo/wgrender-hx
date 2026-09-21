@@ -78,6 +78,10 @@ class CheckBindings {
 		eq((WindowFlag.Msaa4x | WindowFlag.Resizable : Int), 0x24, "window flags or together");
 
 		check(Wgr.getPlatform().length > 0, "getPlatform is not empty");
+		// the binding was generated from a particular wgrender; this is the one running
+		eq(Version.runtime(), Version.BUILT, "the running library matches what we built against");
+		check(Version.check(), "Version.check agrees");
+		check(Version.runtimeLabelled().indexOf(Version.BUILT) == 0, "the labelled string starts with it");
 		check(Assets.defaultBase().length > 0, "an asset base was resolved");
 		check(Wgr.getTime() >= 0, "getTime is sane");
 	}
