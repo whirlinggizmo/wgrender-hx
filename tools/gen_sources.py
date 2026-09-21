@@ -66,6 +66,10 @@ def build(sources, deps):
         <compilerflag value="/DSOKOL_GLCORE" if="msvc" />
         <compilerflag value="-std=gnu11" if="gcc" />
 
+        <!-- M_PI is POSIX, not C. MSVC defines it in math.h only when this is set
+             first, which a command-line define is exactly the right way to do. -->
+        <compilerflag value="/D_USE_MATH_DEFINES" if="msvc" />
+
 {files}
     </files>
 </xml>
