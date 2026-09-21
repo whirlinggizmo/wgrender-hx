@@ -51,19 +51,34 @@ The guest is Haxe compiled to JS (`src/Guest.hx`). It registers its four ops bef
 
 ### Size
 
-| | download | gzipped |
-|---|---:|---:|
-| `../simple` — Haxe inside the wasm | 1,755,187 | 483,670 |
-| this — Haxe as the guest | 787,603 | 328,744 |
-| | **0.45x** | **0.68x** |
+Everything a visitor downloads, against the other ports of the same scene (all linked
+against the same wgrender web library — `BACKEND=webgl2 WEB_THREADS=0`, release):
 
-Broken down: 701,424 of host wasm, 67,424 of Emscripten glue, **18,184 of guest**
-(4,684 gzipped). The host is ~11 KB over wgrender's own C `simple`, so the guest ABI
-is nearly free, and the entire game is 18 KB of JS instead of a megabyte of runtime
-compiled into the wasm.
+| port | wasm | js | total | gzipped | vs C |
+|---|---:|---:|---:|---:|---:|
+| C (wgrender's example) |   690,116 | 64,910 |   755,026 | 315,188 | 1.00x |
+| Nim |   713,584 | 65,138 |   778,722 | 325,062 | 1.03x |
+| Beef |   846,131 | 66,674 |   912,805 | 392,828 | 1.21x |
+| Haxe, in the wasm (../simple) | 1,685,600 | 69,587 | 1,755,187 | 483,670 | 2.32x |
+| Haxe, as a guest (this) |   701,424 | 86,179 |   787,603 | 328,744 | **1.04x** |
 
-Gzipped the win is smaller than raw (0.68x vs 0.45x), because much of what hxcpp adds
-compresses well.
+The honest headline is **1.04x the C download**, not "less than half of ../simple" —
+the interesting number is how close this gets to C, not how far it is from the
+all-in-one build. This port's JS breaks down as:
+
+| | bytes | gzipped | |
+|---|---:|---:|---|
+| `wgrender-host.js` | 67,424 | 24,061 | Emscripten glue |
+| `guest.js` | 18,184 | 4,684 | **the whole game, from Haxe** |
+| `boot.js` | 571 | 349 | the ESM shim that loads one and starts the other |
+
+So Haxe costs about 4% over writing this in C: 11,308 bytes of wasm for the guest ABI
+plus 18 KB of JS for the game, instead of a megabyte of runtime compiled in.
+
+No `index.html` in any row — wgrender's page shell is ~8.6 KB and common to the other
+ports, while this one's page is a 600-byte hand-rolled file, so counting HTML would
+flatter this port for the wrong reason. The Nim row is its `WEB_THREADS=0` build; its
+checked-out `out/web` is the threaded default (726,858 wasm) and doesn't compare.
 
 ### How much of the binding was reusable
 
