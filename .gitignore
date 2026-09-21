@@ -1,2 +1,6 @@
-/build/
-/out/
+out/
+build/
+web/index.html
+web/boot.js
+guest.hxml
+desktop.hxml

@@ -67,7 +67,7 @@ class Guest {
 		GuestAbi.attach(host);
 		GuestAbi.register(onInit, (dt, _) -> onFrame(dt), onAsset);
 		GuestAbi.start(SCREEN_WIDTH, SCREEN_HEIGHT, "simple (wgrender host, Haxe guest)",
-			((Msaa4x | Resizable : WindowFlag) : Int));
+			Msaa4x | Resizable);
 	}
 
 	static function load(path:String, id:Int):Void {
