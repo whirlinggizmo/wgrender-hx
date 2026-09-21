@@ -22,10 +22,11 @@ import re
 import subprocess
 import sys
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+from wgrpath import find  # noqa: E402
+
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-WGRENDER = pathlib.Path(
-    next((a for a in sys.argv[1:] if not a.startswith('--')), None)
-    or ROOT / '../wgrender-c').resolve()
+WGRENDER = find()
 
 # Reachable on hxcpp but deliberately not on js, and why: every one takes a C function
 # pointer or a void *, which the guest ABI replaces there, or returns something too big

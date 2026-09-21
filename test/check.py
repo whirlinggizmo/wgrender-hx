@@ -33,10 +33,10 @@ import pathlib
 import subprocess
 import sys
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / 'tools'))
+from wgrpath import find  # noqa: E402
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-WGRENDER = pathlib.Path(
-    next((a for a in sys.argv[1:] if not a.startswith('--')), None)
-    or os.environ.get('WGRENDER_DIR', ROOT / '../wgrender-c')).resolve()
+WGRENDER = find()
 HAXE = os.environ.get('HAXE', 'haxe')
 BUILD = ROOT / 'test/build'
 FRAMES = os.environ.get('WGR_HEADLESS_FRAMES', '5')

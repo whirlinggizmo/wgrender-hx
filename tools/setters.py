@@ -58,10 +58,11 @@ import pathlib
 import re
 import sys
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+from wgrpath import find  # noqa: E402
+
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-WGRENDER = pathlib.Path(
-    next((a for a in sys.argv[1:] if not a.startswith('--')), None)
-    or os.environ.get('WGRENDER_DIR', ROOT / '../wgrender-c')).resolve()
+WGRENDER = find()
 
 # Refusals Haxe's types make unreachable: the parameter is an enum abstract whose
 # every value wgrender accepts, and which is not `from Int`, so no other value exists

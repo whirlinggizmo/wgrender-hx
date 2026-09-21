@@ -21,8 +21,10 @@ import os
 import pathlib
 import sys
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+from wgrpath import find  # noqa: E402
 LIB = pathlib.Path(__file__).resolve().parent.parent
-WGRENDER = pathlib.Path(os.environ.get('WGRENDER_DIR', LIB / '../wgrender-c')).resolve()
+WGRENDER = find()
 C_BUILD = WGRENDER / 'examples/build/webgl2-nothreads'
 
 

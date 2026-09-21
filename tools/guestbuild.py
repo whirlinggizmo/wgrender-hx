@@ -29,6 +29,9 @@ import shutil
 import subprocess
 import sys
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+from wgrpath import find  # noqa: E402
+
 LIB = pathlib.Path(__file__).resolve().parent.parent
 
 # The guest ABI (host/wgr_guest.h) plus what Emscripten needs for marshalling.
@@ -105,8 +108,7 @@ class Project:
         self.title = title or name
         self.background = background
         self.site = self.root / 'out/web'
-        self.wgrender = pathlib.Path(os.environ.get(
-            'WGRENDER_DIR', LIB / '../wgrender-c')).resolve()
+        self.wgrender = find(argv=[])
         self.haxe = os.environ.get('HAXE', 'haxe')
 
     # ---------------------------------------------------------------- shell ---

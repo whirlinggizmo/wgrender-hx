@@ -16,13 +16,13 @@ Whole files and a check mode is what the other generators do, for this reason.
 import os
 import pathlib, re, sys
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+from wgrpath import find  # noqa: E402
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 # Same default as the other generators: the sibling checkout. This used to say
 # ../../github/whirlinggizmo/wgrender-c, which resolved to .../github/github/... once
 # the repo moved under github/whirlinggizmo itself.
-WGRENDER = pathlib.Path(
-    next((a for a in sys.argv[1:] if not a.startswith('--')), None)
-    or os.environ.get('WGRENDER_DIR', ROOT / '../wgrender-c')).resolve()
+WGRENDER = find()
 SOURCE = ROOT / 'src/wgr/Key.hx'
 
 
