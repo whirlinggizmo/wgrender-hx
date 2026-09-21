@@ -80,6 +80,36 @@ ports, while this one's page is a 600-byte hand-rolled file, so counting HTML wo
 flatter this port for the wrong reason. The Nim row is its `WEB_THREADS=0` build; its
 checked-out `out/web` is the threaded default (726,858 wasm) and doesn't compare.
 
+### Startup
+
+Size doesn't decide this, and the first attempt was *slower* despite shipping less.
+`tools/webstart.mjs --site=DIR` (wgrender's own `tools/webstart.mjs` resolves its site
+from `examples/build/` and needs an `examples.json`), median of 3, ms to
+`wgr:first-frame`:
+
+| visit | net | simple-js | ../simple |
+|---|---|---:|---:|
+| cold | local |  362 | 327 |
+| cold | 4G    | **731** | 888 |
+| warm | local |  129 |  94 |
+| warm | 4G    |  414 | 248 |
+
+**Cold on a slow link — the case the payload matters for — the guest route wins by
+157 ms.** Everywhere else it's a wash or slightly behind, because it is four files
+instead of two and more of the time goes on wiring rather than bytes.
+
+Before the `<link rel=modulepreload/preload>` hints in `web/index.html`, cold 4G was
+**1,040 ms** — worse than `../simple`. `tools/waterfall.mjs` found why: the module
+graph was `html → boot.js → wgrender-host.js → wasm`, so the wasm request didn't start
+until 533 ms, against 241 ms for `../simple` (wgrender's shell kicks off
+`fetch(wasmUrl)` early, in parallel with its JS). With the hints the wasm starts at
+167 ms and cold 4G lands at 731.
+
+Worth keeping in mind: splitting the payload buys nothing unless the page also tells
+the browser about every piece up front. Folding `boot.js` into the HTML and bundling
+the guest with it would cut two more files, and is the obvious next thing to try for
+the warm numbers.
+
 ### How much of the binding was reusable
 
 The whole point of the two-layer split. `src/wgr/Wgr.hx` is `../simple`'s file with
