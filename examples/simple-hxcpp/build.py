@@ -38,6 +38,13 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent
 LIB = ROOT.parents[1]
+if not (LIB / 'tools/wgrpath.py').exists():
+    _found = subprocess.run(['haxelib', 'libpath', 'wgrender-hx'],
+                            capture_output=True, text=True).stdout.strip()
+    if not _found:
+        sys.exit('wgrender-hx not found. Either keep this example inside the library, or:\n'
+                 '  haxelib git wgrender-hx https://github.com/whirlinggizmo/wgrender-hx')
+    LIB = pathlib.Path(_found)
 sys.path.insert(0, str(LIB / 'tools'))
 from wgrpath import find  # noqa: E402  # examples/simple-hxcpp -> the library
 WGRENDER = find(argv=[])

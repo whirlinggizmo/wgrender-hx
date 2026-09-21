@@ -28,6 +28,14 @@ import sys
 
 HERE = pathlib.Path(__file__).resolve().parent
 LIB = HERE.parent
+if not (LIB / 'tools/wgrpath.py').exists():
+    # this tree has been copied out of the library; ask haxelib where it went
+    _found = subprocess.run(['haxelib', 'libpath', 'wgrender-hx'],
+                            capture_output=True, text=True).stdout.strip()
+    if not _found:
+        sys.exit('wgrender-hx not found. Either keep examples/ inside the library, or:\n'
+                 '  haxelib git wgrender-hx https://github.com/whirlinggizmo/wgrender-hx')
+    LIB = pathlib.Path(_found)
 sys.path.insert(0, str(LIB / 'tools'))
 from wgrpath import find  # noqa: E402
 WGRENDER = find(argv=[])
