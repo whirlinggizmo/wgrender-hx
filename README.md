@@ -51,6 +51,20 @@ carrying the link configuration rides on both `wgr.Wgr` and `wgr.impl.GuestAbi`.
 
 15 of the 42 API modules carry a target guard; the rest compile for both untouched.
 
+## Assets
+
+`Assets.defaultBase()` resolves where assets load from at run time, rather than from a
+compile-time define, so a built program is relocatable and a development build uses
+the same lookup a shipped one does:
+
+| | |
+|---|---|
+| web (js or hxcpp/Emscripten) | `/assets` — what `tools/serve.py` mounts, and what a host should serve |
+| native | `$WGR_ASSET_BASE`, then an `assets` directory beside the executable, then `assets` relative to the working directory |
+
+An app's build is expected to put `assets` next to the built executable — the examples
+link it to wherever wgrender is checked out.
+
 ## Using it
 
 ```sh
