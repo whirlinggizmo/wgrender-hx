@@ -141,26 +141,36 @@ text *changes*, not by how much of it you draw.
 (Only the JS→wasm direction was measured. The other way, `addFunction` for the frame
 and asset callbacks, is once a frame plus a handful at startup.)
 
-### What it would cost to build
+### It was built — see ../simple-js
 
-- wgrender has no `bindings/` directory and no `MODULARIZE` / `EXPORT_NAME` /
-  `EXPORTED_FUNCTIONS` / `ALLOW_TABLE_GROWTH` in its build. That comes first; librl's
-  equivalent is `bindings/js/dist/rl.js`, 2,277 lines.
-- Five calls return structs by value (`wgr_scene_pick`, `wgr_input_get_mouse_state`,
-  `wgr_input_get_keyboard_state`, `wgr_window_get_screen_size`, `wgr_text_measure_ex`).
-  Under the wasm C ABI those come back through a hidden out-pointer, so JS allocates
-  scratch and reads the fields out of the heap — what librl's binding calls its
-  "scratch-backed helpers".
-- It's a *second* web backend, not a route to native: hxcpp already gives this project
-  a desktop build. The recurring cost is keeping two implementations in step, which is
-  why librl's Haxe binding is a flat façade — a flat surface is much easier to write
-  twice (`RLImpl.cpp.hx` 1,848 lines, `RLImpl.js.hx` 1,537).
+The estimates below turned out close, so the section now reports results instead.
+[../simple-js](../simple-js) is the same scene with wgrender as a wasm host and this
+example's code compiled to JS as a guest module, verified in a browser down to the
+pick message.
 
-The two-layer split here means it wouldn't be a second binding, though: only **39 of
-the 1,119 hand-written lines** in `wgr/Wgr.hx` are C++-specific — `Native`, `Asset`'s
-callback plumbing, `Wgr`'s trampolines, the seven enum casts and the struct
-converters. The handle abstracts, properties, enums and flags are all target-neutral.
-A JS port is a `Raw.js.hx` plus conditionals in those 39 lines.
+| port | wasm | js | total | gzipped | vs C |
+|---|---:|---:|---:|---:|---:|
+| C (wgrender's example) |   690,116 | 64,910 |   755,026 | 315,188 | 1.00x |
+| Nim |   713,584 | 65,138 |   778,722 | 325,062 | 1.03x |
+| Beef |   846,131 | 66,674 |   912,805 | 392,828 | 1.21x |
+| Haxe, in the wasm (this) | 1,685,600 | 69,587 | 1,755,187 | 483,670 | 2.32x |
+| Haxe, as a guest (../simple-js) |   701,424 | 86,179 |   787,603 | 328,744 | **1.04x** |
+
+The guest route's 86,179 of JS is 67,424 of Emscripten glue, **18,184 for the whole
+game**, and a 571-byte boot shim. So Haxe costs about 4% over writing it in C, rather
+than 2.3x, once its runtime stops being compiled into the wasm.
+
+Two things the estimates got right and one they missed:
+
+- **The binding was reusable.** `wgr/Wgr.hx` needed 37 guard lines and 27 real edits
+  to compile for both — 3.9% of the file, against the 39-of-1,119 guessed here.
+- **The five struct returns** do come back through a hidden out-pointer; confirmed
+  against the wasm C ABI before the JS layer trusted it.
+- **Missed:** that the host ABI would be nearly free. `wgr_guest.c` plus exporting 104
+  functions costs 11,308 bytes of wasm over wgrender's own C `simple`.
+
+What it does *not* yet show is the half that motivated it: `../simple-js` has no
+desktop build, so "one source, JS for web and native for desktop" is still a claim.
 
 ## The bindings
 
