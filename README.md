@@ -1,6 +1,7 @@
 # wgrender-hx
 
-Haxe bindings for [wgrender](../wgrender-c), over two targets from one API:
+Haxe bindings for [wgrender](https://github.com/whirlinggizmo/wgrender-c), over two
+targets from one API:
 
 - **hxcpp** — native desktop, or compiled into the wasm alongside wgrender
 - **js** — wgrender is a wasm *host* and your game is a guest module, so the Haxe
@@ -30,9 +31,19 @@ src/wgr/impl/         the C surface and the guest ABI, chosen by target
   Raw.js.hx             calls the host module's exports, and marshals
   GuestAbi.{cpp,js}.hx  installing the guest's ops, per target
 host/wgr_guest.{c,h}  the guest ABI: wgrender as a host, four ops
+test/                 the binding's own suite: 317 assertions against headless wgrender
+examples/             hello3d, particles, simple (guest) and simple-hxcpp (all-in-one)
+project/              how an installed copy links wgrender, and the submodule it uses
+Run.hx                `haxelib run wgrender-hx setup`
+
 tools/gen_raw.py      writes BOTH impl/Raw.*.hx whole, from wgrender's include/*.h
 tools/gen_keys.py     regenerates wgr.Key from wgrender's wgr_keys.h
 tools/coverage.py     what the binding reaches, and what wrapping next buys
+tools/setters.py      whether a refusal wgrender documents is repeated in these docs
+tools/guestbuild.py   the host/guest build, shared by every example
+tools/compare.py      each example's size against wgrender's own C build of it
+tools/bench.mjs       frame cost, in a headless browser
+tools/drive.mjs       run a built example and fail on anything the console calls an error
 ```
 
 Every handle kind is an `abstract` over `Int` and every method is `inline`, so the API
@@ -68,7 +79,8 @@ The `@:buildXml` carrying the link configuration rides on `wgr.impl.Raw`, becaus
 every program that touches wgrender at all reaches that class — anything in the API
 layer can be stripped by `-dce full` out from under the build.
 
-15 of the 42 API modules carry a target guard; the rest compile for both untouched.
+A handful of the API modules carry a target guard; the rest compile for both
+untouched.
 
 ## Logging
 
@@ -99,37 +111,81 @@ link it to wherever wgrender is checked out.
 ## Using it
 
 ```sh
+haxelib git wgrender-hx https://github.com/whirlinggizmo/wgrender-hx
+haxelib run wgrender-hx setup        # fetches wgrender and builds it
+haxelib run wgrender-hx setup web    # and the Emscripten library, for wasm
+```
+
+then `-lib wgrender-hx`. wgrender rides along as a submodule under `project/lib` and
+`project/Build.xml` tells hxcpp where its headers and library are, so there is nothing
+to point at by hand. `setup` exists because wgrender is C: its own Makefile packs the
+shaders and vendors sokol, and restating that here would be a second build to keep in
+step with the first.
+
+Working on the binding itself instead:
+
+```sh
 haxelib dev wgrender-hx /path/to/wgrender-hx
 ```
 
-then `-lib wgrender-hx`, plus `-D WGR_BUILD_XML=<file>` naming an hxcpp build-tool XML
-that says where wgrender's headers and library are. See the examples for one that
-generates it: [simple](../../../haxe/simple) (guest, web and native) and
-[simple-hxcpp](../../../haxe/simple-hxcpp) (all-in-one, the size comparison against the
-Nim and Beef ports).
+and pass `-D WGR_BUILD_XML=<file>`, an hxcpp build-tool XML naming whichever wgrender
+you are working against. That define is also the switch: set, it wins; unset, the
+vendored one is used. `tools/guestbuild.py` generates one, and every example goes
+through it.
+
+### The examples
+
+```sh
+examples/build.py all      build each one, web and native
+examples/build.py drive    run each web build in a headless browser
+examples/build.py site     collect them under one page
+examples/build.py compare  sizes against wgrender's own C build of each
+test/check.py              the binding's 317 assertions
+```
+
+[`hello3d`](examples/hello3d) is the smallest and loads nothing;
+[`particles`](examples/particles) and [`simple`](examples/simple) are the fuller ones;
+[`simple-hxcpp`](examples/simple-hxcpp) is the same scene built the other way, for the
+size comparison against the C, Nim and Beef ports.
 
 ## Status
 
-A spike, not a release. `wgr.impl.Raw` covers all 466 of wgrender's calls on hxcpp,
-and the hand-written API layer above it wraps 230. Measured against wgrender's 33 C
-examples:
+`wgr.impl.Raw` covers all 480 of wgrender's calls on hxcpp and 470 on js; the
+hand-written API layer above it wraps 478. All 33 of wgrender's C examples could be
+written against it without a gap.
 
-| | |
-|---|---|
-| need nothing more | `font`, `hello`, `materials`, `model`, `particles`, `quit`, `scene3d`, `simple`, `tick` |
-| within five wrappers | `hello3d`, `sprite3d`, `text3d`, `audio`, `force_fetch`, `instancing`, `pick`, `lights`, `environment`, `gamepad`, `render_target`, `textures` |
-| six to ten | `fetch`, `meshes`, `shadows`, `postprocess`, `loading` |
-| more | `sprite2d`, `2d`, `touch`, `ui`, `clay`, `window`, `shaders` |
+The two it leaves alone are a decision, not a backlog: `wgr_text_draw_n` and
+`wgr_text_measure_n` take a length in *bytes*, and a Haxe string measures in UTF-16
+units, so the two disagree for anything non-ASCII — passing a substring to `draw()` is
+correct and these would not be. `tools/coverage.py --check` fails if either is ever
+wrapped after all, so a decision and a to-do stay distinguishable. It holds the js
+omissions the same way: eleven calls that take a C function pointer or a `void *`,
+which the guest ABI replaces there.
 
-`tools/coverage.py` prints that, keeps it current, and ranks what to wrap next by how
-many examples it unblocks — today `sprite2d` (6), then `sprite3d`, `mesh`, `scene` and
-`texture` (5 each).
+`tools/setters.py` guards the other direction. wgrender's headers name every value a
+setter refuses, and this fails the build when one of those sentences is not repeated
+in the binding's docs — the link that broke once already, when a header's "capped at
+65536" was copied into a doc comment and the API shape followed the doc rather than
+the code.
 
-It also holds the list of things deliberately *not* reached on js — twelve calls that
-take a C function pointer or a `void *`, plus `wgr_input_get_keyboard_state`, whose
-512 ints want a heap reader rather than a copy per frame. `--check` fails if one of
-them turns up in `Raw.js.hx` after all, so a decision and a to-do stay distinguishable.
-That idea is taken whole from librl's `tools/audit_binding_parity.py`.
+### Against the C
+
+Same wgrender, same backend, same threading, so the only difference is the language:
+
+| example | C | Haxe | vs C | gzipped | guest js |
+|---|---|---|---|---|---|
+| hello3d | 301,866 | 312,357 | 1.03x | **1.02x** | 8,954 |
+| particles | 473,289 | 494,452 | 1.04x | **1.01x** | 21,996 |
+| simple | 757,457 | 779,052 | 1.03x | **1.01x** | 21,686 |
+
+The wasm is the same wgrender either way; the difference is the guest JS. Frame cost
+differs by about 0.07 ms of script time on `simple`, against a 16.7 ms budget —
+measured with `tools/bench.mjs`, which reads Chrome's CPU accounting because the frame
+interval alone is capped at the display rate and reads 16.66 ms on both sides whatever
+is happening inside it.
+
+For contrast, the same scene compiled all-in-one through hxcpp is 1.69 MB of wasm,
+2.3x the C. Keeping the Haxe runtime out of the binary is what the guest shape buys.
 
 ## Regenerating the C surface
 
@@ -139,27 +195,36 @@ to run it and read what it says:
 
 ```
 $ tools/gen_raw.py
-wgrender-c: 466 functions, 18 enums, 11 structs
-  Raw.cpp.hx  456 externs
-  Raw.js.hx   449 wrappers
+wgrender-c: 480 functions, 18 enums, 12 structs
+  Raw.cpp.hx  478 externs
+  Raw.js.hx   467 wrappers
 ```
 
-**hxcpp reaches all 466 of wgrender's public functions.** On js it reaches 455; the
-other 11 take a C function pointer or a `void *`, which the guest ABI replaces there,
-and `wgr_input_get_keyboard_state` returns a 512-int struct that would be a poor thing
-to copy per frame — it wants a reader that indexes the heap, not a value.
+**hxcpp reaches every one of wgrender's public functions.** On js it reaches all but
+ten, and those ten take a C function pointer or a `void *`, which the guest ABI
+replaces there.
+
+`wgr_input_get_keyboard_state` used to be an eleventh. Its struct is 2,324 bytes — 512
+ints of key state plus the keys and characters a frame produced — and the generator's
+only shape for a returned struct was to read every field and build the Haxe class,
+which means marshalling 581 ints to answer one question about one key. So it learned a
+second shape: a struct listed in `OPAQUE` comes back to js as a pointer into the wasm
+heap, with the field offsets emitted beside it, and `keys[Escape]` is one `HEAP32`
+index. On hxcpp it still wraps the struct, so the two targets differ by a line per
+accessor and the public API is identical.
 
 The tool derives the enum cast types, the struct externs and the struct-return heap
-reads from the headers. It needs help for three things, declared in its `SPEC` rather
+reads from the headers. It needs help for four things, declared in its `SPEC` rather
 than edited into its output: which C callback typedefs map to which Haxe function
 type, which returned structs map to which public value class (whose constructor must
-take the C fields in order), and which functions to skip. Anything it can't map is
+take the C fields in order), which are too big to copy and come back as a heap
+pointer, and which functions to skip. Anything it can't map is
 left out and **listed**, so a gap is reported rather than silent. Today the only entry
 is the two varargs loggers, which it re-adds at fixed arity from `MANUAL`.
 
 Because the binding now declares wgrender's whole API, an app's build derives the
 host's `EXPORTED_FUNCTIONS` from the calls its *compiled guest* makes rather than from
 the binding — Emscripten cannot strip what is exported, and exporting everything cost
-75 KB. The particles example exports 66 and its host wasm is 402 KB against simple's
-689 KB, because it links no model, glTF or audio code at all. The guest fault policy
+75 KB. The `hello3d` example exports 25 and its host wasm is 242 KB against `simple`'s
+689 KB, because it links no model, glTF, audio or particle code at all. The guest fault policy
 defaults to log-and-continue.
