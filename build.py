@@ -103,14 +103,19 @@ def build_desktop():
     write_config('desktop',
                  cflags=[f'-I{WGRENDER}/include'],
                  ldflags=[],
-                 libs=[str(WGRENDER / 'build/desktop/libwgrender.a'), *DESKTOP_LIBS],
-                 defines=[f'wgrAssetBase={WGRENDER}/examples/assets'])
+                 libs=[str(WGRENDER / 'build/desktop/libwgrender.a'), *DESKTOP_LIBS])
     print('simple (desktop) -> out/desktop/simple')
     run([HAXE, 'build.hxml'])
     out = ROOT / 'out/desktop'
     out.mkdir(parents=True, exist_ok=True)
     shutil.copy2(ROOT / 'build/cpp/desktop/simple', out / 'simple')
-    print(f'built {out}/simple')
+    # wgr.Assets looks for `assets` beside the executable, the same lookup a shipped
+    # program uses. (A Windows build would copy or junction instead of linking.)
+    link = out / 'assets'
+    if link.is_symlink() or link.exists():
+        link.unlink()
+    link.symlink_to(WGRENDER / 'examples/assets')
+    print(f'built {out}/simple (assets -> {link.readlink()})')
 
 
 def build_web():
