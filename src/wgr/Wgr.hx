@@ -50,8 +50,19 @@ class Wgr {
 			report("the frame callback", e);
 	}
 
-	/** Open the window and set up the loop. Call before anything else. **/
+	/** What `initValues` returns when the library is not the one this was built for. **/
+	public static inline final ERR_VERSION_MISMATCH = -100;
+
+	/**
+		Open the window and set up the loop. Call before anything else.
+
+		Refuses on a version mismatch, as `wgr.impl.GuestAbi.start` does for a guest —
+		this is the other entry point, so it needs the same guard. wgrender's own codes
+		are 0 and -1..-5, so this returns a value that cannot collide with them.
+	**/
 	public static function initValues(width:Int, height:Int, title:String, ?flags:WindowFlag):Int {
+		if (!Version.check())
+			return ERR_VERSION_MISMATCH;
 		return Raw.wgr_init_values(width, height, title, flags == null ? 0 : (flags : Int));
 	}
 
