@@ -1,0 +1,17 @@
+# Desktop build of the wgrender simple example.
+#
+# Run `./build.py desktop`: it builds wgrender's desktop library, writes
+# build/desktop.hxml (where wgrender is on this machine, and how to link it) and
+# then calls haxe with this file. Once that has run, plain `haxe build.hxml` works
+# too — it just won't rebuild wgrender.
+build/desktop.hxml
+
+-cp src
+--main Simple
+--cpp build/cpp/desktop
+
+# hxcpp names the binary after this (default: the main class).
+-D HAXE_OUTPUT_FILE=simple
+
+-dce full
+-D analyzer-optimize
