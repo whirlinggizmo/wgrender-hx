@@ -14,9 +14,6 @@ import wgr.impl.Raw.GuestRaw;
 	process. On desktop the Haxe program is the entry point, and `autostart` runs the
 	guest from `main` where the page's boot script would on the web.
 **/
-// The same @:buildXml wgr.Wgr carries — see the note there. A guest build keeps this
-// class and strips Wgr, so this is the copy that fires.
-@:buildXml('<include name="${WGR_BUILD_XML}" />')
 class GuestAbi {
 	/** Nothing to attach: the host is linked into this binary. **/
 	public static function attach(_:Dynamic):Void {}

@@ -246,7 +246,13 @@ def emit_cpp(enums, structs, functions):
     for e in sorted(used_enums):
         lines.append(f'@:include("wgr.h") @:native("{e}") @:structAccess @:unreflective\n'
                      f'extern class {hx(e, enums, "cpp")} {{}}\n')
-    lines.append('@:keep @:unreflective @:include("wgr.h")\nextern class Raw {')
+    lines.append(
+        "// Where wgrender is on this machine and how to link it: the app's build writes\n"
+        "// that file and passes -D WGR_BUILD_XML. It rides here because every program\n"
+        "// that touches wgrender at all reaches this class, so -dce full cannot strip it\n"
+        "// out from under the build the way it can any class in the API layer.\n"
+        '@:buildXml(\'<include name="${WGR_BUILD_XML}" />\')\n'
+        '@:keep @:unreflective @:include("wgr.h")\nextern class Raw {')
     lines.append('\n'.join(body))
     lines.append(MANUAL_CPP)
     lines.append('}')

@@ -46,10 +46,23 @@ compiled into the binary (or the wasm) with wgrender. A **guest** app implements
 calls them; on js the host is a wasm module the page loads, on hxcpp it is linked in
 and the Haxe program's `main` is the entry point.
 
-Which one an app is decides which class survives DCE, which is why the `@:buildXml`
-carrying the link configuration rides on both `wgr.Wgr` and `wgr.impl.GuestAbi`.
+The `@:buildXml` carrying the link configuration rides on `wgr.impl.Raw`, because
+every program that touches wgrender at all reaches that class — anything in the API
+layer can be stripped by `-dce full` out from under the build.
 
 15 of the 42 API modules carry a target guard; the rest compile for both untouched.
+
+## Logging
+
+`Log.info(msg)` reaches wgrender's logger through `wgr_logger_message_source`, with
+the file and line filled in by the compiler from `haxe.PosInfos` — so a line reads
+`[INFO ] Guest.hx:91: ...`, naming the Haxe call site rather than generated C++.
+`Log.plain(level, msg)` is the bare form.
+
+The message is handed over as a `%s` argument, never as the format string itself, so
+text can't be read as a format directive and nothing has to be escaped. On js, a log
+before the host module is attached falls back to `console.log` rather than throwing —
+startup going wrong is exactly when you want the log.
 
 ## Assets
 

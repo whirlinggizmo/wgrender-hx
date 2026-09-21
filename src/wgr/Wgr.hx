@@ -6,14 +6,6 @@ import cpp.ConstCharStar;
 
 // wgr.h — the application: open a window, run the loop
 
-// Where wgrender is on this machine and how to link it: the app's build writes that
-// file and passes -D WGR_BUILD_XML.
-//
-// The same metadata rides on wgr.impl.GuestAbi, because which class survives depends
-// on the app. An all-in-one build calls this lifecycle and DCEs GuestAbi; a guest
-// build does the reverse. Only a surviving class's metadata is collected, so exactly
-// one of the two fires either way.
-@:buildXml('<include name="${WGR_BUILD_XML}" />')
 class Wgr {
 	// wgrender enters the loop here on hxcpp; on js the guest ABI does.
 	#if cpp
