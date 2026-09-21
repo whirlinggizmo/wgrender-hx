@@ -76,7 +76,15 @@ def web_flags():
     return WGRENDER / flags['lib'], flags.get('ldflags', '').split()
 
 
+def check_binding():
+    """The binding is generated from wgrender's headers; a stale one declares an API
+    that no longer exists, and a stale omissions list hides a decision as a to-do."""
+    run([LIB / 'tools/gen_raw.py', '--check', WGRENDER])
+    run([LIB / 'tools/coverage.py', '--check', WGRENDER])
+
+
 def build_host():
+    check_binding()
     print('wgrender (web)')
     run(make('web', 'WEB_THREADS=0'))
     lib, ldflags = web_flags()
@@ -96,6 +104,7 @@ def build_host():
 
 def build_desktop():
     """The same guest, native: hxcpp links wgrender and the glue into one binary."""
+    check_binding()
     print('wgrender (desktop)')
     run(make('all'))
     build = ROOT / 'build'
