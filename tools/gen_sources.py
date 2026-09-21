@@ -62,8 +62,8 @@ def build(sources, deps):
         <!-- One flag syntax for every compiler: cl.exe takes -D and -I as readily
              as /D and /I, so the two-branch version this used to have was only a way
              to get it wrong. hxcpp sets toolchain=msvc rather than a bare `msvc`
-             define, so `if="msvc"` was never true and the MSVC half never fired --
-             which is how /D_USE_MATH_DEFINES went missing while looking present.
+             define, so `if="msvc"` was never true and the MSVC half never
+             fired, which is how /D_USE_MATH_DEFINES went missing while looking present.
 
              sokol's backend: GLCORE everywhere wgrender builds natively, which is
              what its own Makefile picks for both Linux and Windows.
@@ -78,7 +78,7 @@ def build(sources, deps):
              everyone else wants -std=gnu11.
 
              hxcpp's conditions test whether a define exists, not what it equals, and
-             it sets toolchain=msvc rather than `msvc` -- so MSVC is spelled
+             it sets toolchain=msvc rather than `msvc`, so MSVC is spelled
              "windows and not mingw", which is true of exactly that combination. -->
         <compilerflag value="/std:c11" if="windows" unless="mingw" />
         <compilerflag value="-std=gnu11" unless="windows" />
@@ -105,6 +105,10 @@ def main():
             return 1
         print(f'sources: current ({len(sources)} files, {len(deps)} vendored)')
         return 0
+    for comment in re.findall(r'<!--(.*?)-->', text, re.S):
+        if '--' in comment:
+            sys.exit('a generated XML comment contains "--", which XML forbids:\n'
+                     f'  {comment.strip()[:100]}')
     OUT.write_text(text)
     print(f'project/wgrender.xml  {len(sources)} sources, {len(deps)} vendored deps')
     return 0

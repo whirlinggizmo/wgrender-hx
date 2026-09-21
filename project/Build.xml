@@ -7,12 +7,18 @@
   the submodule under project/lib and its C sources are compiled here, by whichever
   toolchain hxcpp chose, rather than linked from a library its Makefile built.
 
-  That is what makes Windows work. hxcpp uses MSVC there by default; wgrender's
-  Makefile only cross-compiles Windows with MinGW, and link.exe cannot use MinGW
-  objects because they need GCC runtime symbols it does not provide. Compiling from
-  source sidesteps the question: both halves come from one toolchain everywhere. It
-  also means `haxelib run wgrender-hx setup` needs no `make`, which is the other
-  thing that stopped Windows before it started.
+  That is what Windows needs, though not yet all it needs. hxcpp uses MSVC there by
+  default; wgrender's Makefile only cross-compiles Windows with MinGW, and link.exe
+  cannot use MinGW objects because they need GCC runtime symbols it does not
+  provide. Compiling from source removes that question; both halves come from one
+  toolchain everywhere, and means `haxelib run wgrender-hx setup` needs no `make`.
+
+  What remains is wgrender's, and is about POSIX rather than Haxe: wgr_fs.c,
+  wgr_gamepad.c, wgr_thread.c and wgr_audio.c include unistd.h, dirent.h and
+  pthread.h unguarded. MinGW supplies all three, which is why the MinGW path works
+  and MSVC stops at the first one. Tried on Windows 11 with VS 2019 (MSVC 14.29):
+  MSVC compiles wgrender as far as wgr_fs.c once it is given /std:c11 and
+  _USE_MATH_DEFINES, both of which this file now passes.
 
   wgrender allows this by asking for nothing at build time: its shader headers are
   committed, its dependencies are vendored, and Python regenerates shaders rather
