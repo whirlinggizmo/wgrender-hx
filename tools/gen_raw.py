@@ -437,12 +437,34 @@ def check():
     return 0
 
 
+def emit_built_version():
+    """The wgrender this binding was generated against, for wgr.Version to compare."""
+    version, commit, digest, _ = provenance()
+    major, minor, patch = (version.split('.') + ['0', '0', '0'])[:3]
+    (OUT / 'BuiltVersion.hx').write_text(header_comment() + f"""
+/** What `wgr.Version` compares the running library against. **/
+class BuiltVersion {{
+	public static inline final MAJOR = {major};
+	public static inline final MINOR = {minor};
+	public static inline final PATCH = {patch};
+	public static inline final STRING = "{version}";
+
+	/** The wgrender commit these were generated from, when there was one. **/
+	public static inline final COMMIT = "{commit}";
+
+	/** A digest of the headers; `tools/gen_raw.py --check` compares it. **/
+	public static inline final HEADERS = "{digest}";
+}}
+""")
+
+
 def main():
     if '--check' in sys.argv:
         sys.exit(check())
     enums, structs, functions = read_headers()
     print(f'{WGRENDER.name}: {len(functions)} functions, {len(enums)} enums, {len(structs)} structs')
 
+    emit_built_version()
     n_cpp, cpp_skipped = emit_cpp(enums, structs, functions)
     js_body, js_skipped, _ = emit_js(enums, structs, functions)
     (OUT / 'Raw.js.hx').write_text(header_comment() + JS_PREAMBLE + '\n' + '\n\n'.join(js_body)

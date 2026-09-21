@@ -51,7 +51,9 @@ class GuestAbi {
 		}), signature);
 	}
 
+	/** Checked here because it is the one point both routes pass through. **/
 	public static function start(width:Int, height:Int, title:String, flags:Int):Void {
+		Version.check();
 		final mark = Raw.stackMark();
 		Raw.host._wgr_guest_start(width, height, Raw.cstr(title), flags);
 		Raw.stackRelease(mark);

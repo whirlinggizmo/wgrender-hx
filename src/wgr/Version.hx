@@ -1,0 +1,40 @@
+package wgr;
+
+import wgr.impl.BuiltVersion;
+
+// wgr_version.h — the library the binding was generated against, against the one running
+
+/**
+	A binding is generated from a particular wgrender's headers, and then runs against
+	whatever library it is given. Those are not the same thing, and on the web they are
+	not even the same download: `wgrender-host.wasm` and the guest's JS are fetched and
+	cached independently, so a browser can pair a stale guest with a fresh host.
+
+	`check` reports whether that pairing is one to trust. Major or minor apart means
+	the C API may have moved under the binding; a patch apart is allowed through.
+**/
+class Version {
+	/** The wgrender the binding was generated against. **/
+	public static inline final BUILT = BuiltVersion.STRING;
+
+	public static function runtime():String
+		return '${Raw.wgr_version_major()}.${Raw.wgr_version_minor()}.${Raw.wgr_version_patch()}';
+
+	/** The full string the library reports, label and all. **/
+	public static inline function runtimeLabelled():String
+		return Raw.wgr_version_string();
+
+	/**
+		True when the running library is one this binding was generated for. Logs the
+		mismatch, so a caller that ignores the result still leaves a trace.
+	**/
+	public static function check():Bool {
+		final major = Raw.wgr_version_major();
+		final minor = Raw.wgr_version_minor();
+		if (major == BuiltVersion.MAJOR && minor == BuiltVersion.MINOR)
+			return true;
+		Log.error('wgrender ${runtime()} does not match the $BUILT this binding was generated '
+			+ 'against (${BuiltVersion.COMMIT}) — regenerate with tools/gen_raw.py');
+		return false;
+	}
+}

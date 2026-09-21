@@ -64,8 +64,11 @@ class GuestAbi {
 	static function shutdownOp():Int
 		return 0;
 
-	public static function start(width:Int, height:Int, title:String, flags:Int):Void
+	/** Checked here because it is the one point both routes pass through. **/
+	public static function start(width:Int, height:Int, title:String, flags:Int):Void {
+		Version.check();
 		GuestRaw.wgr_guest_start(width, height, title, flags);
+	}
 
 	/** Make a file local; the host calls the asset op with `id` when it is. **/
 	public static inline function loadAsset(path:String, id:Int):Bool
