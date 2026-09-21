@@ -116,16 +116,23 @@ class CheckBindings {
 		light.enabled = false;
 		check(!light.enabled, "light.enabled round-trips");
 		light.enabled = true;
-		// "Directional lights cast for now; spot and point lights are ignored" —
-		// wgr_light.h. So a point light must refuse, and a directional one must take it.
+		// Directional and spot lights cast; a point light is refused, because it would
+		// need six maps (wgr_light.c: "point lights don't cast shadows yet").
+		// NB wgr_light.h's comment still says spot is ignored too — it is out of date.
 		check(!light.castsShadows, "a light starts not casting");
 		light.castsShadows = true;
-		check(!light.castsShadows, "a point light does not cast shadows, as documented");
+		check(!light.castsShadows, "a point light refuses to cast: it would need a cube map");
 
 		final sun = new Light(Directional);
 		sun.castsShadows = true;
-		check(sun.castsShadows, "a directional light does cast, and it round-trips");
+		check(sun.castsShadows, "a directional light casts, and it round-trips");
 		sun.destroy();
+
+		final torch = new Light(Spot);
+		torch.setSpotCone(0.3, 0.6);
+		torch.castsShadows = true;
+		check(torch.castsShadows, "a spot light casts too — wgri_shadow_fit_spot");
+		torch.destroy();
 		light.color = Color.GOLD;
 		light.position = new Vec3(1, 2, 3);
 		light.range = 10;
