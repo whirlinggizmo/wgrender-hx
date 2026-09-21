@@ -24,13 +24,13 @@ class Particles {
 	static inline final ORBIT_RADIUS = 16.0;
 	static inline final ORBIT_SPEED = 0.15; // radians per second
 
-	static var scene:Scene = Handle.NONE;
-	static var camera:Camera3D = Handle.NONE;
-	static var fountain:Emitter3D = Handle.NONE;
-	static var sparks:Emitter3D = Handle.NONE;
-	static var smoke:Emitter3D = Handle.NONE;
-	static var flame:Emitter3D = Handle.NONE;
-	static var confetti:Emitter2D = Handle.NONE;
+	static var scene:Scene;
+	static var camera:Camera3D;
+	static var fountain:Emitter3D;
+	static var sparks:Emitter3D;
+	static var smoke:Emitter3D;
+	static var flame:Emitter3D;
+	static var confetti:Emitter2D;
 
 	static var paused = false;
 	static var orbit = true;
