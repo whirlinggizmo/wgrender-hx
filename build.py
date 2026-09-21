@@ -1,0 +1,126 @@
+#!/usr/bin/env python3
+"""Build the host/guest version of simple: wgrender as a wasm host, Haxe->JS as the guest.
+
+    ./build.py host        out/web/wgrender-host.js + .wasm (the host; C only)
+    ./build.py guest       out/web/guest.js (Haxe -> JS)
+    ./build.py all         both, plus the page
+    ./build.py serve       http://localhost:8000/
+    ./build.py sizes       what a visitor downloads, next to ../simple's all-in-one wasm
+    ./build.py clean
+
+The host exports two sets of functions: the guest ABI (host/wgr_guest.h) and the slice
+of wgrender's C API the guest calls. That slice is read from ../simple/src/wgr/Raw.hx —
+the hxcpp port's extern list — so the two ports cannot drift apart.
+
+Env: WGRENDER_DIR, BACKEND=webgl2|webgpu, WEB_DEBUG=0|1.
+"""
+import gzip
+import os
+import pathlib
+import re
+import shutil
+import subprocess
+import sys
+
+ROOT = pathlib.Path(__file__).resolve().parent
+WGRENDER = pathlib.Path(os.environ.get('WGRENDER_DIR',
+                                       ROOT / '../../github/whirlinggizmo/wgrender-c')).resolve()
+HXCPP_PORT = (ROOT / '../simple').resolve()
+HAXE = os.environ.get('HAXE', 'haxe')
+SITE = ROOT / 'out/web'
+
+# The guest ABI (host/wgr_guest.h) plus what Emscripten needs for marshalling.
+GUEST_ABI = ['wgr_guest_register', 'wgr_guest_set_fault_policy', 'wgr_guest_start',
+             'wgr_guest_asset_load', 'wgr_guest_frame_id', 'wgr_guest_faulted']
+RUNTIME_METHODS = ['addFunction', 'removeFunction', 'stringToUTF8', 'lengthBytesUTF8', 'UTF8ToString',
+                   'stackAlloc', 'stackSave', 'stackRestore', 'HEAP8', 'HEAPU8', 'HEAP32', 'HEAPU32', 'HEAPF32']
+
+
+def run(cmd, **kw):
+    print('+', ' '.join(str(c) for c in cmd), flush=True)
+    subprocess.run([str(c) for c in cmd], check=True, **kw)
+
+
+def make(*args):
+    web_vars = [f'{v}={os.environ[v]}' for v in ('BACKEND', 'WEB_DEBUG') if v in os.environ]
+    return ['make', '--no-print-directory', '-s', '-C', WGRENDER, *args, *web_vars]
+
+
+def wgr_api():
+    """The wgrender calls the guest may make, from the hxcpp port's extern list."""
+    raw = (HXCPP_PORT / 'src/wgr/Raw.hx').read_text()
+    # `_t` is a type in wgrender's naming (AGENTS.md), not something to export
+    names = sorted(n for n in set(re.findall(r'@:native\("(wgr_[a-z0-9_]+)"\)', raw))
+                   if not n.endswith('_t'))
+    if not names:
+        sys.exit(f'no @:native("wgr_*") found in {HXCPP_PORT}/src/wgr/Raw.hx')
+    return names
+
+
+def web_flags():
+    out = subprocess.run([str(c) for c in make('print-web-flags', 'WEB_THREADS=0')],
+                         check=True, capture_output=True, text=True).stdout
+    flags = {k.strip(): v.strip() for k, _, v in (l.partition(':') for l in out.splitlines())}
+    if 'lib' not in flags:
+        sys.exit(f'could not read wgrender web flags:\n{out}')
+    return WGRENDER / flags['lib'], flags.get('ldflags', '').split()
+
+
+def build_host():
+    print('wgrender (web)')
+    run(make('web', 'WEB_THREADS=0'))
+    lib, ldflags = web_flags()
+    api = wgr_api()
+    exported = ['_main'] + [f'_{n}' for n in GUEST_ABI + api] + ['_malloc', '_free']
+    SITE.mkdir(parents=True, exist_ok=True)
+    print(f'host -> out/web/wgrender-host.js ({len(api)} wgrender calls exported to the guest)')
+    run(['emcc', '-O2', f'-I{WGRENDER}/include', '-Ihost',
+         'host/wgr_guest.c', str(lib), *ldflags,
+         # the guest installs its ops as JS functions turned into C function pointers
+         '-sALLOW_TABLE_GROWTH=1',
+         '-sMODULARIZE=1', '-sEXPORT_ES6=1', '-sEXPORT_NAME=createWgrHost',
+         f'-sEXPORTED_RUNTIME_METHODS={",".join(RUNTIME_METHODS)}',
+         f'-sEXPORTED_FUNCTIONS={",".join(exported)}',
+         '-o', SITE / 'wgrender-host.js'], cwd=ROOT)
+    sizes()
+
+
+def sizes():
+    rows = [('host wasm', SITE / 'wgrender-host.wasm'), ('host js', SITE / 'wgrender-host.js'),
+            ('guest js', SITE / 'guest.js')]
+    total = 0
+    for label, path in rows:
+        if not path.exists():
+            print(f'{label:<12} (not built)')
+            continue
+        raw = path.stat().st_size
+        total += raw
+        print(f'{label:<12} {raw:>10,} bytes ({len(gzip.compress(path.read_bytes(), 9)):>9,} gzipped)')
+    if total:
+        print(f'{"total":<12} {total:>10,} bytes')
+    other = HXCPP_PORT / 'out/web/simple.wasm'
+    if other.exists():
+        print(f'{"(hxcpp)":<12} {other.stat().st_size:>10,} bytes of wasm in ../simple')
+
+
+def clean():
+    for d in ('out',):
+        shutil.rmtree(ROOT / d, ignore_errors=True)
+        print(f'removed {d}/')
+
+
+def main():
+    args = sys.argv[1:]
+    command = args[0] if args else ''
+    if command == 'host':
+        build_host()
+    elif command == 'sizes':
+        sizes()
+    elif command == 'clean':
+        clean()
+    else:
+        sys.exit(__doc__)
+
+
+if __name__ == '__main__':
+    main()
