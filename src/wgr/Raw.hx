@@ -1,8 +1,13 @@
 package wgr;
 
 /**
-	Raw wgrender bindings: the C API as is (C names, C types). Most code wants the
-	wrappers in `wgr.Wgr` instead (Haxe types, abstracts with methods, closures).
+	Raw wgrender bindings: the slice of the C API this example uses, as is (C names,
+	C types). Most code wants the wrappers in `wgr.Wgr` instead (Haxe types, abstracts
+	with methods, closures).
+
+	Not bound: the retained text objects (`wgr_text2d.h`, `wgr_text3d.h`), 2D sprites
+	and shapes, particles, materials, custom shaders, the environment, events and
+	gamepads. Adding one is a line here and a wrapper there.
 
 	Declarations come straight from wgrender's public headers (`@:include("wgr.h")`),
 	so the C++ compiler checks every prototype and struct layout for us — a wrong

@@ -20,7 +20,7 @@ import wgr.Raw;
 	costs exactly what the C call costs. The only allocations are the small value
 	objects (`Vec2`, `Vec3`, `MouseState`, `PickResult`) the wrappers hand back.
 
-	`wgr.Raw` has the C API as is, for anything not wrapped here.
+	`wgr.Raw` has the same slice of the C API as is, for anything not wrapped here.
 **/
 // build.py writes this file: where wgrender's headers and library are on this
 // machine, and the emcc flags the web library was built with.

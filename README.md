@@ -121,11 +121,25 @@ or 30,000 — you pay per object you *mutate* each frame, not per object drawn; 
 `const char*` means there is nothing to marshal on the non-string calls, which is why
 they are 3 ns.
 
-So the realistic risk isn't geometry, it's **text** — a UI drawing a few hundred
-dynamic strings a frame. That's cacheable: hold the encoded pointer while the string
-is unchanged. (Only the JS→wasm direction was measured. The other way,
-`addFunction` for the frame and asset callbacks, is once a frame plus a handful at
-startup.)
+Text is the one shape that costs anything — and wgrender already answers it. This
+example re-sends six strings a frame because it uses the *immediate* path,
+`wgr_text_draw_ex`, which it inherits from the C example it ports. The retained path
+is `Text2d` / `Text3d`: handle objects created from a `Font`, given their string once
+with `wgr_text2d_set_text` (which copies it), and added to a scene like any other
+drawable, so `wgr_scene_draw` draws them. A string then crosses the boundary when it
+*changes*, not once per frame — which for a typical UI, where most text is static, is
+close to never. (It retains the state, not the geometry: the header is explicit that
+text is still shaped on every draw, at the same per-frame cost as the immediate path.
+That doesn't matter here — what matters is that the string stops crossing.)
+
+This example is close to the worst case for its own content either way: four of its
+six strings (the two timers, the mouse readout, the pick message) genuinely change
+every frame, so retained text would save it maybe two crossings out of six. At 0.004%
+of a frame, none of it signifies — the point is that the ceiling is set by how often
+text *changes*, not by how much of it you draw.
+
+(Only the JS→wasm direction was measured. The other way, `addFunction` for the frame
+and asset callbacks, is once a frame plus a handful at startup.)
 
 ### What it would cost to build
 
@@ -152,9 +166,12 @@ are all target-neutral. A JS port is a `Raw.js.hx` plus conditionals in those 38
 
 `src/wgr/` is in two layers, the same split the Nim port uses:
 
-- **`wgr/Raw.hx`** — the C API as is: C names, C types, declared with `@:include("wgr.h")`
-  so the C++ compiler checks every prototype and struct layout. A wrong argument type
-  or a stale struct field is a compile error, not a crash.
+- **`wgr/Raw.hx`** — the slice of the C API this example uses, as is: C names, C types,
+  declared with `@:include("wgr.h")` so the C++ compiler checks every prototype and
+  struct layout. A wrong argument type or a stale struct field is a compile error, not
+  a crash. Not bound: the retained text objects (`wgr_text2d.h`, `wgr_text3d.h`), 2D
+  sprites and shapes, particles, materials, custom shaders, the environment, events
+  and gamepads.
 - **`wgr/Wgr.hx`** — the layer you actually write against.
 
 The design goal was that the whole wrapper compile away. Every handle type is an
