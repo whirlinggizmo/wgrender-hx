@@ -98,17 +98,18 @@ wgrender-c: 466 functions, 18 enums, 11 structs
   Raw.js.hx   449 wrappers
 ```
 
-It derives the enum cast types, the struct externs and the struct-return heap reads
-from the headers. It needs help for three things, declared in the tool's `SPEC` rather
-than edited into its output: which C callback typedefs map to which Haxe function type,
-which returned structs map to which public value class (whose constructor must take the
-C fields in order), and which functions to skip. Anything it can't map is left out and
-**listed**, so a gap is reported rather than silent — today that is the event and fetch
-callbacks, three small structs nothing wraps yet, and the varargs logger.
+**hxcpp reaches all 466 of wgrender's public functions.** On js it reaches 455; the
+other 11 take a C function pointer or a `void *`, which the guest ABI replaces there,
+and `wgr_input_get_keyboard_state` returns a 512-int struct that would be a poor thing
+to copy per frame — it wants a reader that indexes the heap, not a value.
 
-`wgr_set_init`, `wgr_set_frame`, `wgr_set_tick`, `wgr_set_cleanup` and
-`wgr_asset_add_task` are hxcpp-only: they take C function pointers, and the guest ABI
-replaces them on js.
+The tool derives the enum cast types, the struct externs and the struct-return heap
+reads from the headers. It needs help for three things, declared in its `SPEC` rather
+than edited into its output: which C callback typedefs map to which Haxe function
+type, which returned structs map to which public value class (whose constructor must
+take the C fields in order), and which functions to skip. Anything it can't map is
+left out and **listed**, so a gap is reported rather than silent. Today the only entry
+is the two varargs loggers, which it re-adds at fixed arity from `MANUAL`.
 
 Because the binding now declares wgrender's whole API, an app's build derives the
 host's `EXPORTED_FUNCTIONS` from the calls its *compiled guest* makes rather than from

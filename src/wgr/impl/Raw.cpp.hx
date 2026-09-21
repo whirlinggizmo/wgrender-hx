@@ -14,6 +14,9 @@ typedef WgrColor = UInt32;
 typedef VoidStar = RawPointer<cpp.Void>;
 
 typedef AssetCallbackFn = cpp.Callable<(path:ConstCharStar, user:VoidStar) -> Void>;
+typedef AssetFetchFn = cpp.Callable<(request:WgrHandle, url:ConstCharStar, destPath:ConstCharStar, user:VoidStar) -> Void>;
+typedef AssetPingFn = cpp.Callable<(host:ConstCharStar, milliseconds:Single, user:VoidStar) -> Void>;
+typedef EventListenerFn = cpp.Callable<(payload:VoidStar, user:VoidStar) -> Void>;
 typedef FrameFn = cpp.Callable<(dt:Single, tickFraction:Single, user:VoidStar) -> Void>;
 typedef LifecycleFn = cpp.Callable<(user:VoidStar) -> Void>;
 typedef TickFn = cpp.Callable<(dt:Single, user:VoidStar) -> Void>;
@@ -72,6 +75,35 @@ extern class CPickResult {
 	var point_world:CVec3;
 	var normal_local:CVec3;
 	var normal_world:CVec3;
+}
+
+@:include("wgr.h") @:native("wgr_pick_stats_t") @:structAccess @:unreflective
+extern class CPickStats {
+	var broadphase_tests:Int;
+	var broadphase_rejects:Int;
+	var narrowphase_tests:Int;
+	var narrowphase_hits:Int;
+}
+
+@:include("wgr.h") @:native("wgr_touch_gesture_t") @:structAccess @:unreflective
+extern class CTouchGesture {
+	var active:Bool;
+	var x:Single;
+	var y:Single;
+	var dx:Single;
+	var dy:Single;
+	var scale:Single;
+	var rotation:Single;
+}
+
+@:include("wgr.h") @:native("wgr_touch_t") @:structAccess @:unreflective
+extern class CTouch {
+	var id:Int;
+	var x:Single;
+	var y:Single;
+	var dx:Single;
+	var dy:Single;
+	var state:Int;
 }
 
 // C enum parameter types: C++ will not take an `int` where the header names an
@@ -158,6 +190,8 @@ extern class Raw {
 	static function wgr_asset_get_host():ConstCharStar;
 	@:native("wgr_asset_set_cache_dir")
 	static function wgr_asset_set_cache_dir(dir:ConstCharStar):Bool;
+	@:native("wgr_asset_set_fetcher")
+	static function wgr_asset_set_fetcher(fn:AssetFetchFn, user_data:VoidStar):Bool;
 	@:native("wgr_asset_fetch_done")
 	static function wgr_asset_fetch_done(request:WgrHandle, ok:Bool):Bool;
 	@:native("wgr_asset_evict")
@@ -178,6 +212,8 @@ extern class Raw {
 	static function wgr_asset_add_redirect(prefix:ConstCharStar, target:ConstCharStar):Bool;
 	@:native("wgr_asset_clear_redirects")
 	static function wgr_asset_clear_redirects():Void;
+	@:native("wgr_asset_ping_host")
+	static function wgr_asset_ping_host(host:ConstCharStar, timeout_ms:Int, on_done:AssetPingFn, user_data:VoidStar):Bool;
 	@:native("wgr_asset_set_upload_budget")
 	static function wgr_asset_set_upload_budget(milliseconds:Single):Void;
 	@:native("wgr_audio_create")
@@ -376,6 +412,12 @@ extern class Raw {
 	static function wgr_environment_create(path:ConstCharStar):WgrHandle;
 	@:native("wgr_environment_release")
 	static function wgr_environment_release(environment:WgrHandle):Void;
+	@:native("wgr_event_on")
+	static function wgr_event_on(event_name:ConstCharStar, listener:EventListenerFn, user_data:VoidStar):Int;
+	@:native("wgr_event_once")
+	static function wgr_event_once(event_name:ConstCharStar, listener:EventListenerFn, user_data:VoidStar):Int;
+	@:native("wgr_event_off")
+	static function wgr_event_off(event_name:ConstCharStar, listener:EventListenerFn, user_data:VoidStar):Int;
 	@:native("wgr_event_off_all")
 	static function wgr_event_off_all(event_name:ConstCharStar):Int;
 	@:native("wgr_event_emit")
@@ -410,6 +452,10 @@ extern class Raw {
 	static function wgr_input_get_keyboard_state():CKeyboardState;
 	@:native("wgr_input_get_touch_count")
 	static function wgr_input_get_touch_count():Int;
+	@:native("wgr_input_get_touch")
+	static function wgr_input_get_touch(index:Int):CTouch;
+	@:native("wgr_input_get_touch_gesture")
+	static function wgr_input_get_touch_gesture():CTouchGesture;
 	@:native("wgr_input_is_gamepad_connected")
 	static function wgr_input_is_gamepad_connected(pad:Int):Bool;
 	@:native("wgr_input_get_gamepad_name")
@@ -578,6 +624,8 @@ extern class Raw {
 	static function wgr_model_is_ready(handle:WgrHandle):Bool;
 	@:native("wgr_pick_object")
 	static function wgr_pick_object(object:WgrHandle, camera:WgrHandle, x:Single, y:Single):CPickResult;
+	@:native("wgr_pick_get_stats")
+	static function wgr_pick_get_stats():CPickStats;
 	@:native("wgr_pick_reset_stats")
 	static function wgr_pick_reset_stats():Void;
 	@:native("wgr_render_begin")
@@ -1042,4 +1090,9 @@ extern class Raw {
 	/** The varargs logger, fixed at one `%s` — enough for a Haxe string. **/
 	@:native("wgr_logger_message")
 	static function wgr_logger_message(level:CLogLevel, format:ConstCharStar, text:ConstCharStar):Void;
+
+	/** The same, with the call site the WGR_LOG_* macros would have filled in. **/
+	@:native("wgr_logger_message_source")
+	static function wgr_logger_message_source(level:CLogLevel, sourceFile:ConstCharStar, sourceLine:Int,
+		format:ConstCharStar, text:ConstCharStar):Void;
 }

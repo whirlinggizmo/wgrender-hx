@@ -38,6 +38,9 @@ CALLBACKS = {
     'wgr_tick_fn': '(dt:Single, user:VoidStar) -> Void',
     'wgr_asset_callback_fn': '(path:ConstCharStar, user:VoidStar) -> Void',
     'wgr_event_callback_fn': '(event:VoidStar, user:VoidStar) -> Void',
+    'wgr_event_listener_fn': '(payload:VoidStar, user:VoidStar) -> Void',
+    'wgr_asset_fetch_fn': '(request:WgrHandle, url:ConstCharStar, destPath:ConstCharStar, user:VoidStar) -> Void',
+    'wgr_asset_ping_fn': '(host:ConstCharStar, milliseconds:Single, user:VoidStar) -> Void',
 }
 
 # Structs returned by value, and the public-layer class the JS side builds from them.
@@ -50,11 +53,14 @@ VALUES = {
     'vec3_t': 'Vec3',
     'wgr_mouse_state_t': 'MouseState',
     'wgr_pick_result_t': 'PickResult',
+    'wgr_touch_t': 'Touch',
+    'wgr_touch_gesture_t': 'TouchGesture',
+    'wgr_pick_stats_t': 'PickStats',
 }
 
 # No sane rendering: varargs, or a pointer the public API rule says should not exist.
 SKIP = {
-    'wgr_logger_message', 'wgr_logger_message_source',  # varargs — see MANUAL
+    'wgr_logger_message', 'wgr_logger_message_source',  # varargs — re-added in MANUAL
 }
 
 # Declarations the parser can't produce, rendered verbatim. Keep this short: anything
@@ -63,12 +69,22 @@ SKIP = {
 MANUAL_CPP = '''
 	/** The varargs logger, fixed at one `%s` — enough for a Haxe string. **/
 	@:native("wgr_logger_message")
-	static function wgr_logger_message(level:CLogLevel, format:ConstCharStar, text:ConstCharStar):Void;'''
+	static function wgr_logger_message(level:CLogLevel, format:ConstCharStar, text:ConstCharStar):Void;
+
+	/** The same, with the call site the WGR_LOG_* macros would have filled in. **/
+	@:native("wgr_logger_message_source")
+	static function wgr_logger_message_source(level:CLogLevel, sourceFile:ConstCharStar, sourceLine:Int,
+		format:ConstCharStar, text:ConstCharStar):Void;'''
 
 MANUAL_JS = '''
 	/** The varargs logger, fixed at one `%s` — enough for a Haxe string. **/
 	public static inline function wgr_logger_message(level:Int, format:String, text:String):Void
-		Raw.host._wgr_logger_message(level, cstr(format), cstr(text));'''
+		Raw.host._wgr_logger_message(level, cstr(format), cstr(text));
+
+	/** The same, with the call site the WGR_LOG_* macros would have filled in. **/
+	public static inline function wgr_logger_message_source(level:Int, sourceFile:String, sourceLine:Int,
+			format:String, text:String):Void
+		Raw.host._wgr_logger_message_source(level, cstr(sourceFile), sourceLine, cstr(format), cstr(text));'''
 
 SCALARS = {  # C type -> (hxcpp, js), size, how JS reads it out of the heap
     'void': ('Void', 'Void', 0, None),
@@ -99,16 +115,27 @@ def read_headers():
     structs = {}
     for m in re.finditer(r'typedef struct[^{]*\{(.*?)\}\s*(\w+)\s*;', everything, re.S):
         body, name = m.group(1), m.group(2)
+        # Strip comments across the whole body: a trailing /* ... */ can run onto the
+        # next line, and stripping line by line then swallows the field it follows.
+        body = re.sub(r'/\*.*?\*/', ' ', body, flags=re.S)
+        body = re.sub(r'//[^\n]*', ' ', body)
         fields = []
         for line in body.split('\n'):
-            line = re.sub(r'/\*.*?\*/', '', line).strip()
-            fm = re.match(r'^((?:unsigned |const )?[\w]+(?:\s*\*)?)\s+(\w+)\s*(?:\[\s*(\w+)\s*\])?\s*;', line)
-            if fm:
-                bound = fm.group(3)
+            line = line.strip()
+            fm = re.match(r'^((?:unsigned |const )?[\w]+(?:\s*\*)?)\s+(.+);$', line)
+            if not fm:
+                continue
+            ctype = fm.group(1).strip()
+            # one line can declare several: `float x, y;`
+            for declarator in fm.group(2).split(','):
+                dm = re.match(r'^\s*(\w+)\s*(?:\[\s*(\w+)\s*\])?\s*$', declarator)
+                if not dm:
+                    continue
+                bound = dm.group(2)
                 # `int keys[WGR_MAX_KEYS]` — a macro bound is still an array, just one
                 # whose size we can't compute, which is fine for a struct we only pass.
                 count = int(bound) if bound and bound.isdigit() else (-1 if bound else 0)
-                fields.append((fm.group(1).strip(), fm.group(2), count))
+                fields.append((ctype, dm.group(1), count))
         if fields:
             structs[name] = fields
     functions = []

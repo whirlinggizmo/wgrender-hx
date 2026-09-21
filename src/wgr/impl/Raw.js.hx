@@ -491,6 +491,24 @@ class Raw {
 	public static inline function wgr_input_get_touch_count():Int
 		return Raw.host._wgr_input_get_touch_count();
 
+	public static function wgr_input_get_touch(index:Int):Touch {
+		final out = scratch(24);
+		Raw.host._wgr_input_get_touch(out, index);
+		final i32 = Raw.host.HEAP32;
+		final f32 = Raw.host.HEAPF32;
+		final base = out >> 2;
+		return new Touch(i32[base + 0], f32[base + 1], f32[base + 2], f32[base + 3], f32[base + 4], i32[base + 5]);
+	}
+
+	public static function wgr_input_get_touch_gesture():TouchGesture {
+		final out = scratch(28);
+		Raw.host._wgr_input_get_touch_gesture(out);
+		final f32 = Raw.host.HEAPF32;
+		final u8 = Raw.host.HEAPU8;
+		final base = out >> 2;
+		return new TouchGesture(u8[out + 0] != 0, f32[base + 1], f32[base + 2], f32[base + 3], f32[base + 4], f32[base + 5], f32[base + 6]);
+	}
+
 	public static inline function wgr_input_is_gamepad_connected(pad:Int):Bool
 		return Raw.host._wgr_input_is_gamepad_connected(pad) != 0;
 
@@ -748,6 +766,14 @@ class Raw {
 		final u8 = Raw.host.HEAPU8;
 		final base = out >> 2;
 		return new PickResult(u8[out + 0] != 0, u32[base + 1], f32[base + 2], new Vec3(f32[base + 3], f32[base + 4], f32[base + 5]), new Vec3(f32[base + 6], f32[base + 7], f32[base + 8]), new Vec3(f32[base + 9], f32[base + 10], f32[base + 11]), new Vec3(f32[base + 12], f32[base + 13], f32[base + 14]));
+	}
+
+	public static function wgr_pick_get_stats():PickStats {
+		final out = scratch(16);
+		Raw.host._wgr_pick_get_stats(out);
+		final i32 = Raw.host.HEAP32;
+		final base = out >> 2;
+		return new PickStats(i32[base + 0], i32[base + 1], i32[base + 2], i32[base + 3]);
 	}
 
 	public static inline function wgr_pick_reset_stats():Void
@@ -1505,4 +1531,9 @@ class Raw {
 	/** The varargs logger, fixed at one `%s` — enough for a Haxe string. **/
 	public static inline function wgr_logger_message(level:Int, format:String, text:String):Void
 		Raw.host._wgr_logger_message(level, cstr(format), cstr(text));
+
+	/** The same, with the call site the WGR_LOG_* macros would have filled in. **/
+	public static inline function wgr_logger_message_source(level:Int, sourceFile:String, sourceLine:Int,
+			format:String, text:String):Void
+		Raw.host._wgr_logger_message_source(level, cstr(sourceFile), sourceLine, cstr(format), cstr(text));
 }
