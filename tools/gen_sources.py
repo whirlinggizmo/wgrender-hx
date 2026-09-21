@@ -68,10 +68,10 @@ def build(sources, deps):
              sokol's backend: GLCORE everywhere wgrender builds natively, which is
              what its own Makefile picks for both Linux and Windows.
 
-             M_PI is POSIX rather than C, and MSVC defines it in math.h only when
-             _USE_MATH_DEFINES is set before that include. A command-line define is. -->
+             M_PI was here too, as -D_USE_MATH_DEFINES, until wgrender d61ae61 gave
+             wgr_math_internal.h its own fallback. Keeping a flag that is no longer
+             required would say it is. -->
         <compilerflag value="-DSOKOL_GLCORE" />
-        <compilerflag value="-D_USE_MATH_DEFINES" />
 
         <!-- wgrender is C11 (_Static_assert, among other things). The one flag that
              genuinely differs: MSVC wants /std:c11, which VS 2019 16.8 added, and
