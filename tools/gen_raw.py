@@ -2,8 +2,8 @@
 """Generate the whole C surface — src/wgr/impl/Raw.cpp.hx and Raw.js.hx — from
 wgrender's public headers.
 
-    tools/gen_raw.py [WGRENDER_DIR]         write both files (default ../wgrender-c, or
-                                            $WGRENDER_DIR)
+    tools/gen_raw.py [WGRENDER_DIR]         write both files (tools/wgrpath.py says
+                                            where wgrender is looked for)
     tools/gen_raw.py --check [WGRENDER_DIR]  say whether they are current, and exit
                                             non-zero if not
 

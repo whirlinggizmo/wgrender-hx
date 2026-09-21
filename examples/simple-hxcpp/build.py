@@ -37,8 +37,10 @@ import subprocess
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent
-LIB = ROOT.parents[1]  # examples/simple-hxcpp -> the library
-WGRENDER = pathlib.Path(os.environ.get('WGRENDER_DIR', LIB / '../wgrender-c')).resolve()
+LIB = ROOT.parents[1]
+sys.path.insert(0, str(LIB / 'tools'))
+from wgrpath import find  # noqa: E402  # examples/simple-hxcpp -> the library
+WGRENDER = find(argv=[])
 HAXE = os.environ.get('HAXE', 'haxe')
 # The wgr binding, its generator and its host glue are the wgrender-hx haxelib.
 

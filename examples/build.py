@@ -28,7 +28,9 @@ import sys
 
 HERE = pathlib.Path(__file__).resolve().parent
 LIB = HERE.parent
-WGRENDER = pathlib.Path(os.environ.get('WGRENDER_DIR', LIB / '../wgrender-c')).resolve()
+sys.path.insert(0, str(LIB / 'tools'))
+from wgrpath import find  # noqa: E402
+WGRENDER = find(argv=[])
 C_BUILD = WGRENDER / 'examples/build/webgl2-nothreads'
 
 # simple-hxcpp is the other architecture -- Haxe through hxcpp into one wasm, rather
