@@ -19,7 +19,7 @@ abstract Font(Handle) from Handle to Handle {
 		Raw.wgr_text_draw_ex(this, text, x, y, size, color);
 
 	public inline function measure(text:String, size:Float):Vec2
-		return Text.toVec2(Raw.wgr_text_measure_ex(this, text, size));
+		return Vec2.of(Raw.wgr_text_measure_ex(this, text, size));
 
 	/** The frame rate, in this font; a none font draws in the built-in one. **/
 	public inline function drawFps(x:Float, y:Float, size:Float, color:Color):Void

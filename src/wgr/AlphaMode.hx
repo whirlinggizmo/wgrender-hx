@@ -15,6 +15,15 @@ enum abstract AlphaMode(Int) to Int {
 	/** Added to what's behind — glows, sparks. Not sorted, no depth write. The default. **/
 	var Add = 3;
 
+	/**
+		A value wgrender handed back. It returns the C enum as an `int`, and this
+		abstract is deliberately not `from Int` — a setter should not take any
+		number — so reading one back goes through here.
+	**/
+	@:allow(wgr)
+	static inline function of(v:Int):AlphaMode
+		return cast v;
+
 	#if cpp
 	/** C++ needs the cast: the header says `wgr_alpha_mode_t`, not `int`. **/
 	@:to inline function toRaw():CAlphaMode

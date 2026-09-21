@@ -106,7 +106,7 @@ abstract Text3D(Handle) from Handle to Handle {
 
 	/** World-space width and height of the current text; (0, 0) until the font loads. **/
 	public inline function measure():Vec2
-		return Text.toVec2(Raw.wgr_text3d_get_size(this));
+		return Vec2.of(Raw.wgr_text3d_get_size(this));
 
 	/** Draw it now, inside 3D mode; a scene draws its members itself. **/
 	public inline function draw():Void

@@ -29,7 +29,4 @@ class Text {
 		return v;
 	}
 
-	@:allow(wgr)
-	static inline function toVec2(v:#if cpp CVec2 #else Vec2 #end):Vec2
-		#if cpp return new Vec2(v.x, v.y); #else return v; #end
 }
