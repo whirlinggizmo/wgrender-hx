@@ -227,7 +227,7 @@ class CheckBindings {
 		final texture = Texture.create("no/such.png"); // none is fine: we assert on counts
 		confetti = new Emitter2D(texture);
 		check(!confetti.isNone, "emitter2d created");
-		confetti.max = 64;
+		confetti.setMax(64);
 		confetti.setLife(5, 5);
 		confetti.setVelocity(new Vec2(0, -10));
 		confetti.setGravity(new Vec2(0, 10));
@@ -263,7 +263,7 @@ class CheckBindings {
 
 		final spray = new Emitter3D(texture);
 		check(!spray.isNone, "emitter3d created");
-		spray.max = 32;
+		spray.setMax(32);
 		spray.setLife(5, 5);
 		spray.setPosition(new Vec3(0, 0, 0));
 		spray.setSpawnBox(new Vec3(1, 1, 1));
@@ -689,6 +689,34 @@ class CheckBindings {
 		near(Asset.getProgress(group), 0, "an empty group has made no progress");
 	}
 
+	/** What the header sweep of 2026-09-21 says wgrender promises. **/
+	static function checkSweptBehaviour():Void {
+		// emitters: max is 1..65536 and a value outside is refused, not clamped
+		final e = new Emitter3D(Texture.defaultTexture);
+		check(e.setMax(65536), "the largest allowed max is accepted");
+		check(!e.setMax(65537), "one past it is refused, not clamped");
+		check(!e.setMax(0), "and so is zero");
+		e.destroy();
+
+		final e2 = new Emitter2D(Texture.defaultTexture);
+		check(e2.setMax(65536), "2D shares the same ceiling");
+		check(!e2.setMax(65537), "and the same refusal");
+		e2.destroy();
+
+		// a null fetch_url is not an empty one: null keeps redirects and variants,
+		// a URL tells wgrender the caller chose that exact file. The js binding sends
+		// null as a null pointer for this reason; hxcpp always did.
+		final plain = Asset.ensureAsync("no/such.png");
+		check(!plain.isNone, "ensureAsync with no fetch url makes a task");
+		final sourced = Asset.ensureAsync("no/such2.png", "https://example.invalid/no/such2.png");
+		check(!sourced.isNone, "and so does one with a source of its own");
+
+		// redirects: a URL target is legal on desktop now, not just on the web
+		check(Asset.addRedirect("models/", "https://cdn.example.invalid/models/"),
+			"a download redirect is accepted on desktop");
+		Asset.clearRedirects();
+	}
+
 	static function checkEvents():Void {
 		eq(Event.listenerCount("check/ping"), 0, "nothing is listening yet");
 
@@ -763,6 +791,7 @@ class CheckBindings {
 		checkSoundAndAsset();
 		checkEvents();
 		checkPick();
+		checkSweptBehaviour();
 	}
 
 	static function onFrame(dt:Float, tickFraction:Float):Void {
