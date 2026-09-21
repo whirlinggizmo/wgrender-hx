@@ -455,7 +455,17 @@ class Raw {
 		host.stackRestore(mark);
 
 	/** A NUL-terminated copy of `s` in the op's arena. **/
+	/**
+		A Haxe string as a C string in the wasm heap, and `null` as a null pointer.
+
+		The distinction matters: wgr_asset_ensure_async treats a null fetch_url as "use
+		the host, with redirects and variants" and a non-null one as "the caller chose
+		this exact file". An empty string is not the same thing, so null has to survive
+		the crossing — as it already does on hxcpp, through Native.cstr.
+	**/
 	public static inline function cstr(s:String):Int {
+		if (s == null)
+			return 0;
 		final length = host.lengthBytesUTF8(s) + 1;
 		final pointer = host.stackAlloc(length);
 		host.stringToUTF8(s, pointer, length);

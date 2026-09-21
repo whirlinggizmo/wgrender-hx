@@ -46,6 +46,17 @@ OMISSIONS = {
 }
 
 
+# Reachable from Raw on both targets, but deliberately not given an API-layer
+# method, and why. This is the other kind of decision: not a target asymmetry but a
+# judgement that wrapping the call would make the binding worse. `--check` fails if
+# one turns up wrapped after all, so a change of mind has to be recorded here too.
+API_OMISSIONS = {
+    'wgr_text_draw_n': 'length is BYTES; a Haxe string measures in UTF-16 units, so the '
+                       'two disagree for anything non-ASCII. Pass a substring to draw().',
+    'wgr_text_measure_n': 'same: measure() on a substring is correct and this is not.',
+}
+
+
 def c_functions():
     out = {}
     for h in sorted((WGRENDER / 'include').glob('*.h')):
@@ -76,15 +87,24 @@ def main():
     by_header = c_functions()
     every = {fn for fns in by_header.values() for fn in fns}
     api, raw = reached()
+    # The guest ABI's own calls (wgr_guest_*) live in host/wgr_guest.h, not in
+    # wgrender's public headers, so they are not part of the surface being measured.
+    # Counting them made the headline read 467/466.
+    api &= every
 
     if '--check' in sys.argv:
         rotted = [f'{fn}: listed as omitted from js, but Raw.js.hx has it' for fn in OMISSIONS
                   if fn in raw['js']]
-        unknown = [f'{fn}: listed as omitted, but no such function' for fn in OMISSIONS if fn not in every]
-        for line in rotted + unknown:
+        unknown = [f'{fn}: listed as omitted, but no such function'
+                   for fn in list(OMISSIONS) + list(API_OMISSIONS) if fn not in every]
+        wrapped = [f'{fn}: listed as deliberately unwrapped, but the API layer calls it'
+                   for fn in API_OMISSIONS if fn in api]
+        for line in rotted + unknown + wrapped:
             print(f'  {line}')
-        print(f'OMISSIONS: {"stale" if rotted or unknown else "current"} ({len(OMISSIONS)} entries)')
-        return 1 if rotted or unknown else 0
+        bad = rotted or unknown or wrapped
+        print(f'OMISSIONS: {"stale" if bad else "current"} '
+              f'({len(OMISSIONS)} js, {len(API_OMISSIONS)} api)')
+        return 1 if bad else 0
 
     print(f'wgrender: {len(every)} public functions across {len(by_header)} headers\n')
     print(f'  {"C surface (generated)":<28} hxcpp {len(raw["hxcpp"]):>3}/{len(every)}   '
@@ -97,7 +117,7 @@ def main():
         print(f'{header:<22} {len(fns):>5} {done:>8}  {"#" * round(done / len(fns) * 10):<10} '
               f'{done / len(fns) * 100:>3.0f}%')
 
-    skip = macros() | OMISSIONS.keys()
+    skip = macros() | OMISSIONS.keys() | API_OMISSIONS.keys()
     rows = []
     for c in sorted((WGRENDER / 'examples').glob('*.c')):
         need = set(re.findall(r'\b(wgr_[a-z0-9_]+)\s*\(', c.read_text())) - skip - api
@@ -124,6 +144,10 @@ def main():
     print(f'\non hxcpp but not js ({len(missing_js)}), all accounted for'
           f'{"" if not unexplained else f" except {len(unexplained)}: " + ", ".join(unexplained)}:')
     for fn, why in sorted(OMISSIONS.items()):
+        print(f'  {fn:<32} {why}')
+
+    print(f'\nreachable but deliberately not wrapped ({len(API_OMISSIONS)}):')
+    for fn, why in sorted(API_OMISSIONS.items()):
         print(f'  {fn:<32} {why}')
     return 0
 

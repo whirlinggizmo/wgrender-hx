@@ -9,6 +9,9 @@ package wgr;
 abstract Emitter2D(Handle) from Handle to Handle {
 	public var isNone(get, never):Bool;
 
+	/** Where it is, as last set. **/
+	public var position(get, never):Vec2;
+
 	/** Whether new particles are made; the ones alive finish their lives either way. **/
 	public var emitting(get, set):Bool;
 
@@ -40,6 +43,9 @@ abstract Emitter2D(Handle) from Handle to Handle {
 
 	inline function get_isNone():Bool
 		return (this : Handle).isNone;
+
+	inline function get_position():Vec2
+		return Vec2.of(Raw.wgr_emitter2d_get_position(this));
 
 	public inline function new(texture:Texture)
 		this = (Raw.wgr_emitter2d_create(texture) : Handle);

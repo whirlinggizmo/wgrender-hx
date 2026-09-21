@@ -29,6 +29,14 @@ class Version {
 		stops `GuestAbi.start`, so this logs at fatal rather than leaving a trace for
 		someone to find later.
 	**/
+	/** The pre-release label ("dev"), or "" for a plain release. **/
+	public static inline function label():String
+		return Raw.wgr_version_label();
+
+	/** Major, minor and patch packed into one number, for comparing versions. **/
+	public static inline function number():Int
+		return Raw.wgr_version_number();
+
 	public static function check():Bool {
 		final major = Raw.wgr_version_major();
 		final minor = Raw.wgr_version_minor();

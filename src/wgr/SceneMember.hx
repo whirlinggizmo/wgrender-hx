@@ -2,7 +2,7 @@ package wgr;
 
 // wgr_scene.h
 
-/** What `Scene.add` takes: a `Model`, `Sprite3D`, `Text2D`, `Text3D`, `Emitter2D`,
+/** What `Scene.add` takes: a `Model`, `Sprite2D`, `Sprite3D`, `Text2D`, `Text3D`, `Emitter2D`,
 	`Emitter3D`, `Shape2D`, `Shape3D` or `Light`. **/
 abstract SceneMember(Handle) to Handle {
 	/** Whether there is a member here at all — `Scene.hovered` returns none for nothing. **/
@@ -24,6 +24,9 @@ abstract SceneMember(Handle) to Handle {
 		return cast v;
 
 	@:from static inline function ofModel(v:Model):SceneMember
+		return cast v;
+
+	@:from static inline function ofSprite2D(v:Sprite2D):SceneMember
 		return cast v;
 
 	@:from static inline function ofSprite3D(v:Sprite3D):SceneMember

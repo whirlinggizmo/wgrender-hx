@@ -99,6 +99,12 @@ abstract Material(Handle) from Handle to Handle {
 		return v;
 	}
 
+	/** How it uses alpha. Set it with `setAlphaMode`. **/
+	public var alphaMode(get, never):AlphaMode;
+
+	inline function get_alphaMode():AlphaMode
+		return AlphaMode.of(Raw.wgr_material_get_alpha_mode(this));
+
 	public inline function setAlphaMode(mode:AlphaMode, cutoff:Float = 0.5):Bool
 		return Raw.wgr_material_set_alpha_mode(this, mode, cutoff);
 

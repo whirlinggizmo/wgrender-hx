@@ -19,6 +19,12 @@ abstract Handle(Int) from Int to Int {
 		return this == 0;
 		#end
 
+	/** What this handle refers to; `None` for a none handle. **/
+	public var kind(get, never):HandleKind;
+
+	inline function get_kind():HandleKind
+		return HandleKind.of(Raw.wgr_handle_get_kind(this));
+
 	/** wgrender's C `wgr_handle_t`. **/
 	@:to inline function toRaw():WgrHandle
 		return this;

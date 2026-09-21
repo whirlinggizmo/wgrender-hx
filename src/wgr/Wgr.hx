@@ -12,6 +12,8 @@ class Wgr {
 	// --- lifecycle ---
 	static var initCallback:() -> Void;
 	static var frameCallback:(dt:Float, tickFraction:Float) -> Void;
+	static var tickCallback:(dt:Float) -> Void;
+	static var cleanupCallback:() -> Void;
 
 	#end
 
@@ -39,6 +41,24 @@ class Wgr {
 			initCallback()
 		catch (e:haxe.Exception)
 			report("the init callback", e);
+	}
+
+	static function tickTrampoline(dt:Single, user:VoidStar):Void {
+		if (tickCallback == null)
+			return;
+		try
+			tickCallback(dt)
+		catch (e:haxe.Exception)
+			report("the tick callback", e);
+	}
+
+	static function cleanupTrampoline(user:VoidStar):Void {
+		if (cleanupCallback == null)
+			return;
+		try
+			cleanupCallback()
+		catch (e:haxe.Exception)
+			report("the cleanup callback", e);
 	}
 
 	static function frameTrampoline(dt:Single, tickFraction:Single, user:VoidStar):Void {
@@ -78,12 +98,61 @@ class Wgr {
 		Raw.wgr_set_frame(cpp.Callable.fromStaticFunction(frameTrampoline), Native.nullPtr());
 	}
 
+	/**
+		Runs at a fixed rate, 0 to N times before each frame, always with `dt` of 1/`hz`
+		— physics and gameplay rules. Never draw here; draw in the frame callback, where
+		`tickFraction` says how far into the next tick it is, for interpolating.
+
+		After a stall at most 5 ticks run per frame and the rest of the backlog is
+		dropped, so simulation time falls behind instead of snowballing. Input edges
+		belong to whichever callback reads them, and every press is seen by exactly one
+		tick. An `hz` of 0 or less turns the tick off.
+	**/
+	public static function setTick(cb:(dt:Float) -> Void, hz:Int):Void {
+		tickCallback = cb;
+		Raw.wgr_set_tick(cpp.Callable.fromStaticFunction(tickTrampoline), Native.nullPtr(), hz);
+	}
+
+	/** Runs as the window closes, before the GPU is torn down. **/
+	public static function setCleanup(cb:() -> Void):Void {
+		cleanupCallback = cb;
+		Raw.wgr_set_cleanup(cpp.Callable.fromStaticFunction(cleanupTrampoline), Native.nullPtr());
+	}
+
 	/** Drive the loop. On the web this returns at once and the browser drives frames. **/
 	public static inline function run():Int {
 		return Raw.wgr_run();
 	}
 
 	#end
+
+	/** True once `initValues` has succeeded. **/
+	public static var isInitialized(get, never):Bool;
+
+	/**
+		Which renderer is running: "GL core", "GLES3/WebGL2", "WebGPU", "D3D11",
+		"Metal (macOS)" or "headless", and "none" before `run` starts. Display text —
+		it names the backend wgrender chose, which the API otherwise hides.
+	**/
+	public static var renderer(get, never):String;
+
+	/**
+		Whether assets decode and upload off the main thread, so a program can say why
+		something is missing instead of quietly behaving differently. A web build has
+		threads only if it was built with them *and* the page is cross-origin isolated,
+		which needs COOP/COEP headers from the host; a static host that can't send them
+		serves the single-threaded build, where loading blocks the frame it happens on.
+	**/
+	public static var hasThreads(get, never):Bool;
+
+	static inline function get_isInitialized():Bool
+		return Raw.wgr_is_initialized();
+
+	static inline function get_renderer():String
+		return Raw.wgr_get_renderer();
+
+	static inline function get_hasThreads():Bool
+		return Raw.wgr_has_threads();
 
 	/** Close the window / end the loop. **/
 	public static inline function requestQuit():Void {
