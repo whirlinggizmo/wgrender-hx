@@ -54,6 +54,24 @@ class Run {
 				+ "nothing to set up: point -D WGR_BUILD_XML at your own wgrender instead.");
 			Sys.exit(1);
 		}
+		if (Sys.systemName() == "Windows") {
+			// wgrender is built by a Unix Makefile, and its Windows target
+			// cross-compiles with MinGW rather than building natively. Saying so
+			// beats `'make' is not recognized as an internal or external command`.
+			Sys.println('wgrender is here, but this cannot build it on Windows:\n'
+				+ '  $dir\n\n'
+				+ "Its build is a Unix Makefile, and its Windows target cross-compiles\n"
+				+ "with MinGW (x86_64-w64-mingw32) rather than building in place. Two\n"
+				+ "ways to get a library:\n\n"
+				+ "  - build it under MSYS2 or WSL:  make -C <that directory> windows\n"
+				+ "    then compile with -D mingw -D HXCPP_M64, so hxcpp and wgrender\n"
+				+ "    come from the same toolchain\n"
+				+ "  - or cross-compile the whole program from Linux: hxcpp targets\n"
+				+ "    Windows with -D windows -D HXCPP_M64\n\n"
+				+ "hxcpp defaults to MSVC on Windows, and MSVC cannot link MinGW\n"
+				+ "objects: they need GCC runtime symbols it does not provide.");
+			Sys.exit(1);
+		}
 		Sys.println("building wgrender (native)");
 		shell("make", ["-C", dir, "all"], root);
 		if (web) {

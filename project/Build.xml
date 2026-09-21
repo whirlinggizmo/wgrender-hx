@@ -65,39 +65,52 @@
         <lib name="${WGRENDER}/build/webgl2-nothreads/libwgrender.a" if="emscripten" />
 
         <section unless="emscripten">
-            <lib name="${WGRENDER}/build/windows/libwgrender.a" if="windows" />
-            <lib name="${WGRENDER}/build/desktop/libwgrender.a" unless="windows" />
-
             <!-- Linux -->
-            <lib name="-lGL" if="linux" />
-            <lib name="-lX11" if="linux" />
-            <lib name="-lXi" if="linux" />
-            <lib name="-lXcursor" if="linux" />
-            <lib name="-lXrandr" if="linux" />
-            <lib name="-lasound" if="linux" />
-            <lib name="-ldl" if="linux" />
-            <lib name="-lm" if="linux" />
-            <lib name="-lpthread" if="linux" />
+            <section if="linux">
+                <lib name="${WGRENDER}/build/desktop/libwgrender.a" />
+                <lib name="-lGL" />
+                <lib name="-lX11" />
+                <lib name="-lXi" />
+                <lib name="-lXcursor" />
+                <lib name="-lXrandr" />
+                <lib name="-lasound" />
+                <lib name="-ldl" />
+                <lib name="-lm" />
+                <lib name="-lpthread" />
+            </section>
 
-            <!-- Windows (MinGW) -->
-            <lib name="-static" if="windows" />
-            <lib name="-lopengl32" if="windows" />
-            <lib name="-lgdi32" if="windows" />
-            <lib name="-luser32" if="windows" />
-            <lib name="-lkernel32" if="windows" />
-            <lib name="-lole32" if="windows" />
-            <lib name="-lshell32" if="windows" />
-            <lib name="-lwinmm" if="windows" />
+            <!-- Windows. The flag syntax follows the toolchain, not the platform:
+                 hxcpp defines `windows` for an MSVC build as well, and passing
+                 -lopengl32 to link.exe gets "unrecognized option '/lopengl32'". -->
+            <section if="windows">
+                <section if="mingw">
+                    <lib name="${WGRENDER}/build/windows/libwgrender.a" />
+                    <lib name="-static" />
+                    <lib name="-lopengl32" />
+                    <lib name="-lgdi32" />
+                    <lib name="-luser32" />
+                    <lib name="-lkernel32" />
+                    <lib name="-lole32" />
+                    <lib name="-lshell32" />
+                    <lib name="-lwinmm" />
+                </section>
+                <section unless="mingw">
+                    <error value="wgrender has no MSVC build. Its Makefile cross-compiles Windows with MinGW only, and link.exe cannot use those objects: they pull in GCC runtime symbols (__chkstk_ms, __imp__assert) that MSVC does not provide. Build with MinGW instead (-D mingw -D HXCPP_M64), or build wgrender with MSVC and point WGR_BUILD_XML at it." />
+                </section>
+            </section>
 
             <!-- macOS: OpenGL, not Metal. sokol is built with SOKOL_GLCORE here. -->
-            <flag value="-framework" if="macos" />
-            <flag value="Cocoa" if="macos" />
-            <flag value="-framework" if="macos" />
-            <flag value="QuartzCore" if="macos" />
-            <flag value="-framework" if="macos" />
-            <flag value="OpenGL" if="macos" />
-            <flag value="-framework" if="macos" />
-            <flag value="AudioToolbox" if="macos" />
+            <section if="macos">
+                <lib name="${WGRENDER}/build/desktop/libwgrender.a" />
+                <flag value="-framework" />
+                <flag value="Cocoa" />
+                <flag value="-framework" />
+                <flag value="QuartzCore" />
+                <flag value="-framework" />
+                <flag value="OpenGL" />
+                <flag value="-framework" />
+                <flag value="AudioToolbox" />
+            </section>
         </section>
     </target>
 </xml>
