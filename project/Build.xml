@@ -38,29 +38,66 @@
     <target id="haxe">
         <files id="wgrguest" />
 
-        <lib name="${WGRENDER}/build/desktop/libwgrender.a" unless="emscripten" />
+        <!-- Library path and link flags per platform, taken from wgrender's own
+             examples/Makefile (LDLIBS_PLATFORM, and BUILD_DESKTOP for the path).
+             `make -C wgrender-c/examples print-ldlibs [WINDOWS=1]` prints them, which
+             is where these came from rather than from memory.
+
+             Linux is verified end to end. macOS carries the flags wgrender links its
+             own examples with and nobody has built it.
+
+             Windows does not work yet, and the reason is specific. Tried on Windows
+             11 with VS 2019 (MSVC 14.29) and hxcpp 4.3.2 against wgrender's
+             build/windows/libwgrender.a: link.exe reads the GNU ar archive and
+             resolves every one of wgrender's own symbols, then fails on six GCC
+             runtime references the MinGW objects carry, __chkstk_ms and __imp__assert
+             among them. So it is not the archive format and not name mangling; it is
+             that MinGW objects want GCC's runtime and MSVC does not supply it.
+
+             Two ways out, neither taken here: wgrender grows an MSVC build (its
+             Makefile cross-compiles Windows with MinGW only), or the consumer runs
+             hxcpp in MinGW mode so both halves come from the same toolchain.
+
+             Also note hxcpp defaults to a 32-bit build on Windows, so an x64
+             wgrender needs -D HXCPP_M64 or link.exe reports a machine type conflict
+             before it gets as far as any of the above. -->
+
         <lib name="${WGRENDER}/build/webgl2-nothreads/libwgrender.a" if="emscripten" />
 
-        <lib name="-lGL" if="linux" />
-        <lib name="-lX11" if="linux" />
-        <lib name="-lXi" if="linux" />
-        <lib name="-lXcursor" if="linux" />
-        <lib name="-lXrandr" if="linux" />
-        <lib name="-lasound" if="linux" />
-        <lib name="-ldl" if="linux" />
-        <lib name="-lm" unless="windows" />
-        <lib name="-lpthread" unless="windows" />
+        <section unless="emscripten">
+            <lib name="${WGRENDER}/build/windows/libwgrender.a" if="windows" />
+            <lib name="${WGRENDER}/build/desktop/libwgrender.a" unless="windows" />
 
-        <!-- macOS: sokol wants frameworks rather than plain libraries -->
-        <flag value="-framework" if="macos" />
-        <flag value="Cocoa" if="macos" />
-        <flag value="-framework" if="macos" />
-        <flag value="Metal" if="macos" />
-        <flag value="-framework" if="macos" />
-        <flag value="MetalKit" if="macos" />
-        <flag value="-framework" if="macos" />
-        <flag value="QuartzCore" if="macos" />
-        <flag value="-framework" if="macos" />
-        <flag value="AudioToolbox" if="macos" />
+            <!-- Linux -->
+            <lib name="-lGL" if="linux" />
+            <lib name="-lX11" if="linux" />
+            <lib name="-lXi" if="linux" />
+            <lib name="-lXcursor" if="linux" />
+            <lib name="-lXrandr" if="linux" />
+            <lib name="-lasound" if="linux" />
+            <lib name="-ldl" if="linux" />
+            <lib name="-lm" if="linux" />
+            <lib name="-lpthread" if="linux" />
+
+            <!-- Windows (MinGW) -->
+            <lib name="-static" if="windows" />
+            <lib name="-lopengl32" if="windows" />
+            <lib name="-lgdi32" if="windows" />
+            <lib name="-luser32" if="windows" />
+            <lib name="-lkernel32" if="windows" />
+            <lib name="-lole32" if="windows" />
+            <lib name="-lshell32" if="windows" />
+            <lib name="-lwinmm" if="windows" />
+
+            <!-- macOS: OpenGL, not Metal. sokol is built with SOKOL_GLCORE here. -->
+            <flag value="-framework" if="macos" />
+            <flag value="Cocoa" if="macos" />
+            <flag value="-framework" if="macos" />
+            <flag value="QuartzCore" if="macos" />
+            <flag value="-framework" if="macos" />
+            <flag value="OpenGL" if="macos" />
+            <flag value="-framework" if="macos" />
+            <flag value="AudioToolbox" if="macos" />
+        </section>
     </target>
 </xml>

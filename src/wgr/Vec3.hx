@@ -2,6 +2,16 @@ package wgr;
 
 // wgr_types.h
 
+// `of` is inline and takes the C struct, so hxcpp writes it into this class's
+// generated header -- which is not where @:include on the extern puts wgr.h. On
+// Linux the translation unit happened to have it already; MSVC said
+// "syntax error: identifier 'vec3_t'", which is the same bug either way.
+//
+// @:headerCode, not @:headerInclude: the latter is not hxcpp metadata, and Haxe
+// ignores an unknown @: without a word, so it looked applied and did nothing.
+#if cpp
+@:headerCode('#include <wgr.h>')
+#end
 @:structInit
 class Vec3 {
 	public final x:Float;
