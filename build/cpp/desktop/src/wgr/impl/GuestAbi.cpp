@@ -16,13 +16,13 @@
 #include <wgr/impl/GuestAbi.h>
 #endif
 
-HX_LOCAL_STACK_FRAME(_hx_pos_0236987f66b5779a_30_register,"wgr.impl.GuestAbi","register",0x7089917f,"wgr.impl.GuestAbi.register","wgr/impl/GuestAbi.cpp.hx",30,0xcc4e1537)
-HX_LOCAL_STACK_FRAME(_hx_pos_0236987f66b5779a_38_initOp,"wgr.impl.GuestAbi","initOp",0x0e5e106d,"wgr.impl.GuestAbi.initOp","wgr/impl/GuestAbi.cpp.hx",38,0xcc4e1537)
-HX_LOCAL_STACK_FRAME(_hx_pos_0236987f66b5779a_48_frameOp,"wgr.impl.GuestAbi","frameOp",0x00d8cf12,"wgr.impl.GuestAbi.frameOp","wgr/impl/GuestAbi.cpp.hx",48,0xcc4e1537)
-HX_LOCAL_STACK_FRAME(_hx_pos_0236987f66b5779a_58_assetOp,"wgr.impl.GuestAbi","assetOp",0xef40f795,"wgr.impl.GuestAbi.assetOp","wgr/impl/GuestAbi.cpp.hx",58,0xcc4e1537)
-HX_LOCAL_STACK_FRAME(_hx_pos_0236987f66b5779a_69_shutdownOp,"wgr.impl.GuestAbi","shutdownOp",0x2204fd73,"wgr.impl.GuestAbi.shutdownOp","wgr/impl/GuestAbi.cpp.hx",69,0xcc4e1537)
-HX_LOCAL_STACK_FRAME(_hx_pos_0236987f66b5779a_72_start,"wgr.impl.GuestAbi","start",0xd73bbfc6,"wgr.impl.GuestAbi.start","wgr/impl/GuestAbi.cpp.hx",72,0xcc4e1537)
-HX_LOCAL_STACK_FRAME(_hx_pos_0236987f66b5779a_80_autostart,"wgr.impl.GuestAbi","autostart",0x1bad0ff7,"wgr.impl.GuestAbi.autostart","wgr/impl/GuestAbi.cpp.hx",80,0xcc4e1537)
+HX_LOCAL_STACK_FRAME(_hx_pos_0236987f66b5779a_29_register,"wgr.impl.GuestAbi","register",0x7089917f,"wgr.impl.GuestAbi.register","wgr/impl/GuestAbi.cpp.hx",29,0xcc4e1537)
+HX_LOCAL_STACK_FRAME(_hx_pos_0236987f66b5779a_37_initOp,"wgr.impl.GuestAbi","initOp",0x0e5e106d,"wgr.impl.GuestAbi.initOp","wgr/impl/GuestAbi.cpp.hx",37,0xcc4e1537)
+HX_LOCAL_STACK_FRAME(_hx_pos_0236987f66b5779a_47_frameOp,"wgr.impl.GuestAbi","frameOp",0x00d8cf12,"wgr.impl.GuestAbi.frameOp","wgr/impl/GuestAbi.cpp.hx",47,0xcc4e1537)
+HX_LOCAL_STACK_FRAME(_hx_pos_0236987f66b5779a_57_assetOp,"wgr.impl.GuestAbi","assetOp",0xef40f795,"wgr.impl.GuestAbi.assetOp","wgr/impl/GuestAbi.cpp.hx",57,0xcc4e1537)
+HX_LOCAL_STACK_FRAME(_hx_pos_0236987f66b5779a_68_shutdownOp,"wgr.impl.GuestAbi","shutdownOp",0x2204fd73,"wgr.impl.GuestAbi.shutdownOp","wgr/impl/GuestAbi.cpp.hx",68,0xcc4e1537)
+HX_LOCAL_STACK_FRAME(_hx_pos_0236987f66b5779a_71_start,"wgr.impl.GuestAbi","start",0xd73bbfc6,"wgr.impl.GuestAbi.start","wgr/impl/GuestAbi.cpp.hx",71,0xcc4e1537)
+HX_LOCAL_STACK_FRAME(_hx_pos_0236987f66b5779a_79_autostart,"wgr.impl.GuestAbi","autostart",0x1bad0ff7,"wgr.impl.GuestAbi.autostart","wgr/impl/GuestAbi.cpp.hx",79,0xcc4e1537)
 namespace wgr{
 namespace impl{
 
@@ -50,115 +50,115 @@ bool GuestAbi_obj::_hx_isInstanceOf(int inClassId) {
  ::Dynamic GuestAbi_obj::onAsset;
 
 void GuestAbi_obj::_hx_register( ::Dynamic init, ::Dynamic frame, ::Dynamic asset){
-            	HX_STACKFRAME(&_hx_pos_0236987f66b5779a_30_register)
-HXLINE(  31)		::wgr::impl::GuestAbi_obj::onInit = init;
-HXLINE(  32)		::wgr::impl::GuestAbi_obj::onFrame = frame;
-HXLINE(  33)		::wgr::impl::GuestAbi_obj::onAsset = asset;
-HXLINE(  34)		::cpp::Function< int  () > _hx_tmp = ::cpp::Function< int ()>(::hx::AnyCast(&::wgr::impl::GuestAbi_obj::initOp ));
-HXDLIN(  34)		::cpp::Function< int  (float,unsigned int) > _hx_tmp1 = ::cpp::Function< int (float,unsigned int)>(::hx::AnyCast(&::wgr::impl::GuestAbi_obj::frameOp ));
-HXLINE(  35)		::cpp::Function< int  (unsigned int,const char*,int) > _hx_tmp2 = ::cpp::Function< int (unsigned int,const char*,int)>(::hx::AnyCast(&::wgr::impl::GuestAbi_obj::assetOp ));
-HXLINE(  34)		wgr_guest_register(_hx_tmp,_hx_tmp1,_hx_tmp2,::cpp::Function< int ()>(::hx::AnyCast(&::wgr::impl::GuestAbi_obj::shutdownOp )));
+            	HX_STACKFRAME(&_hx_pos_0236987f66b5779a_29_register)
+HXLINE(  30)		::wgr::impl::GuestAbi_obj::onInit = init;
+HXLINE(  31)		::wgr::impl::GuestAbi_obj::onFrame = frame;
+HXLINE(  32)		::wgr::impl::GuestAbi_obj::onAsset = asset;
+HXLINE(  33)		::cpp::Function< int  () > _hx_tmp = ::cpp::Function< int ()>(::hx::AnyCast(&::wgr::impl::GuestAbi_obj::initOp ));
+HXDLIN(  33)		::cpp::Function< int  (float,unsigned int) > _hx_tmp1 = ::cpp::Function< int (float,unsigned int)>(::hx::AnyCast(&::wgr::impl::GuestAbi_obj::frameOp ));
+HXLINE(  34)		::cpp::Function< int  (unsigned int,const char*,int) > _hx_tmp2 = ::cpp::Function< int (unsigned int,const char*,int)>(::hx::AnyCast(&::wgr::impl::GuestAbi_obj::assetOp ));
+HXLINE(  33)		wgr_guest_register(_hx_tmp,_hx_tmp1,_hx_tmp2,::cpp::Function< int ()>(::hx::AnyCast(&::wgr::impl::GuestAbi_obj::shutdownOp )));
             	}
 
 
 STATIC_HX_DEFINE_DYNAMIC_FUNC3(GuestAbi_obj,_hx_register,(void))
 
 int GuestAbi_obj::initOp(){
-            	HX_STACKFRAME(&_hx_pos_0236987f66b5779a_38_initOp)
-HXLINE(  39)		try {
+            	HX_STACKFRAME(&_hx_pos_0236987f66b5779a_37_initOp)
+HXLINE(  38)		try {
             			HX_STACK_CATCHABLE( ::Dynamic, 0);
-HXLINE(  40)			::wgr::impl::GuestAbi_obj::onInit();
+HXLINE(  39)			::wgr::impl::GuestAbi_obj::onInit();
             		} catch( ::Dynamic _hx_e) {
             			if (_hx_e.IsClass<  ::Dynamic >() ){
             				HX_STACK_BEGIN_CATCH
             				 ::Dynamic _g = _hx_e;
-HXLINE(  42)				{
-HXLINE(  42)					::String msg = (HX_("guest: uncaught exception in init: ",f3,44,6f,ab) + ::haxe::Exception_obj::caught(_g)->get_message());
-HXDLIN(  42)					 wgr_log_level_t _hx_tmp = (wgr_log_level_t)(4);
-HXDLIN(  42)					wgr_logger_message(_hx_tmp,HX_("%s",ae,20,00,00).utf8_str(),msg.utf8_str());
+HXLINE(  41)				{
+HXLINE(  41)					::String msg = (HX_("guest: uncaught exception in init: ",f3,44,6f,ab) + ::haxe::Exception_obj::caught(_g)->get_message());
+HXDLIN(  41)					 wgr_log_level_t _hx_tmp = (wgr_log_level_t)(4);
+HXDLIN(  41)					wgr_logger_message(_hx_tmp,HX_("%s",ae,20,00,00).utf8_str(),msg.utf8_str());
             				}
-HXLINE(  43)				return 1;
+HXLINE(  42)				return 1;
             			}
             			else {
             				HX_STACK_DO_THROW(_hx_e);
             			}
             		}
-HXLINE(  45)		return 0;
+HXLINE(  44)		return 0;
             	}
 
 
 STATIC_HX_DEFINE_DYNAMIC_FUNC0(GuestAbi_obj,initOp,return )
 
 int GuestAbi_obj::frameOp(float dt,unsigned int frameId){
-            	HX_STACKFRAME(&_hx_pos_0236987f66b5779a_48_frameOp)
-HXLINE(  49)		try {
+            	HX_STACKFRAME(&_hx_pos_0236987f66b5779a_47_frameOp)
+HXLINE(  48)		try {
             			HX_STACK_CATCHABLE( ::Dynamic, 0);
-HXLINE(  50)			::wgr::impl::GuestAbi_obj::onFrame(dt,frameId);
+HXLINE(  49)			::wgr::impl::GuestAbi_obj::onFrame(dt,frameId);
             		} catch( ::Dynamic _hx_e) {
             			if (_hx_e.IsClass<  ::Dynamic >() ){
             				HX_STACK_BEGIN_CATCH
             				 ::Dynamic _g = _hx_e;
-HXLINE(  52)				{
-HXLINE(  52)					::String msg = (HX_("guest: uncaught exception in frame: ",36,b2,e5,d2) + ::haxe::Exception_obj::caught(_g)->get_message());
-HXDLIN(  52)					 wgr_log_level_t _hx_tmp = (wgr_log_level_t)(4);
-HXDLIN(  52)					wgr_logger_message(_hx_tmp,HX_("%s",ae,20,00,00).utf8_str(),msg.utf8_str());
+HXLINE(  51)				{
+HXLINE(  51)					::String msg = (HX_("guest: uncaught exception in frame: ",36,b2,e5,d2) + ::haxe::Exception_obj::caught(_g)->get_message());
+HXDLIN(  51)					 wgr_log_level_t _hx_tmp = (wgr_log_level_t)(4);
+HXDLIN(  51)					wgr_logger_message(_hx_tmp,HX_("%s",ae,20,00,00).utf8_str(),msg.utf8_str());
             				}
-HXLINE(  53)				return 1;
+HXLINE(  52)				return 1;
             			}
             			else {
             				HX_STACK_DO_THROW(_hx_e);
             			}
             		}
-HXLINE(  55)		return 0;
+HXLINE(  54)		return 0;
             	}
 
 
 STATIC_HX_DEFINE_DYNAMIC_FUNC2(GuestAbi_obj,frameOp,return )
 
 int GuestAbi_obj::assetOp(unsigned int id,const char* path,int ok){
-            	HX_STACKFRAME(&_hx_pos_0236987f66b5779a_58_assetOp)
-HXLINE(  59)		try {
+            	HX_STACKFRAME(&_hx_pos_0236987f66b5779a_57_assetOp)
+HXLINE(  58)		try {
             			HX_STACK_CATCHABLE( ::Dynamic, 0);
-HXLINE(  60)			::String _hx_tmp = ::String(path);
-HXDLIN(  60)			::wgr::impl::GuestAbi_obj::onAsset(id,_hx_tmp,(ok != 0));
+HXLINE(  59)			::String _hx_tmp = ::String(path);
+HXDLIN(  59)			::wgr::impl::GuestAbi_obj::onAsset(id,_hx_tmp,(ok != 0));
             		} catch( ::Dynamic _hx_e) {
             			if (_hx_e.IsClass<  ::Dynamic >() ){
             				HX_STACK_BEGIN_CATCH
             				 ::Dynamic _g = _hx_e;
-HXLINE(  62)				{
-HXLINE(  62)					::String msg = (HX_("guest: uncaught exception in asset: ",b9,da,4d,c1) + ::haxe::Exception_obj::caught(_g)->get_message());
-HXDLIN(  62)					 wgr_log_level_t _hx_tmp1 = (wgr_log_level_t)(4);
-HXDLIN(  62)					wgr_logger_message(_hx_tmp1,HX_("%s",ae,20,00,00).utf8_str(),msg.utf8_str());
+HXLINE(  61)				{
+HXLINE(  61)					::String msg = (HX_("guest: uncaught exception in asset: ",b9,da,4d,c1) + ::haxe::Exception_obj::caught(_g)->get_message());
+HXDLIN(  61)					 wgr_log_level_t _hx_tmp1 = (wgr_log_level_t)(4);
+HXDLIN(  61)					wgr_logger_message(_hx_tmp1,HX_("%s",ae,20,00,00).utf8_str(),msg.utf8_str());
             				}
-HXLINE(  63)				return 1;
+HXLINE(  62)				return 1;
             			}
             			else {
             				HX_STACK_DO_THROW(_hx_e);
             			}
             		}
-HXLINE(  65)		return 0;
+HXLINE(  64)		return 0;
             	}
 
 
 int GuestAbi_obj::shutdownOp(){
-            	HX_STACKFRAME(&_hx_pos_0236987f66b5779a_69_shutdownOp)
-HXDLIN(  69)		return 0;
+            	HX_STACKFRAME(&_hx_pos_0236987f66b5779a_68_shutdownOp)
+HXDLIN(  68)		return 0;
             	}
 
 
 STATIC_HX_DEFINE_DYNAMIC_FUNC0(GuestAbi_obj,shutdownOp,return )
 
 void GuestAbi_obj::start(int width,int height,::String title,int flags){
-            	HX_STACKFRAME(&_hx_pos_0236987f66b5779a_72_start)
-HXDLIN(  72)		wgr_guest_start(width,height,title.utf8_str(),( (unsigned int)(flags) ));
+            	HX_STACKFRAME(&_hx_pos_0236987f66b5779a_71_start)
+HXDLIN(  71)		wgr_guest_start(width,height,title.utf8_str(),( (unsigned int)(flags) ));
             	}
 
 
 STATIC_HX_DEFINE_DYNAMIC_FUNC4(GuestAbi_obj,start,(void))
 
 void GuestAbi_obj::autostart( ::Dynamic boot){
-            	HX_STACKFRAME(&_hx_pos_0236987f66b5779a_80_autostart)
-HXDLIN(  80)		boot(null());
+            	HX_STACKFRAME(&_hx_pos_0236987f66b5779a_79_autostart)
+HXDLIN(  79)		boot(null());
             	}
 
 

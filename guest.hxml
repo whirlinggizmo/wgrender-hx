@@ -3,6 +3,7 @@
 # -cp ../simple/src is not used: the shared wgr.Wgr layer lives in src/wgr/Wgr.hx
 # here while the target guards are being proven out. See README.
 -cp src
+-lib wgrender-hx
 --main Guest
 --js out/web/guest.js
 
