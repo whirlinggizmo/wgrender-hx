@@ -11,14 +11,6 @@ import wgr.*;
 
 @:expose("WgrGuest")
 class Guest {
-	// Web: the served origin (wgrender's tools/serve.py mounts examples/assets at
-	// /assets). Desktop: build.py points this at wgrender's examples/assets.
-	#if js
-	static inline final ASSET_BASE = "/assets";
-	#else
-	static final ASSET_BASE = Defines.value("wgrAssetBase", "assets");
-	#end
-
 	static inline final DEBUG_FONT_PATH = "fonts/JetBrainsMono/JetBrainsMono-Regular.ttf";
 	static inline final KOMIKA_FONT_PATH = "fonts/Komika/KOMIKAH_.ttf";
 	static inline final MODEL_PATH = "models/gumshoe/gumshoe.glb";
@@ -86,7 +78,7 @@ class Guest {
 	// --- lifecycle ---
 
 	static function onInit():Void {
-		Asset.setHost(ASSET_BASE);
+		Asset.setHost(Assets.defaultBase());
 		Log.setLevel(Warn);
 		Wgr.setTargetFps(60);
 
