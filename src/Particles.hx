@@ -46,7 +46,7 @@ class Particles {
 		GuestAbi.attach(host);
 		GuestAbi.register(onInit, (dt, _) -> onFrame(dt), onAsset);
 		GuestAbi.start(SCREEN_WIDTH, SCREEN_HEIGHT, "particles (wgrender host, Haxe guest)",
-			((Msaa4x | Resizable : WindowFlag) : Int));
+			Msaa4x | Resizable);
 	}
 
 	// --- lifecycle ---
