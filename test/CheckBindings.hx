@@ -14,7 +14,7 @@ class CheckBindings {
 		trace(Wgr.getPlatform(), Wgr.run());
 
 		Log.setLevel(Trace);
-		for (message in [Log.trace, Log.debug, Log.info, Log.warn, Log.error, Log.fatal])
+		for (message in [Log.verbose, Log.debug, Log.info, Log.warn, Log.error, Log.fatal])
 			message("check");
 
 		Asset.setHost("assets");
@@ -111,6 +111,70 @@ class CheckBindings {
 			camera.destroy, scene.destroy])
 			destroy();
 		font.release();
+
+		trace(Wgr.getTime());
+
+		final material = new Material(Pbr);
+		material.shading = Unlit;
+		material.doubleSided = true;
+		material.metallic = 0.5;
+		material.roughness = 0.5;
+		material.normalScale = 1;
+		material.occlusionStrength = 1;
+		material.baseColorTexture = texture;
+		material.metallicRoughnessTexture = texture;
+		material.normalTexture = texture;
+		material.occlusionTexture = texture;
+		material.emissiveTexture = texture;
+		material.setBaseColor(1, 1, 1);
+		material.setEmissive(0, 0, 0);
+		material.setAlphaMode(Blend);
+		material.setInt("i", 1);
+		material.setVec2("v2", 1, 2);
+		material.setColor("c", Color.WHITE);
+		material.setTextureSampling("base_color_texture", Repeat, Clamp, Nearest);
+		texture.setSampling(Mirror, Repeat, Linear);
+		trace(material.isNone, material.shading, material.doubleSided, material.getShader(),
+			Material.custom(Handle.NONE));
+		model.setMaterial(0, material);
+		model.setMesh(mesh);
+		material.release();
+
+		light.color = Color.WHITE;
+		light.position = new Vec3(1, 2, 3);
+		light.range = 10;
+		light.enabled = true;
+		light.castsShadows = true;
+		light.shadowDistance = 50;
+		light.shadowMapSize = 1024;
+		light.shadowStrength = 0.8;
+		light.shadowColor = Color.BLACK;
+		light.setSpotCone(0.2, 0.4);
+		light.setShadowBias(0.002, 2);
+		trace(light.enabled, light.castsShadows, ([Pbr, Unlit, Custom] : Array<MaterialShading>),
+			([Repeat, Clamp, Mirror] : Array<TextureWrap>), ([Linear, Nearest] : Array<TextureFilter>));
+
+		Render.beginMode3D();
+		Shape3D.drawGrid(8, 1, Color.DARKGRAY);
+		Shape3D.drawLine(new Vec3(0, 0, 0), new Vec3(1, 1, 1), Color.LIME);
+		Shape3D.drawCube(new Vec3(0, 0, 0), new Vec3(1, 2, 3), Color.SKYBLUE);
+		Shape3D.drawCubeWires(new Vec3(0, 0, 0), new Vec3(1, 2, 3), Color.WHITE);
+		Shape3D.drawSphere(new Vec3(0, 1, 0), 0.5, Color.GOLD);
+		Shape3D.drawRectangle(new Vec3(0, 0, 0), 2, 1, Color.RED);
+		Shape3D.drawRectangle(new Vec3(0, 0, 0), 2, 1, Color.RED, new Vec3(0, Math.PI, 0));
+		Shape3D.drawCircle(new Vec3(0, 0, 0), 1, Color.VIOLET);
+		Shape3D.drawCircle(new Vec3(0, 0, 0), 1, Color.VIOLET, new Vec3(0, Math.PI, 0));
+		Render.endMode3D();
+
+		Shape2D.drawRectangle(0, 0, 10, 10, Color.SKYBLUE);
+		Shape2D.drawRectangleLines(0, 0, 10, 10, Color.LIME);
+		Shape2D.drawLine(new Vec2(0, 0), new Vec2(10, 10), Color.WHITE);
+		Shape2D.drawCircle(new Vec2(5, 5), 4, Color.GOLD);
+		Shape2D.drawCircleLines(new Vec2(5, 5), 4, Color.VIOLET);
+		Shape2D.drawTriangle(new Vec2(0, 0), new Vec2(10, 0), new Vec2(5, 8), Color.RED);
+		Shape2D.drawRoundedRectangle(0, 0, 20, 10, 3, Color.SKYBLUE);
+		Shape2D.drawRoundedRectangleCorners(0, 0, 20, 10, 1, 2, 3, 4, Color.GOLD);
+		Shape2D.drawBorder(0, 0, 20, 10, 1, 1, 1, 1, 2, 2, 2, 2, Color.LIGHTGRAY);
 
 		Render.begin();
 		Render.clearBackground(Color.BLACK);

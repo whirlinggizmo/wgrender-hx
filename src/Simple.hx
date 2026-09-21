@@ -24,14 +24,14 @@ class Simple {
 
 	static var elapsed = 0.0;
 	static var countdownTimer = 0.0;
-	static var debugFont:Font = Handle.NONE;
+	static var debugFont:Font;
 	static var greyAlpha:Color = Color.BLACK;
-	static var komikaFont:Font = Handle.NONE;
-	static var sprite:Sprite3D = Handle.NONE;
-	static var model:Model = Handle.NONE;
-	static var bgm:Sound = Handle.NONE;
-	static var camera:Camera3D = Handle.NONE;
-	static var scene:Scene = Handle.NONE;
+	static var komikaFont:Font;
+	static var sprite:Sprite3D;
+	static var model:Model;
+	static var bgm:Sound;
+	static var camera:Camera3D;
+	static var scene:Scene;
 	static var backgroundColor:Color = Color.RAYWHITE;
 	static var message = "";
 	static var platformText = "";
