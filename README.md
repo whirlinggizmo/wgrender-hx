@@ -134,10 +134,15 @@ Working on the binding itself instead:
 haxelib dev wgrender-hx /path/to/wgrender-hx
 ```
 
-and pass `-D WGR_BUILD_XML=<file>`, an hxcpp build-tool XML naming whichever wgrender
-you are working against. That define is also the switch: set, it wins; unset, the
-vendored one is used. `tools/guestbuild.py` generates one, and every example goes
-through it.
+and pass `-D WGRENDER_DIR=<path>` to build against a wgrender of your own rather than
+the vendored one. That is the only difference between a checkout's build and an
+install's: both go through `project/Build.xml`, which compiles wgrender with the same
+toolchain as your program, so a checkout is not exercising a path nobody else runs.
+
+`-D WGR_BUILD_XML=<file>` still exists for a build that needs more than a path — it
+names an hxcpp build-tool XML outright, and wins over everything above. `test/check.py`
+uses it, because the checks link a *headless* wgrender (`SOKOL_DUMMY_BACKEND`), which
+is a different build rather than a different directory.
 
 ### The examples
 

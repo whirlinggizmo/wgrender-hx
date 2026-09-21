@@ -31,7 +31,11 @@
 <xml>
     <pragma once="true" />
 
-    <set name="WGRENDER" value="${haxelib:wgrender-hx}/project/lib/wgrender-c" />
+    <!-- Which wgrender. -D WGRENDER_DIR names one; without it, the submodule that
+         came with this library. That define is the whole of what a build has to say,
+         which is why the examples no longer generate a build file of their own. -->
+    <set name="WGRENDER" value="${WGRENDER_DIR}" if="WGRENDER_DIR" />
+    <set name="WGRENDER" value="${haxelib:wgrender-hx}/project/lib/wgrender-c" unless="WGRENDER_DIR" />
     <set name="WGRHX" value="${haxelib:wgrender-hx}" />
 
     <include name="${haxelib:wgrender-hx}/project/wgrender.xml" />
