@@ -11,32 +11,28 @@
     <pragma once="true" />
 
     <files id="wgrender">
-        <compilerflag value="-I${WGRENDER}/include" unless="msvc" />
-        <compilerflag value="/I${WGRENDER}/include" if="msvc" />
-        <compilerflag value="-I${WGRENDER}/src" unless="msvc" />
-        <compilerflag value="/I${WGRENDER}/src" if="msvc" />
-        <compilerflag value="-I${WGRENDER}/deps/sokol" unless="msvc" />
-        <compilerflag value="/I${WGRENDER}/deps/sokol" if="msvc" />
-        <compilerflag value="-I${WGRENDER}/deps/sokol_utils" unless="msvc" />
-        <compilerflag value="/I${WGRENDER}/deps/sokol_utils" if="msvc" />
-        <compilerflag value="-I${WGRENDER}/deps/stb" unless="msvc" />
-        <compilerflag value="/I${WGRENDER}/deps/stb" if="msvc" />
-        <compilerflag value="-I${WGRENDER}/deps/fontstash" unless="msvc" />
-        <compilerflag value="/I${WGRENDER}/deps/fontstash" if="msvc" />
-        <compilerflag value="-I${WGRENDER}/deps/dr" unless="msvc" />
-        <compilerflag value="/I${WGRENDER}/deps/dr" if="msvc" />
-        <compilerflag value="-I${WGRENDER}/deps/cgltf" unless="msvc" />
-        <compilerflag value="/I${WGRENDER}/deps/cgltf" if="msvc" />
+        <compilerflag value="-I${WGRENDER}/include" />
+        <compilerflag value="-I${WGRENDER}/src" />
+        <compilerflag value="-I${WGRENDER}/deps/sokol" />
+        <compilerflag value="-I${WGRENDER}/deps/sokol_utils" />
+        <compilerflag value="-I${WGRENDER}/deps/stb" />
+        <compilerflag value="-I${WGRENDER}/deps/fontstash" />
+        <compilerflag value="-I${WGRENDER}/deps/dr" />
+        <compilerflag value="-I${WGRENDER}/deps/cgltf" />
 
-        <!-- sokol's backend. GLCORE everywhere wgrender builds natively; its Makefile
-             picks the same one for Linux and Windows. -->
-        <compilerflag value="-DSOKOL_GLCORE" unless="msvc" />
-        <compilerflag value="/DSOKOL_GLCORE" if="msvc" />
-        <compilerflag value="-std=gnu11" if="gcc" />
+        <!-- One flag syntax for every compiler: cl.exe takes -D and -I as readily
+             as /D and /I, so the two-branch version this used to have was only a way
+             to get it wrong. hxcpp sets toolchain=msvc rather than a bare `msvc`
+             define, so `if="msvc"` was never true and the MSVC half never fired --
+             which is how /D_USE_MATH_DEFINES went missing while looking present.
 
-        <!-- M_PI is POSIX, not C. MSVC defines it in math.h only when this is set
-             first, which a command-line define is exactly the right way to do. -->
-        <compilerflag value="/D_USE_MATH_DEFINES" if="msvc" />
+             sokol's backend: GLCORE everywhere wgrender builds natively, which is
+             what its own Makefile picks for both Linux and Windows.
+
+             M_PI is POSIX rather than C, and MSVC defines it in math.h only when
+             _USE_MATH_DEFINES is set before that include. A command-line define is. -->
+        <compilerflag value="-DSOKOL_GLCORE" />
+        <compilerflag value="-D_USE_MATH_DEFINES" />
 
         <file name="${WGRENDER}/src/wgr.c" />
         <file name="${WGRENDER}/src/wgr_asset.c" />

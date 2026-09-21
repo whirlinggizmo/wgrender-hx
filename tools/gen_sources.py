@@ -42,8 +42,7 @@ def vendored(makefile):
 def build(sources, deps):
     includes = ['include', 'src'] + [f'deps/{d}' for d in deps]
     isystem = '\n'.join(
-        f'        <compilerflag value="-I${{WGRENDER}}/{i}" unless="msvc" />\n'
-        f'        <compilerflag value="/I${{WGRENDER}}/{i}" if="msvc" />' for i in includes)
+        f'        <compilerflag value="-I${{WGRENDER}}/{i}" />' for i in includes)
     files = '\n'.join(f'        <file name="${{WGRENDER}}/src/{s}" />' for s in sources)
     return f'''<?xml version="1.0" encoding="UTF-8"?>
 <!--
@@ -60,15 +59,19 @@ def build(sources, deps):
     <files id="wgrender">
 {isystem}
 
-        <!-- sokol's backend. GLCORE everywhere wgrender builds natively; its Makefile
-             picks the same one for Linux and Windows. -->
-        <compilerflag value="-DSOKOL_GLCORE" unless="msvc" />
-        <compilerflag value="/DSOKOL_GLCORE" if="msvc" />
-        <compilerflag value="-std=gnu11" if="gcc" />
+        <!-- One flag syntax for every compiler: cl.exe takes -D and -I as readily
+             as /D and /I, so the two-branch version this used to have was only a way
+             to get it wrong. hxcpp sets toolchain=msvc rather than a bare `msvc`
+             define, so `if="msvc"` was never true and the MSVC half never fired --
+             which is how /D_USE_MATH_DEFINES went missing while looking present.
 
-        <!-- M_PI is POSIX, not C. MSVC defines it in math.h only when this is set
-             first, which a command-line define is exactly the right way to do. -->
-        <compilerflag value="/D_USE_MATH_DEFINES" if="msvc" />
+             sokol's backend: GLCORE everywhere wgrender builds natively, which is
+             what its own Makefile picks for both Linux and Windows.
+
+             M_PI is POSIX rather than C, and MSVC defines it in math.h only when
+             _USE_MATH_DEFINES is set before that include. A command-line define is. -->
+        <compilerflag value="-DSOKOL_GLCORE" />
+        <compilerflag value="-D_USE_MATH_DEFINES" />
 
 {files}
     </files>
