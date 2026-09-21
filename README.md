@@ -116,14 +116,14 @@ examples:
 
 | | |
 |---|---|
-| need nothing more | `font`, `hello`, `model`, `particles`, `simple` |
-| within five wrappers | `hello3d`, `quit`, `tick`, `audio`, `force_fetch`, `instancing`, `environment`, `gamepad`, `materials`, `render_target`, `scene3d`, `sprite3d`, `textures` |
-| six to ten | `fetch`, `meshes`, `pick`, `lights`, `loading` |
-| more | `shadows`, `sprite2d`, `2d`, `touch`, `clay`, `postprocess`, `text3d`, `window`, `ui`, `shaders` |
+| need nothing more | `font`, `hello`, `materials`, `model`, `particles`, `quit`, `scene3d`, `simple`, `tick` |
+| within five wrappers | `hello3d`, `sprite3d`, `text3d`, `audio`, `force_fetch`, `instancing`, `pick`, `lights`, `environment`, `gamepad`, `render_target`, `textures` |
+| six to ten | `fetch`, `meshes`, `shadows`, `postprocess`, `loading` |
+| more | `sprite2d`, `2d`, `touch`, `ui`, `clay`, `window`, `shaders` |
 
 `tools/coverage.py` prints that, keeps it current, and ranks what to wrap next by how
-many examples it unblocks — today `shape3d` (9), `sprite2d` (6), then `mesh`, `scene`,
-`texture` and `sprite3d` (5 each).
+many examples it unblocks — today `sprite2d` (6), then `sprite3d`, `mesh`, `scene` and
+`texture` (5 each).
 
 It also holds the list of things deliberately *not* reached on js — twelve calls that
 take a C function pointer or a `void *`, plus `wgr_input_get_keyboard_state`, whose
