@@ -349,7 +349,9 @@ class CheckBindings {
 	}
 
 	public static function main():Void {
-		Wgr.initValues(WIDTH, HEIGHT, "check", Msaa4x | Resizable);
+		final rc = Wgr.initValues(WIDTH, HEIGHT, "check", Msaa4x | Resizable);
+		check(rc != Wgr.ERR_VERSION_MISMATCH, "initValues guards the version like the guest ABI does");
+		check(rc == 0, "initValues succeeded");
 		Wgr.setInit(onInit);
 		Wgr.setFrame(onFrame);
 		Wgr.run();
