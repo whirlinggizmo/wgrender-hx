@@ -27,11 +27,20 @@ class CheckBindings {
 	/** Deliberately never assigned: a field needs no initialiser (a local does). **/
 	static var neverSet:Model;
 
+	/** The assertions are target-neutral so js can type-check them; only `main` isn't. **/
+	static function say(line:String):Void {
+		#if sys
+		Sys.println(line);
+		#else
+		js.Browser.console.log(line);
+		#end
+	}
+
 	static function check(ok:Bool, what:String, ?pos:haxe.PosInfos):Void {
 		checks++;
 		if (!ok) {
 			failures++;
-			Sys.println('FAIL ${pos.fileName}:${pos.lineNumber}  $what');
+			say('FAIL ${pos.fileName}:${pos.lineNumber}  $what');
 		}
 	}
 
@@ -39,7 +48,7 @@ class CheckBindings {
 		checks++;
 		if (actual != expected) {
 			failures++;
-			Sys.println('FAIL ${pos.fileName}:${pos.lineNumber}  $what: got $actual, expected $expected');
+			say('FAIL ${pos.fileName}:${pos.lineNumber}  $what: got $actual, expected $expected');
 		}
 	}
 
@@ -47,7 +56,7 @@ class CheckBindings {
 		checks++;
 		if (Math.abs(actual - expected) > 0.001) {
 			failures++;
-			Sys.println('FAIL ${pos.fileName}:${pos.lineNumber}  $what: got $actual, expected ~$expected');
+			say('FAIL ${pos.fileName}:${pos.lineNumber}  $what: got $actual, expected ~$expected');
 		}
 	}
 
@@ -348,6 +357,172 @@ class CheckBindings {
 		camera.setView(new Vec3(0, 1, 5), new Vec3(0, 0, 0));
 	}
 
+	// --- camera, meshes, and the properties with real getters ---------------
+
+	static function checkCamera():Void {
+		final c = new Camera3D(Perspective);
+		eq(c.projection, Projection.Perspective, "projection reads back as the enum, not an int");
+		c.projection = Orthographic;
+		eq(c.projection, Projection.Orthographic, "projection round-trips");
+
+		c.fov = 1.0;
+		near(c.fov, 1.0, "fov round-trips");
+		c.orthoHeight = 4;
+		near(c.orthoHeight, 4, "orthoHeight round-trips");
+
+		check(c.setActive(), "setActive succeeded");
+		eq((Camera3D.active : Int), (c : Int), "the active camera is the one just set");
+		check(!Camera3D.defaultCamera.isNone, "there is a default camera");
+
+		// put the scene's camera back: later checks draw through it
+		check(camera.setActive(), "the check camera is active again");
+		c.destroy();
+	}
+
+	static function checkMeshes():Void {
+		// generated geometry: no file, so these work in headless
+		final cube = Mesh.cube(1, 1, 1);
+		check(!cube.isNone, "a generated cube mesh exists");
+		eq(cube.materialCount, 1, "a generated mesh has one material slot");
+		check(!cube.getMaterial(0).isNone, "that slot has a material");
+
+		// deduplicated: the same parameters give the same resource
+		final again = Mesh.cube(1, 1, 1);
+		eq((again : Int), (cube : Int), "the same parameters return the same mesh");
+		again.release();
+
+		check(!Mesh.plane(2, 2, 4).isNone, "a generated plane exists");
+		check(!Mesh.sphere(1, 8, 16).isNone, "a generated sphere exists");
+		check(!Mesh.cylinder(1, 2, 12).isNone, "a generated cylinder exists");
+		check(!Mesh.cone(1, 2, 12).isNone, "a generated cone exists");
+		check(!Mesh.capsule(0.5, 2, 4, 12).isNone, "a generated capsule exists");
+		check(!Mesh.torus(1, 0.25, 8, 16).isNone, "a generated torus exists");
+		check(Mesh.cube(0, 1, 1).isNone, "a size of 0 is refused, not silently accepted");
+
+		final m = new Model(cube);
+		check(m.isReady, "a model on a generated mesh is ready at once");
+		eq(m.animationCount, 0, "a generated mesh brings no animations");
+		near(m.getAnimationDuration(0), 0, "no animation has no duration");
+
+		// the boolean properties all default on, and all round-trip
+		check(m.visible && m.pickable && m.enabled && m.castsShadow && m.receivesShadow,
+			"a new model is visible, pickable, enabled and shadowed both ways");
+		m.visible = false;
+		m.pickable = false;
+		m.enabled = false;
+		m.castsShadow = false;
+		m.receivesShadow = false;
+		check(!m.visible && !m.pickable && !m.enabled && !m.castsShadow && !m.receivesShadow,
+			"every model flag round-trips false");
+		m.visible = true;
+
+		// the header's promise: a time set before the mesh arrives applies once it does,
+		// so it is remembered rather than dropped when there is nothing to pose yet
+		m.animationTime = 0.5;
+		near(m.animationTime, 0.5, "animationTime is kept with no animation to pose yet");
+
+		// an override changes what this model draws, not what the mesh holds
+		final mesh0 = cube.getMaterial(0);
+		final custom = new Material(Unlit);
+		check(m.setMaterial(0, custom), "a material override is set");
+		eq((m.getMaterial(0) : Int), (custom : Int), "the model draws the override");
+		eq((cube.getMaterial(0) : Int), (mesh0 : Int), "the mesh's own slot is untouched");
+		custom.release();
+		m.destroy();
+		cube.release();
+	}
+
+	static function checkSprite3D():Void {
+		final texture = Texture.create("no/such.png");
+		final s = new Sprite3D(texture);
+
+		s.setTransform(new Vec3(1, 2, 3), new Vec3(0, 0.5, 0), new Vec3(2, 2, 2));
+		final p = s.position;
+		near(p.x, 1, "sprite3d position x reads back");
+		near(p.y, 2, "sprite3d position y reads back");
+		near(p.z, 3, "sprite3d position z reads back — the vec3 is not transposed");
+		near(s.rotation.y, 0.5, "sprite3d rotation reads back in radians");
+		near(s.scale.x, 2, "sprite3d scale reads back");
+
+		check(s.visible && s.pickable && s.enabled, "a new sprite3d is visible, pickable, enabled");
+		s.visible = false;
+		s.pickable = false;
+		s.enabled = false;
+		check(!s.visible && !s.pickable && !s.enabled, "every sprite3d flag round-trips false");
+		s.visible = true;
+
+		eq(s.alphaMode, AlphaMode.Blend, "a sprite3d blends by default");
+		check(s.setAlphaMode(Mask, 0.5), "alpha mode set to masked");
+		eq(s.alphaMode, AlphaMode.Mask, "alpha mode reads back as the enum");
+
+		s.size = 2;
+		check(s.setExtent(3, 1), "a rectangular extent is accepted");
+		check(!s.setExtent(0, 1), "a zero extent is refused");
+		check(s.setSource(0, 0, 16, 16), "a source region is accepted");
+		// a fraction of the quad, not pixels: (0.5, 1) is the bottom edge
+		check(s.setPivot(0.5, 1), "a pivot is a fraction of the quad");
+		check(s.setPickAlphaTest(true, 0.5), "pick alpha test enabled");
+
+		check(s.getMaterial().isNone, "a new sprite3d is on the built-in shader");
+		final custom = new Material(Unlit);
+		check(s.setMaterial(custom), "a sprite3d takes a material");
+		eq((s.getMaterial() : Int), (custom : Int), "and reads it back");
+		custom.release();
+
+		check(s.setTexture(Texture.defaultTexture), "a sprite3d's texture can be swapped");
+		s.destroy();
+		texture.release();
+	}
+
+	static function checkSceneState():Void {
+		final s = new Scene();
+		final m = new Model(Mesh.cube(1, 1, 1));
+
+		check(s.culling, "a new scene culls");
+		s.culling = false;
+		check(!s.culling, "culling round-trips");
+		s.culling = true;
+
+		check(!s.interactive, "a new scene is not interactive");
+		s.interactive = true;
+		check(s.interactive, "interactive round-trips");
+
+		check(s.add(m, 2), "a member goes onto a layer");
+		check(s.setLayer(m, 3), "and moves to another");
+		check(s.setClip(3, 0, 0, 100, 100), "a layer clips to a rectangle");
+		check(s.setClip(3, 0, 0, 0, 0), "a zero rectangle removes the clip");
+
+		// nothing is under a pointer that never moved
+		check(s.hovered.isNone, "nothing is hovered in headless");
+		eq(s.getHover(m), ButtonState.Up, "hover is up");
+		eq(s.getPress(m), ButtonState.Up, "press is up");
+		check(!s.isClicked(m), "nothing is clicked");
+
+		check(s.setTonemap(Aces, 1), "a tonemap and exposure are set");
+		final missing = Environment.create("no/such.hdr");
+		check(missing.isNone, "a missing environment does not load");
+		check(s.setEnvironment(Handle.NONE), "a none environment removes it");
+		check(s.setBackground(Handle.NONE), "a none background removes it");
+
+		check(s.remove(m), "a member comes out");
+		check(!s.remove(m), "and cannot come out twice");
+		s.clear();
+		m.destroy();
+		s.destroy();
+	}
+
+	static function checkTexture():Void {
+		check(!Texture.defaultTexture.isNone, "there is a default texture");
+		check(!Texture.placeholder.isNone, "there is a placeholder texture");
+
+		final target = Texture.createTarget(64, 32);
+		check(!target.isNone, "a render target is created");
+		final size = target.size;
+		near(size.x, 64, "the target's width reads back");
+		near(size.y, 32, "the target's height reads back — the vec2 is not transposed");
+		target.release();
+	}
+
 	// --- lifecycle ----------------------------------------------------------
 
 	static function onInit():Void {
@@ -363,6 +538,11 @@ class CheckBindings {
 		checkEmitters();
 		checkScene();
 		checkShapes();
+		checkCamera();
+		checkTexture();
+		checkMeshes();
+		checkSprite3D();
+		checkSceneState();
 	}
 
 	static function onFrame(dt:Float, tickFraction:Float):Void {
@@ -373,6 +553,18 @@ class CheckBindings {
 			check(Wgr.getTime() >= 0, "getTime inside a frame");
 			eq(Input.getKey(Escape), ButtonState.Up, "no key is down in headless");
 			check(!Input.isKeyPressed(Space), "no key was pressed");
+
+			// the keyboard as a whole. On js this is a heap view, which is why it is
+			// read inside a frame and not held: the op edge resets the stack it sits on.
+			final keyboard = Input.getKeyboardState();
+			eq(keyboard[Key.Escape], ButtonState.Up, "the whole keyboard agrees: escape is up");
+			eq(keyboard[Key.Space], ButtonState.Up, "and space is up");
+			check(!keyboard.isDown(Key.A) && !keyboard.isPressed(Key.A) && !keyboard.isReleased(Key.A),
+				"a key nothing touched is in no state at all");
+			eq(keyboard.numPressedKeys, 0, "no key arrived this frame");
+			eq(keyboard.numPressedChars, 0, "no character arrived this frame");
+			eq(keyboard.pressedChar, 0, "so there is no last character");
+			eq(keyboard.typedText(), "", "and no text to append");
 		}
 		Render.begin();
 		Render.clearBackground(Color.RAYWHITE);
@@ -400,6 +592,14 @@ class CheckBindings {
 		Render.end();
 	}
 
+	#if !sys
+	/**
+		js has no host loop to drive — the guest ABI replaces it — so this entry exists
+		only so `./build.py check` can type-check every assertion above against the js
+		binding. A wrapper that compiles on hxcpp but not js fails here, not in an example.
+	**/
+	public static function main():Void {}
+	#else
 	public static function main():Void {
 		final rc = Wgr.initValues(WIDTH, HEIGHT, "check", Msaa4x | Resizable);
 		check(rc != Wgr.ERR_VERSION_MISMATCH, "initValues guards the version like the guest ABI does");
@@ -409,7 +609,8 @@ class CheckBindings {
 		Wgr.run();
 
 		check(frames > 0, "the loop ran at least one frame");
-		Sys.println('${checks - failures}/$checks checks passed over $frames frames');
+		say('${checks - failures}/$checks checks passed over $frames frames');
 		Sys.exit(failures == 0 ? 0 : 1);
 	}
+	#end
 }

@@ -194,6 +194,13 @@ def check():
     link.symlink_to(WGRENDER / 'examples/assets')
     run([binary], env={**os.environ, 'WGR_HEADLESS_FRAMES': '5'})
 
+    # The same assertions, typed against the js binding. There is no host loop to run
+    # them on js, but a wrapper that exists only on hxcpp — or takes different types
+    # there — fails here rather than in an example nobody built yet.
+    print('type-check (js)')
+    run([HAXE, '-cp', 'src', '-lib', 'wgrender-hx', '-cp', 'test', '--main', 'CheckBindings',
+         '--js', build / 'check-js.js', '-D', 'js-es=6'])
+
 
 def measure(directory):
     out = {}
