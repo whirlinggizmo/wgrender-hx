@@ -51,13 +51,19 @@ def make(*args):
 
 
 def wgr_api():
-    """The wgrender calls the guest may make, from the hxcpp port's extern list."""
-    raw = (LIB / 'src/wgr/impl/Raw.cpp.hx').read_text()
-    # `_t` is a type in wgrender's naming (AGENTS.md), not something to export
-    names = sorted(n for n in set(re.findall(r'@:native\("(wgr_[a-z0-9_]+)"\)', raw))
-                   if not n.endswith('_t'))
+    """What to export from the host: exactly the calls the built guest makes.
+
+    The binding declares wgrender's whole API, so exporting all of it would keep every
+    subsystem alive in the wasm — Emscripten cannot strip what is exported. Reading the
+    compiled guest instead lets the unused ones go (75 KB, measured), and needs no list
+    to maintain. The guest is built first for this reason.
+    """
+    guest = SITE / 'particles.js'
+    if not guest.exists():
+        sys.exit('build the guest first: ./build.py guest (or ./build.py all)')
+    names = sorted(set(re.findall(r'\b_(wgr_[a-z0-9_]+)\b', guest.read_text())))
     if not names:
-        sys.exit(f'no @:native("wgr_*") found in {LIB}/src/wgr/impl/Raw.cpp.hx')
+        sys.exit(f'{guest}: no _wgr_* calls found — did the guest compile?')
     return names
 
 
@@ -175,8 +181,8 @@ def main():
     elif command == 'desktop':
         build_desktop()
     elif command == 'all':
+        build_guest()   # first: the host exports exactly what this calls
         build_host()
-        build_guest()
         build_desktop()
     elif command == 'sizes':
         sizes()
