@@ -29,10 +29,10 @@ class Input {
 	public static inline function isKeyReleased(key:Key):Bool
 		return getKey(key) == Released;
 
-	// Raw.js.hx does not marshal the 512-int keyboard struct yet.
-	#if cpp
-	/** For one key, `getKey` / `isKeyPressed` are simpler. **/
+	/**
+		The whole keyboard at once. For one key, `getKey` / `isKeyPressed` are simpler.
+		On js the result is a heap view good only for this frame — see `KeyboardState`.
+	**/
 	public static inline function getKeyboardState():KeyboardState
 		return Raw.wgr_input_get_keyboard_state();
-	#end
 }

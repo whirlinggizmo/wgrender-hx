@@ -16,11 +16,13 @@ stale without regenerating it. The digest is what actually decides: a header edi
 changes it whether or not anything was committed.
 
 It reads `include/*.h` for functions, enums and structs, and needs help for exactly
-three things, all declared in SPEC below rather than edited into the output:
+four things, all declared in SPEC below rather than edited into the output:
 
   callbacks   a C function-pointer parameter has no shape the parser can infer
   values      a struct returned by value maps to a Haxe class in the public layer,
               whose constructor is expected to take the C fields in order
+  opaque      a struct too big to copy per frame; JS gets a heap pointer and a
+              generated table of field offsets to read it with
   skips       varargs, and anything else with no sane rendering
 
 Everything else is mechanical. Functions whose types it cannot map are left out and
@@ -122,6 +124,9 @@ def read_headers():
     if not text:
         sys.exit(f'no headers under {WGRENDER}/include')
     everything = '\n'.join(text.values())
+    # `int keys[WGR_KEYBOARD_MAX_KEYS]` — resolve the bound so the layout is truthful.
+    defines = {m.group(1): int(m.group(2))
+               for m in re.finditer(r'^#define\s+(WGR_\w+)\s+(\d+)\s*$', everything, re.M)}
     enums = set(re.findall(r'\}\s*(wgr_\w+_t)\s*;', everything)) - set(re.findall(r'typedef struct[^{]*\{[^}]*\}\s*(\w+)\s*;', everything, re.S))
     structs = {}
     for m in re.finditer(r'typedef struct[^{]*\{(.*?)\}\s*(\w+)\s*;', everything, re.S):
@@ -143,9 +148,11 @@ def read_headers():
                 if not dm:
                     continue
                 bound = dm.group(2)
-                # `int keys[WGR_MAX_KEYS]` — a macro bound is still an array, just one
-                # whose size we can't compute, which is fine for a struct we only pass.
-                count = int(bound) if bound and bound.isdigit() else (-1 if bound else 0)
+                count = (0 if not bound else int(bound) if bound.isdigit()
+                         else defines.get(bound, -1))
+                if count == -1:
+                    sys.exit(f'{name}.{dm.group(1)}: array bound {bound} is not a '
+                             f'#define this can resolve')
                 fields.append((ctype, dm.group(1), count))
         if fields:
             structs[name] = fields
@@ -239,6 +246,40 @@ def hx(ctype, enums, side):
     return None
 
 
+def layout_name(ctype):
+    """The JS-side offsets class for an opaque struct: wgr_keyboard_state_t -> KeyboardStateLayout."""
+    return ''.join(p.title() for p in ctype.replace('wgr_', '').removesuffix('_t').split('_')) + 'Layout'
+
+
+def camel(name):
+    head, *rest = name.split('_')
+    return head + ''.join(p.title() for p in rest)
+
+
+def emit_layouts(structs, opaque_used):
+    """Field offsets for the structs JS reads in place, so no one hand-counts them."""
+    out = []
+    for ctype in sorted(opaque_used):
+        fields, size = layout(structs, ctype)
+        lines = [f'/**',
+                 f'\tWhere `{ctype}`\'s fields sit, in ints from the pointer. Offsets are',
+                 f'\tgenerated from the header, so a layout change moves them rather than',
+                 f'\tsilently misreading. An array field gives the index of its first element.',
+                 f'**/',
+                 f'class {layout_name(ctype)} {{',
+                 f'\tpublic static inline var BYTES = {size};']
+        for field, fctype, at, count in fields:
+            assert at % 4 == 0 and SCALARS[fctype][2] == 4, f'{ctype}.{field} is not 4-byte'
+            lines.append(f'\tpublic static inline var {camel(field)}'
+                         f' = {at // 4};' + (f' // [{count}]' if count else ''))
+        lines += ['',
+                  '\tpublic static inline function read(pointer:Int, index:Int):Int',
+                  '\t\treturn (Raw.host.HEAP32 : Array<Int>)[(pointer >> 2) + index];',
+                  '}']
+        out.append('\n'.join(lines))
+    return out
+
+
 def emit_cpp(enums, structs, functions):
     used_enums, used_values, used_callbacks, body, skipped = set(), set(), set(), [], []
     for header, ret, name, params in functions:
@@ -297,7 +338,7 @@ def emit_cpp(enums, structs, functions):
 
 
 def emit_js(enums, structs, functions):
-    body, skipped, values_used = [], [], set()
+    body, skipped, values_used, opaque_used = [], [], set(), set()
     for header, ret, name, params in functions:
         if name in SKIP:
             continue
@@ -307,6 +348,26 @@ def emit_js(enums, structs, functions):
         types = [ret] + [t for t, _ in args]
         if any(t in CALLBACKS for t in types):
             skipped.append((name, 'takes a C callback — the guest ABI replaces it on js'))
+            continue
+        if ret in OPAQUE:
+            if any(hx(t, enums, 'js') is None for t, _ in args):
+                continue
+            opaque_used.add(ret)
+            osig = ', '.join(f'{n}:{hx(t, enums, "js")}' for t, n in args)
+            ocall = ', '.join(f'cstr({n})' if t in ('const char *', 'char *') else n
+                              for t, n in args)
+            size = layout(structs, ret)[1]
+            body.append(
+                f'\t/**\n'
+                f'\t\tA pointer to a `{ret}` in the wasm heap — {size} bytes is too much to\n'
+                f'\t\tcopy per frame, so the public layer reads the fields it wants through\n'
+                f'\t\t`{layout_name(ret)}`. Valid until the current guest op returns, which is\n'
+                f'\t\twhen the op edge resets the stack this was taken from.\n'
+                f'\t**/\n'
+                f'\tpublic static function {name}({osig}):Int {{\n'
+                f'\t\tfinal out = scratch({size});\n'
+                f'\t\tRaw.host._{name}(out{", " if ocall else ""}{ocall});\n'
+                f'\t\treturn out;\n\t}}')
             continue
         if any(hx(t, enums, 'js') is None for t in types):
             continue
@@ -350,7 +411,7 @@ def emit_js(enums, structs, functions):
                     else f'\t\treturn {call};')
             body.append(f'\tpublic static inline function {name}({sig}):'
                         f'{"String" if ret in ("const char *", "char *") else hret}\n{line}')
-    return body, skipped, values_used
+    return body, skipped, values_used, opaque_used
 
 
 JS_PREAMBLE = '''
@@ -466,9 +527,11 @@ def main():
 
     emit_built_version()
     n_cpp, cpp_skipped = emit_cpp(enums, structs, functions)
-    js_body, js_skipped, _ = emit_js(enums, structs, functions)
+    js_body, js_skipped, _, js_opaque = emit_js(enums, structs, functions)
+    layouts = emit_layouts(structs, js_opaque)
     (OUT / 'Raw.js.hx').write_text(header_comment() + JS_PREAMBLE + '\n' + '\n\n'.join(js_body)
-                                   + '\n' + MANUAL_JS + '\n}\n')
+                                   + '\n' + MANUAL_JS + '\n}\n'
+                                   + ''.join('\n' + c + '\n' for c in layouts))
 
     print(f'  Raw.cpp.hx  {n_cpp} externs')
     print(f'  Raw.js.hx   {len(js_body)} wrappers')

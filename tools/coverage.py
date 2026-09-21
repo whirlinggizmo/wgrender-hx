@@ -43,7 +43,6 @@ OMISSIONS = {
     'wgr_event_emit': 'js: takes a void * payload',
     'wgr_asset_set_fetcher': 'js: takes a C callback',
     'wgr_asset_ping_host': 'js: takes a C callback',
-    'wgr_input_get_keyboard_state': 'js: 512 ints; wants a heap reader, not a copy per frame',
 }
 
 
