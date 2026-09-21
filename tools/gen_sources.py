@@ -73,6 +73,17 @@ def build(sources, deps):
         <compilerflag value="-DSOKOL_GLCORE" />
         <compilerflag value="-D_USE_MATH_DEFINES" />
 
+        <!-- wgrender is C11 (_Static_assert, among other things). The one flag that
+             genuinely differs: MSVC wants /std:c11, which VS 2019 16.8 added, and
+             everyone else wants -std=gnu11.
+
+             hxcpp's conditions test whether a define exists, not what it equals, and
+             it sets toolchain=msvc rather than `msvc` -- so MSVC is spelled
+             "windows and not mingw", which is true of exactly that combination. -->
+        <compilerflag value="/std:c11" if="windows" unless="mingw" />
+        <compilerflag value="-std=gnu11" unless="windows" />
+        <compilerflag value="-std=gnu11" if="mingw" />
+
 {files}
     </files>
 </xml>
