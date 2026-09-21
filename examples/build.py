@@ -33,6 +33,7 @@ build did not have.
     WGRENDER_DIR   build against a wgrender of your own
     TLS_CERT/TLS_KEY   serve https without passing --tls
 """
+import json
 import os
 import pathlib
 import subprocess
@@ -56,10 +57,11 @@ C_BUILD = WGRENDER / 'examples/build/webgl2-nothreads'
 # simple-hxcpp is the other architecture -- Haxe through hxcpp into one wasm, rather
 # than a JS guest on a wgrender host -- so it has its own commands and is not driven
 # or benched with the guests.
-GUESTS = ['hello3d', 'particles', 'simple']
+GUESTS = ['hello', 'hello3d', 'particles', 'simple']
 OTHERS = ['simple-hxcpp']
 
 WHAT = {
+    'hello': 'a window, 2D shapes, text and the mouse',
     'hello3d': 'an orbiting camera over immediate-mode 3D; loads nothing, so it is '
                'the size floor',
     'particles': 'five emitters, 2D and 3D, with a click to burst confetti',
@@ -116,27 +118,55 @@ SITE_INDEX = """<!doctype html>
   main {{ max-width: 46rem; margin: 0 auto; }}
   h1 {{ font-size: 1.3rem; font-weight: 600; margin: 0 0 .3rem; }}
   p.lede {{ color: #9a9aad; margin: 0 0 2rem; }}
-  ul {{ list-style: none; padding: 0; margin: 0 0 2.5rem; }}
-  li {{ margin: 0 0 .5rem; }}
-  a {{ color: #66bfff; text-decoration: none; display: block; padding: .7rem .9rem;
-       border: 1px solid #2a2a36; border-radius: 6px; }}
-  a:hover {{ background: #1c1c26; border-color: #3a3a4a; }}
-  a span {{ float: right; color: #6a6a7d; }}
+  form {{ display: flex; gap: .6rem; align-items: center; margin: 0 0 .6rem; }}
+  select {{ flex: 1; padding: .6rem .7rem; background: #1c1c26; color: #e8e8ef;
+           border: 1px solid #2a2a36; border-radius: 6px; font: inherit; }}
+  select:hover {{ border-color: #3a3a4a; }}
+  button {{ padding: .6rem 1.1rem; background: #66bfff; color: #14141a; border: 0;
+           border-radius: 6px; font: inherit; font-weight: 600; cursor: pointer; }}
+  button:hover {{ background: #8ccfff; }}
+  p.what {{ color: #9a9aad; margin: 0 0 2.5rem; min-height: 1.6em; }}
   table {{ border-collapse: collapse; width: 100%; font-size: 13px; }}
   th, td {{ text-align: right; padding: .35rem .6rem; border-bottom: 1px solid #23232e; }}
   th:first-child, td:first-child {{ text-align: left; }}
   th {{ color: #9a9aad; font-weight: 500; }}
   caption {{ text-align: left; color: #9a9aad; padding-bottom: .6rem; }}
+  noscript p {{ color: #ffb4b4; }}
 </style>
 <main>
 <h1>wgrender-hx examples</h1>
 <p class="lede">wgrender compiled to wasm as the host, the game compiled to JS as the
 guest. The same sources build native through hxcpp.</p>
-<ul>
-{links}
-</ul>
+
+<form onsubmit="go(event)">
+  <select id="ex" onchange="describe()" aria-label="example">
+{options}
+  </select>
+  <button type="submit">Run</button>
+</form>
+<p class="what" id="what"></p>
+
+<noscript><p>This picker needs JavaScript; the examples are at ./&lt;name&gt;/</p></noscript>
+
 {table}
 </main>
+<script>
+  const WHAT = {what};
+  const sel = document.getElementById("ex");
+  // Remember the last pick, so a reload does not send you back to the top of the
+  // list. Storage can throw in a private window, and the default is fine then.
+  try {{
+    const last = localStorage.getItem("wgrender-hx:example");
+    if (last && [...sel.options].some((o) => o.value === last)) sel.value = last;
+  }} catch (e) {{}}
+  function describe() {{ document.getElementById("what").textContent = WHAT[sel.value] || ""; }}
+  function go(event) {{
+    event.preventDefault();
+    try {{ localStorage.setItem("wgrender-hx:example", sel.value); }} catch (e) {{}}
+    location.href = "./" + sel.value + "/";
+  }}
+  describe();
+</script>
 """
 
 
@@ -152,7 +182,7 @@ def site(chosen=()):
     out = HERE / 'out/www'
     shutil.rmtree(out, ignore_errors=True)
     out.mkdir(parents=True)
-    links, built = [], []
+    options, built = [], []
     for name in wanted(GUESTS, chosen):
         src = HERE / name / 'out/web'
         if not (src / 'index.html').exists():
@@ -161,11 +191,13 @@ def site(chosen=()):
         shutil.copytree(src, out / name)
         built.append(name)
         size = sum(f.stat().st_size for f in (out / name).rglob('*') if f.is_file())
-        links.append(f'  <li><a href="./{name}/">{name}<span>{size:,} bytes</span></a></li>')
+        options.append(f'    <option value="{name}">{name} &mdash; {size:,} bytes</option>')
     if not built:
         sys.exit('nothing built: examples/build.py all')
-    (out / 'index.html').write_text(
-        SITE_INDEX.format(links='\n'.join(links), table=size_table(built)))
+    (out / 'index.html').write_text(SITE_INDEX.format(
+        options='\n'.join(options),
+        what=json.dumps({n: WHAT.get(n, '') for n in built}),
+        table=size_table(built)))
     print(f'site -> {out} ({len(built)} examples)')
     return out
 
