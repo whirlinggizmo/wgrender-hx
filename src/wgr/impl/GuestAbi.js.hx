@@ -24,6 +24,7 @@ class GuestAbi {
 
 	static var onInit:() -> Void;
 	static var onFrame:(dt:Float, frameId:Int) -> Void;
+	static var onTick:(dt:Float) -> Void;
 	static var onAsset:(id:Int, path:String, ok:Bool) -> Void;
 
 	public static function register(init:() -> Void, frame:(dt:Float, frameId:Int) -> Void,
@@ -35,6 +36,23 @@ class GuestAbi {
 			op("frame", "ifi", (dt:Float, frameId:Int) -> onFrame(dt, frameId)),
 			op("asset", "iiii", (id:Int, path:Int, ok:Int) -> onAsset(id, Raw.str(path), ok != 0)), 0);
 	}
+
+	/**
+		Fixed-rate simulation: `tick` runs 0..N times before each frame, always with
+		`dt` of 1/`hz`. Optional, and set on its own because it is the one op that
+		needs configuring. `hz` of 0 or less turns it off.
+
+		Draw in the frame op, not here, and use `tickFraction` there to interpolate
+		between the last two tick states.
+	**/
+	public static function registerTick(tick:(dt:Float) -> Void, hz:Int):Void {
+		onTick = tick;
+		Raw.host._wgr_guest_register_tick(op("tick", "if", (dt:Float) -> onTick(dt)), hz);
+	}
+
+	/** How far this frame is into the next tick, 0..1. 0 without a tick. **/
+	public static inline function tickFraction():Float
+		return Raw.host._wgr_guest_tick_fraction();
 
 	static function op(name:String, signature:String, body:Dynamic):Int {
 		return Raw.host.addFunction(Reflect.makeVarArgs(args -> {

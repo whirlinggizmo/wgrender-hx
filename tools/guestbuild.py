@@ -41,8 +41,9 @@ from wgrpath import find  # noqa: E402
 LIB = pathlib.Path(__file__).resolve().parent.parent
 
 # The guest ABI (host/wgr_guest.h) plus what Emscripten needs for marshalling.
-GUEST_ABI = ['wgr_guest_register', 'wgr_guest_set_fault_policy', 'wgr_guest_start',
-             'wgr_guest_asset_load', 'wgr_guest_frame_id', 'wgr_guest_faulted']
+GUEST_ABI = ['wgr_guest_register', 'wgr_guest_register_tick', 'wgr_guest_set_fault_policy',
+             'wgr_guest_start', 'wgr_guest_asset_load', 'wgr_guest_frame_id',
+             'wgr_guest_tick_fraction', 'wgr_guest_faulted']
 RUNTIME_METHODS = ['addFunction', 'removeFunction', 'stringToUTF8', 'lengthBytesUTF8', 'UTF8ToString',
                    'stackAlloc', 'stackSave', 'stackRestore', 'HEAP8', 'HEAPU8', 'HEAP32', 'HEAPU32', 'HEAPF32']
 

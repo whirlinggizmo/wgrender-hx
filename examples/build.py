@@ -57,7 +57,7 @@ C_BUILD = WGRENDER / 'examples/build/webgl2-nothreads'
 # simple-hxcpp is the other architecture -- Haxe through hxcpp into one wasm, rather
 # than a JS guest on a wgrender host -- so it has its own commands and is not driven
 # or benched with the guests.
-GUESTS = ['hello', 'hello3d', 'particles', 'simple']
+GUESTS = ['hello', 'hello3d', 'particles', 'simple', 'tick']
 OTHERS = ['simple-hxcpp']
 
 WHAT = {
@@ -65,6 +65,7 @@ WHAT = {
     'hello3d': 'an orbiting camera over immediate-mode 3D; loads nothing, so it is '
                'the size floor',
     'particles': 'five emitters, 2D and 3D, with a click to burst confetti',
+    'tick': 'a 10 Hz simulation against the render rate, raw and interpolated',
     'simple': 'a glTF model, a sprite, text, audio and picking',
     'simple-hxcpp': 'the same scene the other way: Haxe through hxcpp into one wasm, '
                     'for the size comparison',

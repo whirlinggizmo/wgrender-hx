@@ -20,6 +20,7 @@ class GuestAbi {
 
 	static var onInit:() -> Void;
 	static var onFrame:(dt:Float, frameId:Int) -> Void;
+	static var onTick:(dt:Float) -> Void;
 	static var onAsset:(id:Int, path:String, ok:Bool) -> Void;
 
 	public static function register(init:() -> Void, frame:(dt:Float, frameId:Int) -> Void,
@@ -29,6 +30,33 @@ class GuestAbi {
 		onAsset = asset;
 		GuestRaw.wgr_guest_register(cpp.Callable.fromStaticFunction(initOp), cpp.Callable.fromStaticFunction(frameOp),
 			cpp.Callable.fromStaticFunction(assetOp), cpp.Callable.fromStaticFunction(shutdownOp));
+	}
+
+	/**
+		Fixed-rate simulation: `tick` runs 0..N times before each frame, always with
+		`dt` of 1/`hz`. Optional, and set on its own because it is the one op that
+		needs configuring. `hz` of 0 or less turns it off.
+
+		Draw in the frame op, not here, and use `tickFraction` there to interpolate
+		between the last two tick states.
+	**/
+	public static function registerTick(tick:(dt:Float) -> Void, hz:Int):Void {
+		onTick = tick;
+		GuestRaw.wgr_guest_register_tick(cpp.Callable.fromStaticFunction(tickOp), hz);
+	}
+
+	/** How far this frame is into the next tick, 0..1. 0 without a tick. **/
+	public static inline function tickFraction():Float
+		return GuestRaw.wgr_guest_tick_fraction();
+
+	static function tickOp(dt:Single):Int {
+		try
+			onTick(dt)
+		catch (e:haxe.Exception) {
+			Log.error('guest: uncaught exception in tick: ${e.message}');
+			return 1;
+		}
+		return 0;
 	}
 
 	static function initOp():Int {

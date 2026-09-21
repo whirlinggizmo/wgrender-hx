@@ -36,6 +36,10 @@ typedef int (*wgr_guest_frame_fn)(float dt, uint32_t frame_id);
 /* `id` is the guest's own key from wgr_guest_asset_load; ok is 1 or 0. */
 typedef int (*wgr_guest_asset_fn)(uint32_t id, const char *path, int ok);
 typedef int (*wgr_guest_shutdown_fn)(void);
+/* Fixed-rate simulation, 0..N times before each frame, always with dt = 1/hz.
+ * Optional, and the only op that needs configuring, which is why it is registered on
+ * its own rather than passed to wgr_guest_register with the other four. */
+typedef int (*wgr_guest_tick_fn)(float dt);
 
 typedef enum {
     /* Log the fault and keep calling the guest: a bad frame stays a bad frame. */
@@ -49,6 +53,10 @@ void wgr_guest_register(wgr_guest_init_fn init, wgr_guest_frame_fn frame,
                         wgr_guest_asset_fn asset, wgr_guest_shutdown_fn shutdown);
 void wgr_guest_set_fault_policy(int policy); /* default: CONTINUE */
 
+/* Register the tick and its rate. hz <= 0 or a NULL fn means no tick, as
+ * wgr_set_tick has it. Call before wgr_guest_start; it takes effect there. */
+void wgr_guest_register_tick(wgr_guest_tick_fn tick, int hz);
+
 /* Open the window and run. Returns when the loop ends — at once on the web, where
  * the browser drives frames from here on. Register before calling this. */
 int wgr_guest_start(int width, int height, const char *title, uint32_t flags);
@@ -59,6 +67,10 @@ int wgr_guest_asset_load(const char *path, uint32_t id);
 
 /* Introspection, for tests and for a guest that wants to know. */
 uint32_t wgr_guest_frame_id(void);
+/* How far the current frame is into the next tick, 0..1, for drawing tick state
+ * smoothly: lerp(previous, current, fraction). 0 when there is no tick. Only
+ * meaningful inside the frame op. */
+float wgr_guest_tick_fraction(void);
 int wgr_guest_faulted(void);
 
 #ifdef __cplusplus

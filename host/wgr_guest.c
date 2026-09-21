@@ -21,10 +21,13 @@ static wgr_guest_init_fn guest_init;
 static wgr_guest_frame_fn guest_frame;
 static wgr_guest_asset_fn guest_asset;
 static wgr_guest_shutdown_fn guest_shutdown;
+static wgr_guest_tick_fn guest_tick;
+static int guest_tick_hz;
 
 static int fault_policy = WGR_GUEST_FAULT_CONTINUE;
 static int faulted;
 static uint32_t frame_id;
+static float last_tick_fraction;
 
 GUEST_EXPORT void wgr_guest_register(wgr_guest_init_fn init, wgr_guest_frame_fn frame,
                                      wgr_guest_asset_fn asset, wgr_guest_shutdown_fn shutdown)
@@ -37,6 +40,13 @@ GUEST_EXPORT void wgr_guest_register(wgr_guest_init_fn init, wgr_guest_frame_fn 
 
 GUEST_EXPORT void wgr_guest_set_fault_policy(int policy) { fault_policy = policy; }
 GUEST_EXPORT uint32_t wgr_guest_frame_id(void) { return frame_id; }
+GUEST_EXPORT float wgr_guest_tick_fraction(void) { return last_tick_fraction; }
+
+GUEST_EXPORT void wgr_guest_register_tick(wgr_guest_tick_fn tick, int hz)
+{
+    guest_tick = tick;
+    guest_tick_hz = hz;
+}
 GUEST_EXPORT int wgr_guest_faulted(void) { return faulted; }
 
 static void fault(const char *op, int code)
@@ -62,10 +72,22 @@ static void host_init(void *user)
     }
 }
 
+static void host_tick(float dt, void *user)
+{
+    (void)user;
+    if (faulted || guest_tick == NULL) {
+        return;
+    }
+    int rc = guest_tick(dt);
+    if (rc != 0) {
+        fault("tick", rc);
+    }
+}
+
 static void host_frame(float dt, float tick_fraction, void *user)
 {
-    (void)tick_fraction;
     (void)user;
+    last_tick_fraction = tick_fraction;
     frame_id++;
     if (faulted || guest_frame == NULL) {
         return;
@@ -114,6 +136,9 @@ GUEST_EXPORT int wgr_guest_start(int width, int height, const char *title, uint3
     wgr_init_values(width, height, kept_title, flags);
     wgr_set_init(host_init, NULL);
     wgr_set_frame(host_frame, NULL);
+    if (guest_tick != NULL && guest_tick_hz > 0) {
+        wgr_set_tick(host_tick, NULL, guest_tick_hz);
+    }
     return wgr_run();
 }
 
