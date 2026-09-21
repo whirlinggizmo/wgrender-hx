@@ -1,7 +1,7 @@
-# Compile-check of the whole wgr binding surface (test/CheckBindings.hx), not just the
-# part Simple.hx uses. Run ./build.py check — it needs build/desktop.hxml, which
-# ./build.py desktop writes. The result is never run.
-build/desktop.hxml
+# The binding checks (test/CheckBindings.hx), built against headless wgrender — no
+# window, GPU or audio — so they can run and assert rather than only compile.
+# Run ./build.py check; it writes build/check.hxml and runs the binary.
+build/check.hxml
 
 -cp src
 -lib wgrender-hx

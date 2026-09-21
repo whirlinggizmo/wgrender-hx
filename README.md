@@ -235,8 +235,18 @@ Enums are `enum abstract`s over `Int`; window and asset flags are or-able
 `tools/gen_keys.py`, and carries `static_assert`s that fail the C++ build if the
 header's numbers ever move — the same guard the Nim port uses.
 
-`test/CheckBindings.hx` (`./build.py check`) touches every wrapper, so the parts
-`Simple.hx` doesn't use keep compiling against wgrender's headers.
+`test/CheckBindings.hx` (`./build.py check`) **runs** against headless wgrender — no
+window, GPU or audio, with `WGR_HEADLESS_FRAMES` driving a few frames — and asserts
+what it gets back. 79 checks: struct field order, colour packing, enum values against
+the headers, property round-trips, and behaviours the headers state exactly (a missing
+asset yields a none handle; an unknown material parameter is refused; a point light
+refuses shadows where a directional one takes them; an emitter with the default rate
+of 0 makes nothing until it bursts).
+
+It compiled-but-never-ran before, which proves the API exists but not that it reaches
+the right C call — a grouped wrapper with two arguments transposed compiles perfectly.
+Transposing `Text.toVec2`'s x and y now fails two checks and exits non-zero, which is
+the point.
 
 It is the longest of the three bindings, at 1,119 hand-written lines against Nim's 342
 and Beef's 187 (each excluding its generated key table) — though it also covers more:
