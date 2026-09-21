@@ -2,17 +2,25 @@
 	`haxelib run wgrender-hx <command>`.
 
 	An installed wgrender-hx carries wgrender as a submodule under project/lib, and
-	`haxelib git` fetches it along with everything else. For a native target there is
-	nothing to build here: hxcpp compiles wgrender's sources with the same toolchain
-	it compiles your program with, which is what lets Windows work at all.
+	`haxelib git` fetches it along with everything else, so for a native target there
+	is nothing for this to do: hxcpp compiles wgrender's sources with the same
+	toolchain it compiles your program with, which is what lets Windows work at all.
+	Verified by installing into an empty haxelib repository and building an example
+	without running setup at all.
 
 	The web target is different. There wgrender is a wasm *host* the page loads and
 	the game is a JS guest on top of it, so the host is an emcc link that wgrender's
 	own Makefile does.
 
-	    haxelib run wgrender-hx setup          fetch the wgrender submodule
+	    haxelib run wgrender-hx setup          fetch the submodule if it is missing
 	    haxelib run wgrender-hx setup web      also build the Emscripten host library
-	    haxelib run wgrender-hx where          print where wgrender is
+	    haxelib run wgrender-hx where          print what is present
+
+	Normally none of this is needed. `haxelib git` clones submodules, so wgrender is
+	already there, and a native build compiles its sources rather than linking a
+	library. `setup` is for the cases where that did not happen: a submodule that did
+	not come down, or an archive install once this is published, since a haxelib zip
+	is flat and carries no submodule.
 
 	Nothing here is needed in a checkout of this repo: the examples and test/check.py
 	define WGR_BUILD_XML and point at whatever wgrender they are working against.
@@ -40,8 +48,10 @@ class Run {
 	}
 
 	static function help():String
-		return "haxelib run wgrender-hx setup [web]   fetch and build wgrender\n"
-			+ "haxelib run wgrender-hx where         where wgrender and its library are";
+		return "haxelib run wgrender-hx setup [web]   fetch the submodule if it is missing\n"
+			+ "haxelib run wgrender-hx where         what is present\n\n"
+			+ "Normally neither is needed: `haxelib git` clones submodules, and a native\n"
+			+ "build compiles wgrender's sources rather than linking a library.";
 
 	static function wgrender():String
 		return haxe.io.Path.join([root, "project/lib/wgrender-c"]);

@@ -112,15 +112,21 @@ link it to wherever wgrender is checked out.
 
 ```sh
 haxelib git wgrender-hx https://github.com/whirlinggizmo/wgrender-hx
-haxelib run wgrender-hx setup        # fetches wgrender and builds it
-haxelib run wgrender-hx setup web    # and the Emscripten library, for wasm
 ```
 
-then `-lib wgrender-hx`. wgrender rides along as a submodule under `project/lib` and
-`project/Build.xml` tells hxcpp where its headers and library are, so there is nothing
-to point at by hand. `setup` exists because wgrender is C: its own Makefile packs the
-shaders and vendors sokol, and restating that here would be a second build to keep in
-step with the first.
+then `-lib wgrender-hx`. That is the whole install: `haxelib git` clones submodules
+too, so wgrender arrives under `project/lib` with its sources and vendored
+dependencies, and `project/Build.xml` hands hxcpp the include paths and the C files to
+compile. There is no library to build first and nothing to point at by hand, because
+hxcpp compiles wgrender with the same toolchain it compiles your program with.
+
+`haxelib run wgrender-hx setup` exists for when that is not true — a submodule that
+did not come down, or an archive install once this is published, since a haxelib zip
+is flat and carries no submodule. It fetches what is missing and reports; for a
+native target it has nothing to build. `setup web` additionally builds wgrender's
+Emscripten library, which the examples' own build does for you.
+
+`haxelib run wgrender-hx where` says what is present.
 
 Working on the binding itself instead:
 
