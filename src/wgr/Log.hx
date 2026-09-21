@@ -32,7 +32,9 @@ class Log {
 		Raw.wgr_logger_message_source(level, file, line, "%s", msg);
 	}
 
-	public static inline function trace(msg:String, ?pos:haxe.PosInfos):Void
+	/** Named `verbose`, not `trace`: Haxe already has a global `trace` that does
+		something else entirely, and the two sitting side by side reads badly. **/
+	public static inline function verbose(msg:String, ?pos:haxe.PosInfos):Void
 		message(Trace, msg, pos);
 
 	public static inline function debug(msg:String, ?pos:haxe.PosInfos):Void

@@ -38,6 +38,23 @@ Every handle kind is an `abstract` over `Int` and every method is `inline`, so t
 layer compiles away: a call costs what the C call costs. The only allocations are the
 small value objects (`Vec2`, `Vec3`, `MouseState`, `PickResult`) the wrappers return.
 
+### Why handles aren't `null`
+
+A handle is 0 when it doesn't exist, and `isNone` reports that — rather than the
+`model != null` a Haxe developer would reach for first. That is deliberate, and
+measured:
+
+- **`null` is not 0.** On hxcpp `Null<Int>(0) == null` is `false`, so the two would
+  have to be mapped at every boundary, in both directions.
+- **`Null<Model>` stops being an `Int`.** hxcpp renders it as `::Dynamic` — boxed, and
+  no longer inlinable, which is the whole point of the layer.
+- It would only be free on js, where `null` is native.
+
+A field needs no initialiser either way: `isNone` treats js's `undefined` as none, so
+`static var model:Model;` is correct on both targets. Without that it would be correct
+on hxcpp (an uninitialised `Int` static is 0) and quietly wrong on js (`undefined == 0`
+is `false`).
+
 ## The two shapes
 
 An **all-in-one** app calls `Wgr.initValues` / `setInit` / `setFrame` / `run` and is
