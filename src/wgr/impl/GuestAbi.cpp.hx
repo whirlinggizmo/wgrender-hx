@@ -1,6 +1,6 @@
 package wgr.impl;
 
-import wgr.impl.Raw.GuestRaw;
+import wgr.impl.GuestRaw;
 
 /**
 	The guest side of `host/wgr_guest.h`, for the hxcpp target: the host is the same C

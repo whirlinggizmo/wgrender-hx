@@ -86,4 +86,9 @@ class Wgr {
 	public static inline function setTargetFps(fps:Int):Void {
 		Raw.wgr_set_target_fps(fps);
 	}
+
+	/** Seconds since the program started. Can be called at any time. **/
+	public static inline function getTime():Float {
+		return Raw.wgr_get_time();
+	}
 }
