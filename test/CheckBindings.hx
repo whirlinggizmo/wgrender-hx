@@ -269,6 +269,57 @@ class CheckBindings {
 		confetti.destroy();
 	}
 
+	static function checkShapes():Void {
+		final box = new Shape3D();
+		check(!box.isNone, "shape3d created");
+		check(box.setCube(new Vec3(1, 2, 3)), "a shape3d takes a cube");
+		check(box.setSphere(1), "and a sphere — the last form set wins");
+		check(box.setRectangle(2, 1), "and a filled rectangle");
+		check(box.setCircle(1), "and a circle outline");
+		check(box.setLine(new Vec3(0, 0, 0), new Vec3(1, 1, 1)), "and a line");
+		box.color = Color.SKYBLUE;
+		box.setTransform(new Vec3(1, 2, 3), new Vec3(0, Math.PI, 0), new Vec3(2, 2, 2));
+		check(box.visible, "a shape3d starts visible");
+		box.visible = false;
+		check(!box.visible, "shape3d.visible round-trips");
+		box.visible = true;
+		check(box.pickable, "a shape3d starts pickable");
+		box.pickable = false;
+		check(!box.pickable, "shape3d.pickable round-trips");
+		box.pickable = true;
+		check(box.enabled, "a shape3d starts enabled");
+		box.enabled = false;
+		check(!box.enabled, "shape3d.enabled round-trips");
+		box.enabled = true;
+
+		// a strip is built point by point, and reset by starting a new one
+		check(box.setLineStrip(), "a strip can be started");
+		eq(box.pointCount, 0, "a new strip is empty");
+		box.addPoint(new Vec3(0, 0, 0));
+		box.addPoint(new Vec3(1, 0, 0));
+		box.addPoint(new Vec3(1, 1, 0));
+		eq(box.pointCount, 3, "addPoint appends");
+		box.setLineStrip();
+		eq(box.pointCount, 0, "starting again empties it");
+
+		final badge = new Shape2D();
+		check(!badge.isNone, "shape2d created");
+		check(badge.setRectangle(20, 10, 3), "a shape2d takes a rounded rectangle");
+		check(badge.setCircle(5), "and a circle");
+		check(badge.setLine(new Vec2(0, 0), new Vec2(10, 0), 2), "and a line with a thickness");
+		badge.color = Color.GOLD;
+		badge.outline = 2;
+		check(badge.setPivot(new Vec2(0.5, 0.5)), "pivot is a fraction of the size, not pixels");
+		badge.setTransform(new Vec2(10, 20), Math.PI / 4, new Vec2(2, 2));
+		check(badge.visible && badge.pickable && badge.enabled, "a shape2d starts visible, pickable and enabled");
+		badge.visible = false;
+		check(!badge.visible, "shape2d.visible round-trips");
+		badge.visible = true;
+
+		check(scene.add(box), "a shape3d is a scene member");
+		check(scene.add(badge, 1), "a shape2d is a scene member, on a layer");
+	}
+
 	static function checkScene():Void {
 		final mesh = Mesh.create("no/such.glb");
 		model = new Model(mesh);
@@ -311,6 +362,7 @@ class CheckBindings {
 		checkText();
 		checkEmitters();
 		checkScene();
+		checkShapes();
 	}
 
 	static function onFrame(dt:Float, tickFraction:Float):Void {
