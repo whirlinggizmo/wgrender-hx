@@ -305,6 +305,32 @@ enum abstract SpriteFacing(Int) to Int {
 		return untyped __cpp__("(wgr_sprite3d_facing_t)({0})", this);
 }
 
+/**
+	Where a block of text sits horizontally relative to its position. wgrender has one
+	C enum for both axes and returns false for a value meant for the other one; this
+	splits it in two, so `setAlign(Top, Left)` doesn't compile.
+**/
+enum abstract AlignX(Int) to Int {
+	var Left = 0;
+	var Center = 1;
+	var Right = 2;
+
+	/** C++ needs the cast: the header says `wgr_text_align_t`, not `int`. **/
+	@:to inline function toRaw():CTextAlign
+		return untyped __cpp__("(wgr_text_align_t)({0})", this);
+}
+
+/** Where a block of text sits vertically relative to its position. See `AlignX`. **/
+enum abstract AlignY(Int) to Int {
+	var Top = 3;
+	var Middle = 4;
+	var Bottom = 5;
+
+	/** C++ needs the cast: the header says `wgr_text_align_t`, not `int`. **/
+	@:to inline function toRaw():CTextAlign
+		return untyped __cpp__("(wgr_text_align_t)({0})", this);
+}
+
 enum abstract ButtonState(Int) from Int to Int {
 	/** Not held. **/
 	var Up = 0;
@@ -645,6 +671,10 @@ abstract Sound(Handle) from Handle to Handle {
 
 	public inline function play():Bool
 		return Raw.wgr_sound_play(this);
+
+	/** Objects are private, so they're destroyed; resources are shared and released. **/
+	public inline function destroy():Void
+		Raw.wgr_sound_destroy(this);
 }
 
 // ---------------------------------------------------------- mesh / model ----
@@ -715,6 +745,10 @@ abstract Model(Handle) from Handle to Handle {
 	/** Advance the current animation by `dt` seconds. **/
 	public inline function animate(dt:Float):Bool
 		return Raw.wgr_model_animate(this, dt);
+
+	/** Also takes it out of every scene it's in. **/
+	public inline function destroy():Void
+		Raw.wgr_model_destroy(this);
 }
 
 /** The defaults `setTransform` fills in for an omitted rotation or scale. **/
@@ -776,6 +810,10 @@ abstract Sprite3D(Handle) from Handle to Handle {
 		final s = scale != null ? scale : Transform.UNIT_SCALE;
 		return Raw.wgr_sprite3d_set_transform(this, position.x, position.y, position.z, r.x, r.y, r.z, s.x, s.y, s.z);
 	}
+
+	/** Also takes it out of every scene it's in. **/
+	public inline function destroy():Void
+		Raw.wgr_sprite3d_destroy(this);
 }
 
 // ----------------------------------------------------------- fonts / text ---
@@ -802,6 +840,14 @@ abstract Font(Handle) from Handle to Handle {
 	/** The frame rate, in this font; a none font draws in the built-in one. **/
 	public inline function drawFps(x:Float, y:Float, size:Float, color:Color):Void
 		Raw.wgr_text_draw_fps_ex(this, x, y, size, color);
+
+	/** Once at a 3D point, facing the camera; `size` is line height in world units. **/
+	public inline function draw3D(text:String, position:Vec3, size:Float, color:Color):Void
+		Raw.wgr_text_draw_3d(this, text, position.x, position.y, position.z, size, color);
+
+	/** Drop this reference; the font goes when the last one does. **/
+	public inline function release():Void
+		Raw.wgr_font_release(this);
 }
 
 /** Text in wgrender's built-in font. For a TTF, use `Font`. **/
@@ -813,9 +859,257 @@ class Text {
 	public static inline function measure(text:String, size:Int):Int
 		return Raw.wgr_text_measure(text, size);
 
+	public static inline function drawFps(x:Int, y:Int):Void
+		Raw.wgr_text_draw_fps(x, y);
+
+	/**
+		What `Text.draw`/`measure` use, and what a none font means everywhere else
+		(`Font.draw`, `Text2D`, `Text3D`). None goes back to wgrender's built-in font,
+		JetBrains Mono, printable ASCII only. The default font holds its own reference.
+	**/
+	public static var defaultFont(get, set):Font;
+
+	static inline function get_defaultFont():Font
+		return (Raw.wgr_text_get_default_font() : Handle);
+
+	static inline function set_defaultFont(v:Font):Font {
+		Raw.wgr_text_set_default_font(v);
+		return v;
+	}
+
 	@:allow(wgr)
 	static inline function toVec2(v:CVec2):Vec2
 		return new Vec2(v.x, v.y);
+}
+
+/**
+	A placed string with retained state: set its text, place and colour once and
+	wgrender keeps them, instead of your code re-passing them every frame. Add it to a
+	`Scene` and `Scene.draw` draws it; `draw` draws it on its own.
+
+	It retains the state, not the geometry — the text is still shaped on every draw,
+	at the same per-frame cost as `Font.draw`. What it saves is re-sending the string.
+
+	A none `font` uses `Text.defaultFont` until one is attached, so you can create,
+	place and show text before its font asset has loaded. It holds its own reference
+	to the font.
+**/
+abstract Text2D(Handle) from Handle to Handle {
+	public var isNone(get, never):Bool;
+	public var font(never, set):Font;
+	public var text(never, set):String;
+	public var position(never, set):Vec2;
+
+	/** Pixel height of one line. **/
+	public var size(never, set):Float;
+
+	public var color(never, set):Color;
+
+	/** Wrap to this many logical pixels, between words; 0 is off (the default). **/
+	public var maxWidth(never, set):Float;
+
+	public var visible(get, set):Bool;
+
+	/** Whether a pick can hit it. Default: pickable. **/
+	public var pickable(get, set):Bool;
+
+	/** Disabled: still drawn, picked and blocking the pointer, but it doesn't react. **/
+	public var enabled(get, set):Bool;
+
+	@:to inline function toRaw():WgrHandle
+		return (this : Int);
+
+	inline function get_isNone():Bool
+		return (this : Handle).isNone;
+
+	/** `Handle.NONE` for the default font; attach a real one later with `font`. **/
+	public inline function new(font:Font)
+		this = (Raw.wgr_text2d_create(font) : Handle);
+
+	inline function set_font(v:Font):Font {
+		Raw.wgr_text2d_set_font(this, v);
+		return v;
+	}
+
+	inline function set_text(v:String):String {
+		Raw.wgr_text2d_set_text(this, v); // wgrender copies it
+		return v;
+	}
+
+	inline function set_position(v:Vec2):Vec2 {
+		Raw.wgr_text2d_set_position(this, v.x, v.y);
+		return v;
+	}
+
+	inline function set_size(v:Float):Float {
+		Raw.wgr_text2d_set_size(this, v);
+		return v;
+	}
+
+	inline function set_color(v:Color):Color {
+		Raw.wgr_text2d_set_color(this, v);
+		return v;
+	}
+
+	inline function set_maxWidth(v:Float):Float {
+		Raw.wgr_text2d_set_max_width(this, v);
+		return v;
+	}
+
+	inline function get_visible():Bool
+		return Raw.wgr_text2d_is_visible(this);
+
+	inline function set_visible(v:Bool):Bool {
+		Raw.wgr_text2d_set_visible(this, v);
+		return v;
+	}
+
+	inline function get_pickable():Bool
+		return Raw.wgr_text2d_is_pickable(this);
+
+	inline function set_pickable(v:Bool):Bool {
+		Raw.wgr_text2d_set_pickable(this, v);
+		return v;
+	}
+
+	inline function get_enabled():Bool
+		return Raw.wgr_text2d_is_enabled(this);
+
+	inline function set_enabled(v:Bool):Bool {
+		Raw.wgr_text2d_set_enabled(this, v);
+		return v;
+	}
+
+	/** Default: the position is the block's top-left corner. **/
+	public inline function setAlign(horizontal:AlignX, vertical:AlignY):Bool
+		return Raw.wgr_text2d_set_align(this, horizontal, vertical);
+
+	/** The laid-out text at its current size: widest line, and the lines' total height. **/
+	public inline function measure():Vec2
+		return new Vec2(Raw.wgr_text2d_measure_width(this), Raw.wgr_text2d_measure_height(this));
+
+	/** Draw it now; a scene draws its members itself. **/
+	public inline function draw():Void
+		Raw.wgr_text2d_draw(this);
+
+	/** Also takes it out of every scene it's in. **/
+	public inline function destroy():Void
+		Raw.wgr_text2d_destroy(this);
+}
+
+/**
+	The same, placed in the 3D world instead of on the screen: `size` is in world
+	units, it has a transform and a `facing`, and it is depth-tested and sorted with
+	the scene's other transparent parts. Note there is no scale — the size is the
+	scale.
+**/
+abstract Text3D(Handle) from Handle to Handle {
+	public var isNone(get, never):Bool;
+	public var font(never, set):Font;
+	public var text(never, set):String;
+
+	/** Line height in world units (default 1), descender to ascender. **/
+	public var size(never, set):Float;
+
+	public var color(never, set):Color;
+
+	/** Wrap to this many world units, between words; 0 is off (the default). **/
+	public var maxWidth(never, set):Float;
+
+	public var facing(never, set):SpriteFacing;
+	public var visible(get, set):Bool;
+
+	/** Whether a pick can hit it. Default: pickable. **/
+	public var pickable(get, set):Bool;
+
+	/** Disabled: still drawn, picked and blocking the pointer, but it doesn't react. **/
+	public var enabled(get, set):Bool;
+
+	@:to inline function toRaw():WgrHandle
+		return (this : Int);
+
+	inline function get_isNone():Bool
+		return (this : Handle).isNone;
+
+	/** `Handle.NONE` for the default font; attach a real one later with `font`. **/
+	public inline function new(font:Font)
+		this = (Raw.wgr_text3d_create(font) : Handle);
+
+	inline function set_font(v:Font):Font {
+		Raw.wgr_text3d_set_font(this, v);
+		return v;
+	}
+
+	inline function set_text(v:String):String {
+		Raw.wgr_text3d_set_text(this, v); // wgrender copies it
+		return v;
+	}
+
+	inline function set_size(v:Float):Float {
+		Raw.wgr_text3d_set_size(this, v);
+		return v;
+	}
+
+	inline function set_color(v:Color):Color {
+		Raw.wgr_text3d_set_color(this, v);
+		return v;
+	}
+
+	inline function set_maxWidth(v:Float):Float {
+		Raw.wgr_text3d_set_max_width(this, v);
+		return v;
+	}
+
+	inline function set_facing(v:SpriteFacing):SpriteFacing {
+		Raw.wgr_text3d_set_facing(this, v);
+		return v;
+	}
+
+	inline function get_visible():Bool
+		return Raw.wgr_text3d_is_visible(this);
+
+	inline function set_visible(v:Bool):Bool {
+		Raw.wgr_text3d_set_visible(this, v);
+		return v;
+	}
+
+	inline function get_pickable():Bool
+		return Raw.wgr_text3d_is_pickable(this);
+
+	inline function set_pickable(v:Bool):Bool {
+		Raw.wgr_text3d_set_pickable(this, v);
+		return v;
+	}
+
+	inline function get_enabled():Bool
+		return Raw.wgr_text3d_is_enabled(this);
+
+	inline function set_enabled(v:Bool):Bool {
+		Raw.wgr_text3d_set_enabled(this, v);
+		return v;
+	}
+
+	/** Default: centred both ways, so the position is the middle of the block. **/
+	public inline function setAlign(horizontal:AlignX, vertical:AlignY):Bool
+		return Raw.wgr_text3d_set_align(this, horizontal, vertical);
+
+	/** `rotation` in radians. No scale: `size` is the scale. **/
+	public inline function setTransform(position:Vec3, ?rotation:Vec3):Bool {
+		final r = rotation != null ? rotation : Transform.NO_ROTATION;
+		return Raw.wgr_text3d_set_transform(this, position.x, position.y, position.z, r.x, r.y, r.z);
+	}
+
+	/** World-space width and height of the current text; (0, 0) until the font loads. **/
+	public inline function measure():Vec2
+		return Text.toVec2(Raw.wgr_text3d_get_size(this));
+
+	/** Draw it now, inside 3D mode; a scene draws its members itself. **/
+	public inline function draw():Void
+		Raw.wgr_text3d_draw(this);
+
+	/** Also takes it out of every scene it's in. **/
+	public inline function destroy():Void
+		Raw.wgr_text3d_destroy(this);
 }
 
 // -------------------------------------------------- camera / light / scene --
@@ -838,6 +1132,10 @@ abstract Camera3D(Handle) from Handle to Handle {
 		return Raw.wgr_camera3d_set_view(this, position.x, position.y, position.z, target.x, target.y, target.z, u.x,
 			u.y, u.z);
 	}
+
+	/** Scenes using it fall back to the active camera. **/
+	public inline function destroy():Void
+		Raw.wgr_camera3d_destroy(this);
 }
 
 @:noCompletion
@@ -868,9 +1166,13 @@ abstract Light(Handle) from Handle to Handle {
 		Raw.wgr_light_set_intensity(this, v);
 		return v;
 	}
+
+	/** Also takes it out of every scene it's in. **/
+	public inline function destroy():Void
+		Raw.wgr_light_destroy(this);
 }
 
-/** What `Scene.add` takes: a `Model`, a `Sprite3D` or a `Light`. **/
+/** What `Scene.add` takes: a `Model`, `Sprite3D`, `Text2D`, `Text3D` or `Light`. **/
 abstract SceneMember(Handle) to Handle {
 	@:to inline function toRaw():WgrHandle
 		return (this : Int);
@@ -882,6 +1184,12 @@ abstract SceneMember(Handle) to Handle {
 		return cast v;
 
 	@:from static inline function ofLight(v:Light):SceneMember
+		return cast v;
+
+	@:from static inline function ofText2D(v:Text2D):SceneMember
+		return cast v;
+
+	@:from static inline function ofText3D(v:Text3D):SceneMember
 		return cast v;
 }
 
@@ -922,6 +1230,10 @@ abstract Scene(Handle) from Handle to Handle {
 	@:allow(wgr)
 	static inline function toVec3(v:CVec3):Vec3
 		return new Vec3(v.x, v.y, v.z);
+
+	/** A scene doesn't own its members; destroying it leaves them alone. **/
+	public inline function destroy():Void
+		Raw.wgr_scene_destroy(this);
 
 	@:allow(wgr)
 	static function toPickResult(r:CPickResult):PickResult {

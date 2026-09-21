@@ -46,6 +46,40 @@ class CheckBindings {
 		trace(texture.isNone, sprite.isNone, [Camera, CameraFixedY, YUp, Free]);
 
 		final font = Font.create("a.ttf");
+		font.draw3D("hi", new Vec3(0, 1, 0), 1, Color.WHITE);
+		Text.drawFps(0, 0);
+		Text.defaultFont = font;
+		trace(Text.defaultFont, Text.defaultFont.isNone);
+
+		// retained text: the string is set once and kept, not re-passed every frame
+		final label = new Text2D(font);
+		label.text = "hello";
+		label.position = new Vec2(10, 20);
+		label.size = 18;
+		label.color = Color.BLACK;
+		label.maxWidth = 200;
+		label.visible = true;
+		label.pickable = false;
+		label.enabled = true;
+		label.setAlign(Center, Middle);
+		trace(label.isNone, label.visible, label.pickable, label.enabled, label.measure());
+		label.draw();
+
+		final sign = new Text3D(Handle.NONE); // no font yet: uses Text.defaultFont
+		sign.font = font;
+		sign.text = "world";
+		sign.size = 1.5;
+		sign.color = Color.BLUE;
+		sign.maxWidth = 4;
+		sign.facing = CameraFixedY;
+		sign.visible = true;
+		sign.pickable = true;
+		sign.enabled = false;
+		sign.setAlign(Left, Bottom);
+		sign.setTransform(new Vec3(0, 2, 0), new Vec3(0, Math.PI, 0));
+		trace(sign.isNone, sign.visible, sign.pickable, sign.enabled, sign.measure());
+		sign.draw();
+		trace(([Left, Center, Right] : Array<AlignX>), ([Top, Middle, Bottom] : Array<AlignY>));
 		font.draw("hi", 0, 0, 12, Color.BLACK);
 		font.drawFps(0, 0, 12, Color.BLUE);
 		Text.draw("hi", 0, 0, 12, Color.RAYWHITE);
@@ -68,6 +102,15 @@ class CheckBindings {
 		final pick = scene.pick(1, 2, camera);
 		trace(scene.isNone, pick.hit, pick.handle == model, pick.handle.isNone, pick.distance, pick.pointLocal,
 			pick.pointWorld, pick.normalLocal, pick.normalWorld, Handle.NONE);
+
+		scene.add(label);
+		scene.add(sign, 2);
+
+		// objects are destroyed, resources released
+		for (destroy in [label.destroy, sign.destroy, model.destroy, sprite.destroy, sound.destroy, light.destroy,
+			camera.destroy, scene.destroy])
+			destroy();
+		font.release();
 
 		Render.begin();
 		Render.clearBackground(Color.BLACK);

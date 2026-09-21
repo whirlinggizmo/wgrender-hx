@@ -124,7 +124,7 @@ they are 3 ns.
 Text is the one shape that costs anything — and wgrender already answers it. This
 example re-sends six strings a frame because it uses the *immediate* path,
 `wgr_text_draw_ex`, which it inherits from the C example it ports. The retained path
-is `Text2d` / `Text3d`: handle objects created from a `Font`, given their string once
+is `Text2D` / `Text3D`: handle objects created from a `Font`, given their string once
 with `wgr_text2d_set_text` (which copies it), and added to a scene like any other
 drawable, so `wgr_scene_draw` draws them. A string then crosses the boundary when it
 *changes*, not once per frame — which for a typical UI, where most text is static, is
@@ -156,11 +156,11 @@ and asset callbacks, is once a frame plus a handful at startup.)
   why librl's Haxe binding is a flat façade — a flat surface is much easier to write
   twice (`RLImpl.cpp.hx` 1,848 lines, `RLImpl.js.hx` 1,537).
 
-The two-layer split here means it wouldn't be a second binding, though: only **38 of
-the 807 hand-written lines** in `wgr/Wgr.hx` are C++-specific, clustered in `Native`
-(10), `Asset`'s callback plumbing (5), `Wgr`'s trampolines (4), the five enum casts
-(10) and the struct converters (4). The handle abstracts, properties, enums and flags
-are all target-neutral. A JS port is a `Raw.js.hx` plus conditionals in those 38 lines.
+The two-layer split here means it wouldn't be a second binding, though: only **39 of
+the 1,119 hand-written lines** in `wgr/Wgr.hx` are C++-specific — `Native`, `Asset`'s
+callback plumbing, `Wgr`'s trampolines, the seven enum casts and the struct
+converters. The handle abstracts, properties, enums and flags are all target-neutral.
+A JS port is a `Raw.js.hx` plus conditionals in those 39 lines.
 
 ## The bindings
 
@@ -169,9 +169,8 @@ are all target-neutral. A JS port is a `Raw.js.hx` plus conditionals in those 38
 - **`wgr/Raw.hx`** — the slice of the C API this example uses, as is: C names, C types,
   declared with `@:include("wgr.h")` so the C++ compiler checks every prototype and
   struct layout. A wrong argument type or a stale struct field is a compile error, not
-  a crash. Not bound: the retained text objects (`wgr_text2d.h`, `wgr_text3d.h`), 2D
-  sprites and shapes, particles, materials, custom shaders, the environment, events
-  and gamepads.
+  a crash. Not bound: 2D sprites and shapes, particles, materials, custom shaders,
+  the environment, events and gamepads.
 - **`wgr/Wgr.hx`** — the layer you actually write against.
 
 The design goal was that the whole wrapper compile away. Every handle type is an
@@ -199,6 +198,18 @@ Asset.ensureAsync(path).then(path -> { ... }, path -> Log.error('failed: $path')
 if (pick.handle == model) ...
 ```
 
+Two places where the Haxe types say more than the C ones:
+
+- **Split align.** wgrender has one `wgr_text_align_t` covering both axes
+  (LEFT/CENTER/RIGHT, TOP/MIDDLE/BOTTOM) and returns `false` if you pass a value meant
+  for the other one. Here it's two enums, `AlignX` and `AlignY`, both casting to the
+  same C type — so `setAlign(Top, Left)` is a compile error rather than a silent
+  runtime `false`.
+- **`destroy` vs `release`.** wgrender's split is that objects are private and
+  destroyed, resources are shared, reference-counted and released. Every object
+  abstract has `destroy()` and every resource has `release()`, and nothing has both,
+  so the layer a handle belongs to is visible at the call site.
+
 Enums are `enum abstract`s over `Int`; window and asset flags are or-able
 (`Msaa4x | Resizable`). The `Key` table is generated from wgrender's `wgr_keys.h` by
 `tools/gen_keys.py`, and carries `static_assert`s that fail the C++ build if the
@@ -207,13 +218,14 @@ header's numbers ever move — the same guard the Nim port uses.
 `test/CheckBindings.hx` (`./build.py check`) touches every wrapper, so the parts
 `Simple.hx` doesn't use keep compiling against wgrender's headers.
 
-It is the longest of the three bindings, at 807 hand-written lines against Nim's 342
-and Beef's 187 (each excluding its generated key table). Beef is short because it
-stops at the raw C surface; Nim and this one both wrap it, and Nim does the same job
-in less than half the lines. Most of the gap is per-handle boilerplate: Nim gets a
-typed handle from one `distinct Handle` line and shares `isNone` and `==` across all
-of them with a typeclass, where each Haxe `abstract` has to restate `isNone`, its
-conversion to the raw C type, and one named function per property setter.
+It is the longest of the three bindings, at 1,119 hand-written lines against Nim's 342
+and Beef's 187 (each excluding its generated key table) — though it also covers more:
+the retained text objects, which the other two skip. Beef is short because it stops at
+the raw C surface; Nim and this one both wrap it, and Nim does the same job in far
+fewer lines. Most of the gap is per-handle boilerplate: Nim gets a typed handle from
+one `distinct Handle` line and shares `isNone` and `==` across all of them with a
+typeclass, where each Haxe `abstract` has to restate `isNone`, its conversion to the
+raw C type, and one named function per property accessor.
 
 ### Compared with the older librl Haxe binding
 

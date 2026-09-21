@@ -5,9 +5,8 @@ package wgr;
 	C types). Most code wants the wrappers in `wgr.Wgr` instead (Haxe types, abstracts
 	with methods, closures).
 
-	Not bound: the retained text objects (`wgr_text2d.h`, `wgr_text3d.h`), 2D sprites
-	and shapes, particles, materials, custom shaders, the environment, events and
-	gamepads. Adding one is a line here and a wrapper there.
+	Not bound: 2D sprites and shapes, particles, materials, custom shaders, the
+	environment, events and gamepads. Adding one is a line here and a wrapper there.
 
 	Declarations come straight from wgrender's public headers (`@:include("wgr.h")`),
 	so the C++ compiler checks every prototype and struct layout for us — a wrong
@@ -87,6 +86,9 @@ extern class CSpriteFacing {}
 @:include("wgr.h") @:native("wgr_keycode_t") @:structAccess @:unreflective
 extern class CKeycode {}
 
+@:include("wgr.h") @:native("wgr_text_align_t") @:structAccess @:unreflective
+extern class CTextAlign {}
+
 @:include("wgr.h") @:native("wgr_pick_result_t") @:structAccess @:unreflective
 extern class CPickResult {
 	var hit:Bool;
@@ -147,6 +149,8 @@ extern class Raw {
 	static function wgr_sound_set_loop(sound:WgrHandle, loop:Bool):Bool;
 	@:native("wgr_sound_play")
 	static function wgr_sound_play(sound:WgrHandle):Bool;
+	@:native("wgr_sound_destroy")
+	static function wgr_sound_destroy(handle:WgrHandle):Void;
 
 	// --- mesh / model (wgr_model.h) ---
 	@:native("wgr_mesh_create")
@@ -168,6 +172,8 @@ extern class Raw {
 	static function wgr_model_set_tint(model:WgrHandle, color:WgrColor):Bool;
 	@:native("wgr_model_animate")
 	static function wgr_model_animate(model:WgrHandle, dt:Single):Bool;
+	@:native("wgr_model_destroy")
+	static function wgr_model_destroy(handle:WgrHandle):Void;
 
 	// --- texture / sprite3d (wgr_texture.h, wgr_sprite3d.h) ---
 	@:native("wgr_texture_create")
@@ -183,10 +189,14 @@ extern class Raw {
 		rz:Single, sx:Single, sy:Single, sz:Single):Bool;
 	@:native("wgr_sprite3d_set_tint")
 	static function wgr_sprite3d_set_tint(sprite:WgrHandle, color:WgrColor):Bool;
+	@:native("wgr_sprite3d_destroy")
+	static function wgr_sprite3d_destroy(handle:WgrHandle):Void;
 
 	// --- fonts / text (wgr_font.h, wgr_text.h) ---
 	@:native("wgr_font_create")
 	static function wgr_font_create(path:ConstCharStar):WgrHandle;
+	@:native("wgr_font_release")
+	static function wgr_font_release(font:WgrHandle):Void;
 	@:native("wgr_text_draw")
 	static function wgr_text_draw(text:ConstCharStar, x:Int, y:Int, size:Int, color:WgrColor):Void;
 	@:native("wgr_text_draw_ex")
@@ -223,6 +233,98 @@ extern class Raw {
 	static function wgr_scene_draw(scene:WgrHandle):Void;
 	@:native("wgr_scene_pick")
 	static function wgr_scene_pick(scene:WgrHandle, camera:WgrHandle, mouseX:Single, mouseY:Single):CPickResult;
+	@:native("wgr_camera3d_destroy")
+	static function wgr_camera3d_destroy(camera:WgrHandle):Void;
+	@:native("wgr_light_destroy")
+	static function wgr_light_destroy(light:WgrHandle):Void;
+	@:native("wgr_scene_destroy")
+	static function wgr_scene_destroy(scene:WgrHandle):Void;
+
+	// --- retained text objects (wgr_text.h, wgr_text2d.h, wgr_text3d.h) ---
+	@:native("wgr_text_set_default_font")
+	static function wgr_text_set_default_font(font:WgrHandle):Bool;
+	@:native("wgr_text_get_default_font")
+	static function wgr_text_get_default_font():WgrHandle;
+	@:native("wgr_text_draw_fps")
+	static function wgr_text_draw_fps(x:Int, y:Int):Void;
+	@:native("wgr_text_draw_3d")
+	static function wgr_text_draw_3d(font:WgrHandle, text:ConstCharStar, x:Single, y:Single, z:Single, size:Single,
+		color:WgrColor):Void;
+
+	@:native("wgr_text2d_create")
+	static function wgr_text2d_create(font:WgrHandle):WgrHandle;
+	@:native("wgr_text2d_destroy")
+	static function wgr_text2d_destroy(text:WgrHandle):Void;
+	@:native("wgr_text2d_set_font")
+	static function wgr_text2d_set_font(text:WgrHandle, font:WgrHandle):Bool;
+	@:native("wgr_text2d_set_text")
+	static function wgr_text2d_set_text(text:WgrHandle, string:ConstCharStar):Bool;
+	@:native("wgr_text2d_set_position")
+	static function wgr_text2d_set_position(text:WgrHandle, x:Single, y:Single):Bool;
+	@:native("wgr_text2d_set_size")
+	static function wgr_text2d_set_size(text:WgrHandle, size:Single):Bool;
+	@:native("wgr_text2d_set_color")
+	static function wgr_text2d_set_color(text:WgrHandle, color:WgrColor):Bool;
+	@:native("wgr_text2d_set_visible")
+	static function wgr_text2d_set_visible(text:WgrHandle, visible:Bool):Bool;
+	@:native("wgr_text2d_is_visible")
+	static function wgr_text2d_is_visible(text:WgrHandle):Bool;
+	@:native("wgr_text2d_set_pickable")
+	static function wgr_text2d_set_pickable(text:WgrHandle, pickable:Bool):Bool;
+	@:native("wgr_text2d_is_pickable")
+	static function wgr_text2d_is_pickable(text:WgrHandle):Bool;
+	@:native("wgr_text2d_set_enabled")
+	static function wgr_text2d_set_enabled(text:WgrHandle, enabled:Bool):Bool;
+	@:native("wgr_text2d_is_enabled")
+	static function wgr_text2d_is_enabled(text:WgrHandle):Bool;
+	@:native("wgr_text2d_set_align")
+	static function wgr_text2d_set_align(text:WgrHandle, horizontal:CTextAlign, vertical:CTextAlign):Bool;
+	@:native("wgr_text2d_set_max_width")
+	static function wgr_text2d_set_max_width(text:WgrHandle, width:Single):Bool;
+	@:native("wgr_text2d_measure_width")
+	static function wgr_text2d_measure_width(text:WgrHandle):Single;
+	@:native("wgr_text2d_measure_height")
+	static function wgr_text2d_measure_height(text:WgrHandle):Single;
+	@:native("wgr_text2d_draw")
+	static function wgr_text2d_draw(text:WgrHandle):Void;
+
+	@:native("wgr_text3d_create")
+	static function wgr_text3d_create(font:WgrHandle):WgrHandle;
+	@:native("wgr_text3d_destroy")
+	static function wgr_text3d_destroy(text:WgrHandle):Void;
+	@:native("wgr_text3d_set_font")
+	static function wgr_text3d_set_font(text:WgrHandle, font:WgrHandle):Bool;
+	@:native("wgr_text3d_set_text")
+	static function wgr_text3d_set_text(text:WgrHandle, string:ConstCharStar):Bool;
+	@:native("wgr_text3d_set_size")
+	static function wgr_text3d_set_size(text:WgrHandle, size:Single):Bool;
+	@:native("wgr_text3d_set_align")
+	static function wgr_text3d_set_align(text:WgrHandle, horizontal:CTextAlign, vertical:CTextAlign):Bool;
+	@:native("wgr_text3d_set_max_width")
+	static function wgr_text3d_set_max_width(text:WgrHandle, width:Single):Bool;
+	@:native("wgr_text3d_set_transform")
+	static function wgr_text3d_set_transform(text:WgrHandle, x:Single, y:Single, z:Single, rx:Single, ry:Single,
+		rz:Single):Bool;
+	@:native("wgr_text3d_set_facing")
+	static function wgr_text3d_set_facing(text:WgrHandle, facing:CSpriteFacing):Bool;
+	@:native("wgr_text3d_set_color")
+	static function wgr_text3d_set_color(text:WgrHandle, color:WgrColor):Bool;
+	@:native("wgr_text3d_set_visible")
+	static function wgr_text3d_set_visible(text:WgrHandle, visible:Bool):Bool;
+	@:native("wgr_text3d_is_visible")
+	static function wgr_text3d_is_visible(text:WgrHandle):Bool;
+	@:native("wgr_text3d_set_pickable")
+	static function wgr_text3d_set_pickable(text:WgrHandle, pickable:Bool):Bool;
+	@:native("wgr_text3d_is_pickable")
+	static function wgr_text3d_is_pickable(text:WgrHandle):Bool;
+	@:native("wgr_text3d_set_enabled")
+	static function wgr_text3d_set_enabled(text:WgrHandle, enabled:Bool):Bool;
+	@:native("wgr_text3d_is_enabled")
+	static function wgr_text3d_is_enabled(text:WgrHandle):Bool;
+	@:native("wgr_text3d_get_size")
+	static function wgr_text3d_get_size(text:WgrHandle):CVec2;
+	@:native("wgr_text3d_draw")
+	static function wgr_text3d_draw(text:WgrHandle):Void;
 
 	// --- frame (wgr_render.h, wgr_window.h, wgr_input.h) ---
 	@:native("wgr_render_begin")
