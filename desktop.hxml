@@ -1,0 +1,16 @@
+# The same Haxe guest, compiled native: hxcpp links wgrender and host/wgr_guest.c
+# straight into the binary, so there is no wasm and no host module — the Haxe program
+# is the entry point, and GuestAbi.cpp.hx installs the ops as plain function pointers.
+#
+# Run ./build.py desktop; it writes build/desktop.hxml (where wgrender is on this
+# machine) and build/desktop.xml (how to compile and link it) first.
+build/desktop.hxml
+
+-cp src
+-lib wgrender-hx
+--main Particles
+--cpp build/cpp/desktop
+
+-D HAXE_OUTPUT_FILE=particles-guest
+-dce full
+-D analyzer-optimize
