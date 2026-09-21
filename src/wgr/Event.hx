@@ -7,9 +7,13 @@ package wgr;
 	parts of a program — and any C-side component alongside them — can tell each
 	other things without knowing about each other.
 
-	The payload is an untyped C pointer, because that is what the bus carries. A
-	listener and whoever emits have to agree on what is behind it; for a plain
-	notification, emit with none.
+	`emit` can carry a payload, because the bus does: a C-side component may be
+	listening and may know what is behind the pointer. A Haxe listener is not handed
+	it. That is partly because a `void *` is nothing a Haxe program can safely read,
+	and partly because a Haxe closure taking a raw pointer does not compile on hxcpp
+	4.3.2 -- the generated `__Run(Array<Dynamic>)` needs a `Dynamic` to `void *`
+	conversion that it finds ambiguous. Reach for `wgr.impl.Raw` if you genuinely need
+	the pointer; that is what it is for.
 
 	Listening needs a C function pointer, so `on`, `once`, `off` and `emit` are hxcpp
 	only — on js the guest ABI takes that role, and a guest that wants a bus of its
@@ -36,11 +40,11 @@ class Event {
 		reliably the same value on every target, and unsubscribing the wrong listener
 		silently is worse than a token to keep.
 	**/
-	public static function on(name:String, listener:(payload:VoidStar) -> Void):EventListener
+	public static function on(name:String, listener:() -> Void):EventListener
 		return register(name, listener, false);
 
 	/** The same, dropped after it fires once. **/
-	public static function once(name:String, listener:(payload:VoidStar) -> Void):EventListener
+	public static function once(name:String, listener:() -> Void):EventListener
 		return register(name, listener, true);
 
 	/** Drop one listener, by the token `on` or `once` returned. **/
@@ -59,7 +63,7 @@ class Event {
 	public static inline function emit(name:String, ?payload:VoidStar):Int
 		return Raw.wgr_event_emit(name, payload == null ? Native.nullPtr() : payload);
 
-	static function register(name:String, listener:(payload:VoidStar) -> Void, once:Bool):EventListener {
+	static function register(name:String, listener:() -> Void, once:Bool):EventListener {
 		final id = nextId++;
 		listeners.set(id, new Registered(name, listener, once));
 		// Branch rather than pick the function into a local: a reference to an extern
@@ -77,6 +81,8 @@ class Event {
 	}
 
 	static function trampoline(payload:VoidStar, user:VoidStar):Void {
+		// payload is deliberately not passed on; see the class docs
+
 		final id = Native.fromUser(user);
 		final entry = listeners.get(id);
 		if (entry == null)
@@ -85,7 +91,7 @@ class Event {
 		if (entry.once)
 			listeners.remove(id);
 		try
-			entry.fn(payload)
+			entry.fn()
 		catch (e:haxe.Exception)
 			Wgr.report('an event listener for "${entry.name}"', e);
 	}
@@ -100,10 +106,10 @@ class Event {
 **/
 private class Registered {
 	public final name:String;
-	public final fn:(payload:VoidStar) -> Void;
+	public final fn:() -> Void;
 	public final once:Bool;
 
-	public function new(name:String, fn:(payload:VoidStar) -> Void, once:Bool) {
+	public function new(name:String, fn:() -> Void, once:Bool) {
 		this.name = name;
 		this.fn = fn;
 		this.once = once;

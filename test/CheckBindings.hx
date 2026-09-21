@@ -799,14 +799,14 @@ class CheckBindings {
 		#if cpp
 
 		var heard = 0;
-		final token = Event.on("check/ping", (_) -> heard++);
+		final token = Event.on("check/ping", () -> heard++);
 		check(!token.isNone, "on returns a token");
 		eq(Event.listenerCount("check/ping"), 1, "and the listener is registered");
 		eq(Event.emit("check/ping"), 1, "emitting reaches it");
 		eq(heard, 1, "and the Haxe closure ran");
 
 		// once goes away by itself; the plain listener does not
-		Event.once("check/ping", (_) -> heard++);
+		Event.once("check/ping", () -> heard++);
 		eq(Event.listenerCount("check/ping"), 2, "a once listener is registered too");
 		Event.emit("check/ping");
 		eq(heard, 3, "both ran");
@@ -818,7 +818,7 @@ class CheckBindings {
 		Event.emit("check/ping");
 		eq(heard, 3, "nothing ran after that");
 
-		Event.on("check/other", (_) -> heard++);
+		Event.on("check/other", () -> heard++);
 		eq(Event.offAll("check/other"), 1, "offAll drops what is there");
 		eq(Event.listenerCount("check/other"), 0, "leaving nothing");
 		#end
