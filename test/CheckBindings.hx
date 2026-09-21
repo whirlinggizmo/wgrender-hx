@@ -1,7 +1,7 @@
 // Touches every wrapper in wgr.Wgr, so the whole binding keeps compiling (and keeps
 // type-checking against wgrender's headers) even though Simple.hx uses only part of
 // it. `./build.py check` builds this; it is never run.
-import wgr.Wgr;
+import wgr.*;
 
 class CheckBindings {
 	static function main():Void {
@@ -43,7 +43,7 @@ class CheckBindings {
 		sprite.facing = CameraFixedY;
 		sprite.tint = Color.WHITE;
 		sprite.setTransform(new Vec3(0, 1, 0));
-		trace(texture.isNone, sprite.isNone, [Camera, CameraFixedY, YUp, Free]);
+		trace(texture.isNone, sprite.isNone, ([Camera, CameraFixedY, YUp, Free] : Array<SpriteFacing>));
 
 		final font = Font.create("a.ttf");
 		font.draw3D("hi", new Vec3(0, 1, 0), 1, Color.WHITE);
@@ -122,7 +122,7 @@ class CheckBindings {
 			mouse.dx, mouse.dy);
 		trace(Input.getKey(A), Input.isKeyPressed(Escape), Input.isKeyDown(LeftShift), Input.isKeyReleased(F12));
 		final keyboard = Input.getKeyboardState();
-		trace(keyboard[Space], keyboard.isPressed(Digit0), keyboard.isDown(GraveAccent), keyboard.isReleased(Enter));
+		trace(keyboard[(Space : Key)], keyboard.isPressed(Digit0), keyboard.isDown(GraveAccent), keyboard.isReleased(Enter));
 		trace(([Up, Pressed, Down, Released] : Array<ButtonState>));
 	}
 }

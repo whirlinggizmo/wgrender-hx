@@ -174,7 +174,13 @@ desktop build, so "one source, JS for web and native for desktop" is still a cla
 
 ## The bindings
 
-`src/wgr/` is in two layers, the same split the Nim port uses:
+`src/wgr/` is one module per wgrender public header, over a flat per-target C surface
+— the shape librl's Haxe bindings use (`rl/Model.hx`, `rl/Asset.hx`, … over one
+`rl/impl/RLImpl.<target>.hx`). Files, not directories: `wgr/Model.hx`, not `wgr/Model/`.
+A `wgr/import.hx` gives every module the C surface without each one repeating it, and
+consumers write `import wgr.*;`.
+
+Two layers, the same split the Nim port uses:
 
 - **`wgr/Raw.hx`** — the slice of the C API this example uses, as is: C names, C types,
   declared with `@:include("wgr.h")` so the C++ compiler checks every prototype and

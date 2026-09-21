@@ -4,7 +4,7 @@
 // Scene: an animated model, a bobbing 3D sprite, looping music, two TTF fonts,
 // a centered message that reports what the mouse is over (scene picking), and a
 // debug overlay with timers, mouse state and the platform name.
-import wgr.Wgr;
+import wgr.*;
 
 class Simple {
 	// Where assets load from. Desktop: build.py points this at wgrender's
