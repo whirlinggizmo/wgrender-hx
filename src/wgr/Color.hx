@@ -4,17 +4,34 @@ package wgr;
 
 /** A packed 0xRRGGBBAA color, by value. **/
 abstract Color(Int) from Int to Int {
+	public static inline var LIGHTGRAY:Color = cast 0xC8C8C8FF;
+	public static inline var GRAY:Color = cast 0x828282FF;
+	public static inline var DARKGRAY:Color = cast 0x505050FF;
+	public static inline var YELLOW:Color = cast 0xFFFF00FF;
+	public static inline var GOLD:Color = cast 0xFFCB00FF;
+	public static inline var ORANGE:Color = cast 0xFFA100FF;
+	public static inline var PINK:Color = cast 0xFF6DC2FF;
+	public static inline var RED:Color = cast 0xE62937FF;
+	public static inline var MAROON:Color = cast 0xBE212DFF;
+	public static inline var GREEN:Color = cast 0x00E430FF;
+	public static inline var LIME:Color = cast 0x009E2FFF;
+	public static inline var DARKGREEN:Color = cast 0x00752CFF;
+	public static inline var SKYBLUE:Color = cast 0x66BFFFFF;
+	public static inline var BLUE:Color = cast 0x0079F1FF;
+	public static inline var DARKBLUE:Color = cast 0x0052ACFF;
+	public static inline var PURPLE:Color = cast 0xC87AFFFF;
+	public static inline var VIOLET:Color = cast 0x873CBEFF;
+	public static inline var DARKPURPLE:Color = cast 0x701F7EFF;
+	public static inline var BEIGE:Color = cast 0xD3B083FF;
+	public static inline var BROWN:Color = cast 0x7F6A4FFF;
+	public static inline var DARKBROWN:Color = cast 0x4C3F2FFF;
 	public static inline var WHITE:Color = cast 0xFFFFFFFF;
 	public static inline var BLACK:Color = cast 0x000000FF;
-	public static inline var BLUE:Color = cast 0x0079F1FF;
+	/** Fully transparent. Note that this is not "unset": a tint that changes
+		nothing is `WHITE`. **/
+	public static inline var BLANK:Color = cast 0x00000000;
+	public static inline var MAGENTA:Color = cast 0xFF00FFFF;
 	public static inline var RAYWHITE:Color = cast 0xF5F5F5FF;
-	public static inline var LIGHTGRAY:Color = cast 0xC8C8C8FF;
-	public static inline var DARKGRAY:Color = cast 0x505050FF;
-	public static inline var RED:Color = cast 0xE62937FF;
-	public static inline var GOLD:Color = cast 0xFFCB00FF;
-	public static inline var LIME:Color = cast 0x009E2FFF;
-	public static inline var SKYBLUE:Color = cast 0x66BFFFFF;
-	public static inline var VIOLET:Color = cast 0x873CBEFF;
 
 	/** Red, 0..255. **/
 	public var red(get, never):Int;

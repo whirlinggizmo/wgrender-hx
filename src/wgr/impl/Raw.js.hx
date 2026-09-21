@@ -32,7 +32,23 @@ typedef WgrColor = Int;
 **/
 class Raw {
 	/** The Emscripten module, handed over at boot. **/
-	public static var host(default, null):Dynamic;
+	/**
+		The host module's exports. Until `GuestAbi.attach` sets it, this is a stand-in
+		that explains itself: a `static final` initialiser runs when the guest module
+		loads, which is before any host exists, so `static final BG = Color.rgba(...)`
+		fails there. Without this the browser says
+		"Cannot read properties of undefined (reading '_wgr_color_rgba')", which names
+		the call and not the cause. Build such values in the init op instead.
+	**/
+	public static var host(default, null):Dynamic = notAttached();
+
+	static function notAttached():Dynamic {
+		return new js.lib.Proxy<Dynamic>(cast {}, {
+			get: (_, name, _) -> throw 'wgrender: $name was called before GuestAbi.attach(host). '
+				+ 'A static initialiser runs when this module loads, before the host exists — '
+				+ 'build wgrender values in the init op instead.'
+		});
+	}
 
 	public static function attach(module:Dynamic):Void {
 		host = module;

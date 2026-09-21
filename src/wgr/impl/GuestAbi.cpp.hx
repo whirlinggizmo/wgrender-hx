@@ -72,10 +72,10 @@ class GuestAbi {
 
 		Checked here because it is the one point both routes pass through.
 	**/
-	public static function start(width:Int, height:Int, title:String, flags:Int):Bool {
+	public static function start(width:Int, height:Int, title:String, ?flags:WindowFlag):Bool {
 		if (!Version.check())
 			return false;
-		GuestRaw.wgr_guest_start(width, height, title, flags);
+		GuestRaw.wgr_guest_start(width, height, title, flags == null ? 0 : (flags : Int));
 		return true;
 	}
 
