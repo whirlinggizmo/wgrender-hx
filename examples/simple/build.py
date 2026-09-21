@@ -8,11 +8,12 @@ are generated from these four values, so there is nothing here to keep in step.
     ./build.py host | guest | desktop | all | serve | sizes | clean
 """
 import pathlib
-import subprocess
 import sys
 
-LIB = pathlib.Path(subprocess.run(['haxelib', 'path', 'wgrender-hx'], check=True,
-                                  capture_output=True, text=True).stdout.split('\n')[0].strip()).parent
+# examples/<name>/build.py, so the library is two directories up. The hxml still says
+# `-lib wgrender-hx`, which resolves through `haxelib dev` -- that way building an
+# example exercises the packaging a user gets, not just the source tree.
+LIB = pathlib.Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(LIB / 'tools'))
 from guestbuild import Project  # noqa: E402
 

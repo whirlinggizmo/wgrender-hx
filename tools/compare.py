@@ -40,8 +40,7 @@ def measure(*paths):
 def main():
     dirs = [pathlib.Path(a).resolve() for a in sys.argv[1:]]
     if not dirs:
-        here = LIB / '../../../haxe'
-        dirs = sorted(d for d in here.resolve().iterdir()
+        dirs = sorted(d for d in (LIB / 'examples').iterdir()
                       if (d / 'build.py').exists() and (d / 'out/web').exists())
     rows = []
     for d in dirs:

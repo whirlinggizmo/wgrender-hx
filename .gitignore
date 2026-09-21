@@ -1,3 +1,6 @@
 /test/out/
 __pycache__/
 *.pyc
+test/build/
+examples/*/out/
+examples/*/build/
