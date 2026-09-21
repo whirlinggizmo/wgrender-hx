@@ -164,6 +164,7 @@ def check():
     # The binding is generated from wgrender's headers, so a stale one is a real
     # failure mode: it would declare an API that no longer exists.
     run([LIB / 'tools/gen_raw.py', '--check', WGRENDER])
+    run([LIB / 'tools/coverage.py', '--check', WGRENDER])
     print('wgrender (headless)')
     run(make('all', 'HEADLESS=1'))
     build = ROOT / 'build'
