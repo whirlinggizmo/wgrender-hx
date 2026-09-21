@@ -93,11 +93,18 @@ Nim and Beef ports).
 ## Status
 
 A spike, not a release. `wgr.impl.Raw` covers all 466 of wgrender's calls on hxcpp,
-but the hand-written API layer above it wraps 197 of them. Measured against wgrender's
-33 C examples: 4 need nothing more (`font`, `hello`, `particles`, `simple`), 10 are
-within five wrappers, and 19 want a subsystem that isn't wrapped yet — mostly
-materials, full lights, the environment, render targets, 2D sprites and the retained
-shape objects. All of those are callable through `Raw` today.
+and the hand-written API layer above it wraps 230. Measured against wgrender's 33 C
+examples:
+
+| | |
+|---|---|
+| need nothing more | `font`, `hello`, `model`, `particles`, `simple` |
+| within five wrappers | `hello3d`, `quit`, `tick`, `audio`, `force_fetch`, `instancing`, `environment`, `gamepad`, `materials`, `render_target`, `scene3d`, `sprite3d`, `textures` |
+| six to ten | `fetch`, `meshes`, `pick`, `lights`, `loading` |
+| more | `shadows`, `sprite2d`, `2d`, `touch`, `clay`, `postprocess`, `text3d`, `window`, `ui`, `shaders` |
+
+The unwrapped work is mostly 2D sprites, the retained shape objects, the environment,
+render targets, events and gamepads — all callable through `Raw` today.
 `KeyboardState` is unmarshalled on js.
 
 ## Regenerating the C surface

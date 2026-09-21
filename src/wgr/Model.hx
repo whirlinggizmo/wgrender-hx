@@ -51,6 +51,14 @@ abstract Model(Handle) from Handle to Handle {
 	public inline function animate(dt:Float):Bool
 		return Raw.wgr_model_animate(this, dt);
 
+	/** The material for one of the mesh's slots; the model takes its own reference. **/
+	public inline function setMaterial(slot:Int, material:Material):Bool
+		return Raw.wgr_model_set_material(this, slot, material);
+
+	/** Swap the geometry, keeping this model's transform, tint and materials. **/
+	public inline function setMesh(mesh:Mesh):Bool
+		return Raw.wgr_model_set_mesh(this, mesh);
+
 	/** Also takes it out of every scene it's in. **/
 	public inline function destroy():Void
 		Raw.wgr_model_destroy(this);
