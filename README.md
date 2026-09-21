@@ -198,6 +198,22 @@ is happening inside it.
 For contrast, the same scene compiled all-in-one through hxcpp is 1.69 MB of wasm,
 2.3x the C. Keeping the Haxe runtime out of the binary is what the guest shape buys.
 
+Those are `WEB_THREADS=0` on both sides, which is what the examples build: a threaded
+build only starts on a cross-origin isolated page, and that needs COOP/COEP headers
+that `tools/serve.py` sends and a plain static host does not. `WEB_THREADS=1` builds
+the other one, and it works -- `simple` reports its four asset loading workers on the
+web, where the single-threaded build loads on the main thread and blocks the frame it
+happens on. It costs a flat ~21 KB (~9 KB gzipped) whatever the example, since it is
+the pthread runtime rather than anything proportional, and the ratios against C are
+unchanged at 1.01-1.02x gzipped: threads are wgrender's cost, paid the same either
+way.
+
+| threaded | C | Haxe | vs C gzipped |
+|---|---|---|---|
+| hello3d | 322,581 | 333,256 | 1.02x |
+| particles | 494,432 | 515,776 | 1.01x |
+| simple | 779,212 | 800,981 | 1.01x |
+
 ## Regenerating the C surface
 
 `tools/gen_raw.py` reads wgrender's `include/*.h` and writes **both** `impl/Raw.cpp.hx`

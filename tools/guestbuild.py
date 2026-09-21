@@ -116,6 +116,11 @@ class Project:
         self.site = self.root / 'out/web'
         self.wgrender = find(argv=[])
         self.haxe = os.environ.get('HAXE', 'haxe')
+        # wgrender defaults to threaded asset decoding on the web. The examples do not,
+        # because a threaded build only starts on a cross-origin isolated page: that
+        # needs COOP/COEP headers, which tools/serve.py sends and a plain static host
+        # (GitHub Pages) does not. WEB_THREADS=1 to build the other one.
+        self.web_threads = os.environ.get('WEB_THREADS', '0')
 
     # ---------------------------------------------------------------- shell ---
 
@@ -163,7 +168,8 @@ class Project:
         return names
 
     def web_flags(self):
-        out = subprocess.run([str(c) for c in self.make('print-web-flags', 'WEB_THREADS=0')],
+        out = subprocess.run([str(c) for c in self.make('print-web-flags',
+                                                        f'WEB_THREADS={self.web_threads}')],
                              check=True, capture_output=True, text=True).stdout
         flags = {k.strip(): v.strip() for k, _, v in (l.partition(':') for l in out.splitlines())}
         if 'lib' not in flags:
@@ -183,7 +189,7 @@ class Project:
     def build_host(self):
         self.check_binding()
         print('wgrender (web)')
-        self.run(self.make('web', 'WEB_THREADS=0'))
+        self.run(self.make('web', f'WEB_THREADS={self.web_threads}'))
         lib, ldflags = self.web_flags()
         api = self.wgr_api()
         exported = ['_main'] + [f'_{n}' for n in GUEST_ABI + api] + ['_malloc', '_free']
