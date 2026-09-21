@@ -177,8 +177,9 @@ desktop build, so "one source, JS for web and native for desktop" is still a cla
 `src/wgr/` is one module per wgrender public header, over a flat per-target C surface
 — the shape librl's Haxe bindings use (`rl/Model.hx`, `rl/Asset.hx`, … over one
 `rl/impl/RLImpl.<target>.hx`). Files, not directories: `wgr/Model.hx`, not `wgr/Model/`.
-A `wgr/import.hx` gives every module the C surface without each one repeating it, and
-consumers write `import wgr.*;`.
+The C surface lives under `wgr/impl/`, as librl's does, so `import wgr.*;` gives a
+consumer the API and none of the plumbing. `wgr/import.hx` gives every public module
+the C surface without each one repeating it.
 
 Two layers, the same split the Nim port uses:
 

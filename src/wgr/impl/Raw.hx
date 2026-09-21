@@ -1,4 +1,4 @@
-package wgr;
+package wgr.impl;
 
 /**
 	Raw wgrender bindings: the slice of the C API this example uses, as is (C names,
