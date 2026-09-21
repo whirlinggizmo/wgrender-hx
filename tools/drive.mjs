@@ -33,6 +33,15 @@ try {
     await page.send("Page.enable");
     await page.send("Page.navigate", { url: `http://127.0.0.1:${port}/` });
     await sleep(settle);
+    // over the model: middle of the canvas, a little low — exercises wgr_scene_pick,
+    // whose wgr_pick_result_t comes back through the out-pointer.
+    const { result } = await page.send("Runtime.evaluate", {
+        expression: "(() => { const r = document.getElementById('canvas').getBoundingClientRect();" +
+                    " return [r.left + r.width / 2, r.top + r.height / 2 + 20]; })()",
+        returnByValue: true });
+    const [mx, my] = result.value;
+    await page.send("Input.dispatchMouseEvent", { type: "mouseMoved", x: mx, y: my });
+    await sleep(1000);
     const shot = await page.send("Page.captureScreenshot", { format: "png" });
     writeFileSync(join(site, "../check.png"), Buffer.from(shot.data, "base64"));
     for (const l of lines) console.log("  " + l);

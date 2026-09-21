@@ -1,4 +1,11 @@
-<!doctype html><meta charset="utf-8"><title>simple (wgrender host, Haxe guest)</title>
-<style>html,body{margin:0;background:#f5f5f5}canvas{display:block}</style>
-<canvas id="canvas"></canvas>
+<!doctype html>
+<meta charset="utf-8">
+<title>simple (wgrender host, Haxe guest)</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #f5f5f5; overflow: hidden; }
+  /* CSS sizes the canvas; sokol manages the drawing buffer from it, as wgrender's
+     own example shell does. Without a size here it stays at the default 300x150. */
+  #canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; outline: none; }
+</style>
+<canvas id="canvas" tabindex="-1" oncontextmenu="event.preventDefault()"></canvas>
 <script type="module" src="./boot.js"></script>

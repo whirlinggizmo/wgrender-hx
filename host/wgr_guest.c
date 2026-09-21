@@ -101,7 +101,17 @@ GUEST_EXPORT int wgr_guest_asset_load(const char *path, uint32_t id)
 
 GUEST_EXPORT int wgr_guest_start(int width, int height, const char *title, uint32_t flags)
 {
-    wgr_init_values(width, height, title, flags);
+    /* Copied: a guest passing scratch memory shouldn't have to keep it alive. */
+    static char kept_title[128];
+    size_t i = 0;
+    if (title != NULL) {
+        for (; i + 1 < sizeof kept_title && title[i] != '\0'; i++) {
+            kept_title[i] = title[i];
+        }
+    }
+    kept_title[i] = '\0';
+
+    wgr_init_values(width, height, kept_title, flags);
     wgr_set_init(host_init, NULL);
     wgr_set_frame(host_frame, NULL);
     return wgr_run();

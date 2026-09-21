@@ -2,7 +2,7 @@
 """Build the host/guest version of simple: wgrender as a wasm host, Haxe->JS as the guest.
 
     ./build.py host        out/web/wgrender-host.js + .wasm (the host; C only)
-    ./build.py guest       out/web/guest.js (Haxe -> JS)
+    ./build.py guest       out/web/guest.js (Haxe -> JS) and the page
     ./build.py all         both, plus the page
     ./build.py serve       http://localhost:8000/
     ./build.py sizes       what a visitor downloads, next to ../simple's all-in-one wasm
@@ -82,6 +82,14 @@ def build_host():
          f'-sEXPORTED_RUNTIME_METHODS={",".join(RUNTIME_METHODS)}',
          f'-sEXPORTED_FUNCTIONS={",".join(exported)}',
          '-o', SITE / 'wgrender-host.js'], cwd=ROOT)
+
+
+def build_guest():
+    SITE.mkdir(parents=True, exist_ok=True)
+    print('guest -> out/web/guest.js')
+    run([HAXE, 'guest.hxml'], cwd=ROOT)
+    for name in ('index.html', 'boot.js'):
+        shutil.copy2(ROOT / 'web' / name, SITE / name)
     sizes()
 
 
@@ -114,6 +122,11 @@ def main():
     command = args[0] if args else ''
     if command == 'host':
         build_host()
+    elif command == 'guest':
+        build_guest()
+    elif command == 'all':
+        build_host()
+        build_guest()
     elif command == 'sizes':
         sizes()
     elif command == 'clean':

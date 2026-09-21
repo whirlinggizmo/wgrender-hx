@@ -1,0 +1,11 @@
+# The Haxe guest: compiled to JS, run on top of the wgrender wasm host.
+#
+# -cp ../simple/src is not used: the shared wgr.Wgr layer lives in src/wgr/Wgr.hx
+# here while the target guards are being proven out. See README.
+-cp src
+--main Guest
+--js out/web/guest.js
+
+-D js-es=6
+-dce full
+-D analyzer-optimize
