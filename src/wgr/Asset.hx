@@ -80,7 +80,8 @@ class Asset {
 	/**
 		Load files whose path starts with `prefix` from under `target` instead — mods,
 		translations, a CDN. A `target` containing "://" is where the file downloads
-		from; it is still cached and loaded under its own path.
+		from — the browser on the web, your fetcher on desktop — and it is still cached
+		and loaded under its own path.
 
 		Path rules stack: every one matching a file is tried, the one added last first,
 		then the file's own path, so later rules sit on top. A miss under a path rule
@@ -127,6 +128,9 @@ class Asset {
 		null means the host plus the path, with redirects and per-device variants
 		applied. Null is not the same as "": passing a URL tells wgrender the caller
 		chose this exact file.
+
+		On desktop a `fetchUrl` needs a fetcher (`setFetcher`) but not a URL host: a
+		task told where to download from downloads from there.
 	**/
 	public static inline function ensureAsync(path:String, ?fetchUrl:String, ?flags:AssetFlag):AssetTask
 		return (Raw.wgr_asset_ensure_async(path, #if cpp Native.cstr(fetchUrl) #else fetchUrl #end,
@@ -145,11 +149,13 @@ class Asset {
 	}
 
 	/**
-		Download a missing asset. wgrender calls `fetch` when the host is a URL, the
-		file isn't local yet, and the platform has no downloader of its own — which is
-		every desktop build. Fetch the URL into the destination path, then call
-		`fetchDone` with the same request and whether it worked; finishing on a later
-		tick is expected, and nothing blocks meanwhile.
+		Download a missing asset. wgrender calls `fetch` when a file isn't local yet,
+		there is somewhere to download it from, and the platform has no downloader of
+		its own — which is every desktop build. Somewhere to download from means a URL
+		`host`, or a source this task was handed outright: a `fetchUrl` passed to
+		`ensureAsync`, or a redirect target containing "://". Fetch the URL into the
+		destination path, then call `fetchDone` with the same request and whether it
+		worked; finishing on a later tick is expected, and nothing blocks meanwhile.
 
 		Bytes never cross this boundary: a downloader deals in files, which is what
 		curl, WinHTTP and NSURLSession all hand you anyway, and the directories above
@@ -169,8 +175,10 @@ class Asset {
 		`timeoutMs` (0 or less means 5000). A null `host` pings the current one.
 
 		On the web it is a HEAD request, and any response counts, even a 404. On desktop
-		the host is a local directory: 0 if it exists, negative if not. False when eight
-		pings are already waiting. hxcpp only.
+		the host is a local directory: 0 if it exists, negative if not — a URL host
+		can't be pinged there, since the fetcher hook deals in files rather than round
+		trips, so time an `ensureAsync` instead. False when eight pings are already
+		waiting. hxcpp only.
 	**/
 	public static function pingHost(?host:String, timeoutMs:Int = 0, onDone:(host:String, ms:Float) -> Void):Bool {
 		final id = nextId++;

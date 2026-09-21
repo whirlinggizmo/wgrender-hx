@@ -2,7 +2,11 @@ package wgr;
 
 // wgr_audio.h — the sound data resource
 
-/** A loaded sound file: reference counted, shared. **/
+/**
+	A loaded sound file: decoded PCM, reference counted and shared. `Sound` objects
+	reference one by handle — including looping music, which is a `Sound` with
+	`loop` set rather than a kind of its own.
+**/
 abstract Audio(Handle) from Handle to Handle {
 	public var isNone(get, never):Bool;
 

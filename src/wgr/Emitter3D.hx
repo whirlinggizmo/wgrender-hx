@@ -7,6 +7,9 @@ package wgr;
 	draws it; `draw` draws it on its own, inside `Render.beginMode3D`.
 
 	It takes its own reference to the texture, so the caller can release theirs.
+
+	Particles are unlit: the texture times the particle's color, with no material
+	and no scene lighting. A lit effect wants `Sprite3D` objects with a material.
 **/
 abstract Emitter3D(Handle) from Handle to Handle {
 	public var isNone(get, never):Bool;
@@ -21,9 +24,6 @@ abstract Emitter3D(Handle) from Handle to Handle {
 
 	/** Particles alive now. **/
 	public var count(get, never):Int;
-
-	/** The most that can be alive at once. **/
-	public var max(never, set):Int;
 
 	/** Made per second while emitting. **/
 	public var rate(never, set):Float;
@@ -90,10 +90,14 @@ abstract Emitter3D(Handle) from Handle to Handle {
 	inline function get_count():Int
 		return Raw.wgr_emitter3d_get_count(this);
 
-	inline function set_max(v:Int):Int {
-		Raw.wgr_emitter3d_set_max(this, v);
-		return v;
-	}
+	/**
+		The most that can be alive at once; 1024 by default. Must be 1..65536 — a value
+		outside that is refused rather than clamped, and the emitter keeps the max it
+		had, which is why this is a method and not a property. Setting it clears the
+		particles that were alive.
+	**/
+	public inline function setMax(count:Int):Bool
+		return Raw.wgr_emitter3d_set_max(this, count);
 
 	inline function set_rate(v:Float):Float {
 		Raw.wgr_emitter3d_set_rate(this, v);

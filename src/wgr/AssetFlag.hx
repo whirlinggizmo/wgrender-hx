@@ -4,7 +4,10 @@ package wgr;
 
 /** Asset flags, or-ed together. **/
 enum abstract AssetFlag(Int) to Int {
-	/** Re-download even if cached. **/
+	/**
+		Re-download even if cached. Does nothing where nothing can download — a desktop
+		build with no fetcher (`Asset.setFetcher`).
+	**/
 	var ForceFetch = 1 << 0;
 
 	/** Only make the file local; don't load the resource it names. **/

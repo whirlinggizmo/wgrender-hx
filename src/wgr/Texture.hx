@@ -26,6 +26,13 @@ abstract Texture(Handle) from Handle to Handle {
 	/** The 1x1 white texture, for a material or sprite that wants no image. **/
 	public static var defaultTexture(get, never):Texture;
 
+	/**
+		Load an image. A path ending `.ktx` names a texture compressed for GPUs: the
+		first of `name.bc7.ktx`, `name.astc.ktx` or `name.etc2.ktx` this GPU can sample
+		is loaded, and `name.png` when none of them can. On the web only the chosen one
+		downloads. Name the plain `name.ktx` — naming a variant outright loads that one,
+		with no fallback.
+	**/
 	public static inline function create(path:String):Texture
 		return (Raw.wgr_texture_create(path) : Handle);
 
