@@ -2,6 +2,10 @@
 <set name="HXCPP_API_LEVEL" value="430" />
 <files id="haxe">
 <compilerflag value="-Iinclude"/>
+  <file name="src/wgr/impl/GuestAbi.cpp" >
+   <depend name="include/haxe/Exception.h"/>
+   <depend name="include/wgr/impl/GuestAbi.h"/>
+  </file>
   <file name="src/wgr/Vec2.cpp" >
    <depend name="include/wgr/Vec2.h"/>
   </file>
@@ -24,10 +28,6 @@
   <file name="src/wgr/Input.cpp" >
    <depend name="include/wgr/Input.h"/>
    <depend name="include/wgr/MouseState.h"/>
-  </file>
-  <file name="src/wgr/GuestAbi.cpp" >
-   <depend name="include/haxe/Exception.h"/>
-   <depend name="include/wgr/GuestAbi.h"/>
   </file>
   <file name="src/wgr/Camera3DDefaults.cpp" >
    <depend name="include/wgr/Camera3DDefaults.h"/>
@@ -60,7 +60,6 @@
    <depend name="include/Guest.h"/>
    <depend name="include/Std.h"/>
    <depend name="include/wgr/Camera3DDefaults.h"/>
-   <depend name="include/wgr/GuestAbi.h"/>
    <depend name="include/wgr/Input.h"/>
    <depend name="include/wgr/MouseState.h"/>
    <depend name="include/wgr/PickResult.h"/>
@@ -69,6 +68,7 @@
    <depend name="include/wgr/Vec3.h"/>
    <depend name="include/wgr/_Handle/Handle_Impl_.h"/>
    <depend name="include/wgr/_Scene/Scene_Impl_.h"/>
+   <depend name="include/wgr/impl/GuestAbi.h"/>
   </file>
   <file name="src/wgr/_Handle/Handle_Impl_.cpp" >
    <depend name="include/wgr/_Handle/Handle_Impl_.h"/>

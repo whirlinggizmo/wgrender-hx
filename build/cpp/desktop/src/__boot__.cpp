@@ -13,6 +13,9 @@
 #ifndef INCLUDED_wgr__Handle_Handle_Impl_
 #include <wgr/_Handle/Handle_Impl_.h>
 #endif
+#ifndef INCLUDED_wgr_impl_GuestAbi
+#include <wgr/impl/GuestAbi.h>
+#endif
 #ifndef INCLUDED_wgr_Vec2
 #include <wgr/Vec2.h>
 #endif
@@ -27,9 +30,6 @@
 #endif
 #ifndef INCLUDED_wgr_Input
 #include <wgr/Input.h>
-#endif
-#ifndef INCLUDED_wgr_GuestAbi
-#include <wgr/GuestAbi.h>
 #endif
 #ifndef INCLUDED_wgr_Vec3
 #include <wgr/Vec3.h>
@@ -60,12 +60,12 @@ __files__boot();
 ::wgr::Camera3DDefaults_obj::__register();
 ::Guest_obj::__register();
 ::wgr::_Handle::Handle_Impl__obj::__register();
+::wgr::impl::GuestAbi_obj::__register();
 ::wgr::Vec2_obj::__register();
 ::wgr::_Scene::Scene_Impl__obj::__register();
 ::wgr::PickResult_obj::__register();
 ::wgr::MouseState_obj::__register();
 ::wgr::Input_obj::__register();
-::wgr::GuestAbi_obj::__register();
 ::wgr::Vec3_obj::__register();
 ::haxe::iterators::ArrayIterator_obj::__register();
 ::haxe::ValueException_obj::__register();

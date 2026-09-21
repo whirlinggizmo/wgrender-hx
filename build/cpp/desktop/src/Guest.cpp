@@ -22,9 +22,6 @@
 #ifndef INCLUDED_wgr_Camera3DDefaults
 #include <wgr/Camera3DDefaults.h>
 #endif
-#ifndef INCLUDED_wgr_GuestAbi
-#include <wgr/GuestAbi.h>
-#endif
 #ifndef INCLUDED_wgr_Input
 #include <wgr/Input.h>
 #endif
@@ -48,6 +45,9 @@
 #endif
 #ifndef INCLUDED_wgr__Scene_Scene_Impl_
 #include <wgr/_Scene/Scene_Impl_.h>
+#endif
+#ifndef INCLUDED_wgr_impl_GuestAbi
+#include <wgr/impl/GuestAbi.h>
 #endif
 
 HX_LOCAL_STACK_FRAME(_hx_pos_3e40763dac58a534_64_main,"Guest","main",0x22325daf,"Guest.main","Guest.hx",64,0xc43d1706)
@@ -176,7 +176,7 @@ int Guest_obj::backgroundColor;
 
 void Guest_obj::main(){
             	HX_STACKFRAME(&_hx_pos_3e40763dac58a534_64_main)
-HXDLIN(  64)		::wgr::GuestAbi_obj::autostart(::Guest_obj::start_dyn());
+HXDLIN(  64)		::wgr::impl::GuestAbi_obj::autostart(::Guest_obj::start_dyn());
             	}
 
 
@@ -191,8 +191,8 @@ HXLINE(  76)			::Guest_obj::onFrame(dt);
             		HX_END_LOCAL_FUNC2((void))
 
             	HX_STACKFRAME(&_hx_pos_3e40763dac58a534_74_start)
-HXLINE(  76)		::wgr::GuestAbi_obj::_hx_register(::Guest_obj::onInit_dyn(), ::Dynamic(new _hx_Closure_0()),::Guest_obj::onAsset_dyn());
-HXLINE(  77)		::wgr::GuestAbi_obj::start(1024,1280,HX_("simple (wgrender host, Haxe guest)",8f,5e,fa,f1),(32 | 4));
+HXLINE(  76)		::wgr::impl::GuestAbi_obj::_hx_register(::Guest_obj::onInit_dyn(), ::Dynamic(new _hx_Closure_0()),::Guest_obj::onAsset_dyn());
+HXLINE(  77)		::wgr::impl::GuestAbi_obj::start(1024,1280,HX_("simple (wgrender host, Haxe guest)",8f,5e,fa,f1),(32 | 4));
             	}
 
 

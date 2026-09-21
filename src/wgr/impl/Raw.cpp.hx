@@ -1,4 +1,4 @@
-package wgr;
+package wgr.impl;
 
 /**
 	Raw wgrender bindings for the hxcpp guest: the slice of the C API this example

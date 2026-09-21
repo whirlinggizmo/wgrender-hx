@@ -13,7 +13,6 @@ const char *__hxcpp_all_files[] = {
 "Defines.hx",
 "Guest.hx",
 "wgr/Camera3D.hx",
-"wgr/GuestAbi.cpp.hx",
 "wgr/Handle.hx",
 "wgr/Input.hx",
 "wgr/MouseState.hx",
@@ -22,6 +21,7 @@ const char *__hxcpp_all_files[] = {
 "wgr/Transform.hx",
 "wgr/Vec2.hx",
 "wgr/Vec3.hx",
+"wgr/impl/GuestAbi.cpp.hx",
 #endif
  0 };
 
@@ -36,7 +36,6 @@ const char *__hxcpp_all_files_fullpath[] = {
 "/home/rknopf/projects/haxe/simple-js/src/Defines.hx",
 "/home/rknopf/projects/haxe/simple-js/src/Guest.hx",
 "/home/rknopf/projects/haxe/simple-js/src/wgr/Camera3D.hx",
-"/home/rknopf/projects/haxe/simple-js/wgr/GuestAbi.cpp.hx",
 "/home/rknopf/projects/haxe/simple-js/src/wgr/Handle.hx",
 "/home/rknopf/projects/haxe/simple-js/src/wgr/Input.hx",
 "/home/rknopf/projects/haxe/simple-js/src/wgr/MouseState.hx",
@@ -45,6 +44,7 @@ const char *__hxcpp_all_files_fullpath[] = {
 "/home/rknopf/projects/haxe/simple-js/src/wgr/Transform.hx",
 "/home/rknopf/projects/haxe/simple-js/src/wgr/Vec2.hx",
 "/home/rknopf/projects/haxe/simple-js/src/wgr/Vec3.hx",
+"/home/rknopf/projects/haxe/simple-js/wgr/impl/GuestAbi.cpp.hx",
 #endif
  0 };
 
@@ -59,13 +59,13 @@ const char *__hxcpp_all_classes[] = {
 "haxe.iterators.ArrayIterator",
 "wgr.Vec3",
 "wgr.Camera3DDefaults",
-"wgr.GuestAbi",
 "wgr.Input",
 "wgr.MouseState",
 "wgr.PickResult",
 "wgr._Scene.Scene_Impl_",
 "wgr.Transform",
 "wgr.Vec2",
+"wgr.impl.GuestAbi",
 #endif
  0 };
 } // namespace hx

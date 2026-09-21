@@ -1,6 +1,5 @@
-package wgr;
+package wgr.impl;
 
-import wgr.Wgr; // Log
 
 /**
 	The guest side of `host/wgr_guest.h`, for the JS target: the host is an Emscripten

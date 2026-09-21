@@ -1,6 +1,5 @@
-package wgr;
+package wgr.impl;
 
-import wgr.Wgr; // Vec2, Vec3, MouseState, PickResult — the shared layer's value types
 
 /**
 	Raw wgrender bindings for the JS guest: the same C API `../simple/src/wgr/Raw.hx`
