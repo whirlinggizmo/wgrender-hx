@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  How an installed wgrender-hx finds wgrender.
+
+  Pulled in by the @:buildXml on wgr.impl.Raw when WGR_BUILD_XML is NOT defined,
+  which is the case for anyone who ran `haxelib install wgrender-hx`. wgrender comes
+  from the submodule under project/lib and is linked as the static library its own
+  Makefile builds, rather than compiled from source here: wgrender's build packs
+  shaders and vendors sokol, and restating that in hxcpp would be a second build to
+  keep in step with the first.
+
+  `haxelib run wgrender-hx setup` is what builds it. hxcpp's Build.xml can test for a
+  define but not for a file, so a missing library shows up as a linker error; setup
+  is the one step between installing and building.
+
+  A checkout of this repo defines WGR_BUILD_XML instead, pointing at whatever
+  wgrender it is working against, so the examples and the test suite never come here.
+-->
+<xml>
+    <pragma once="true" />
+
+    <set name="WGRENDER" value="${haxelib:wgrender-hx}/project/lib/wgrender-c" />
+    <set name="WGRHX" value="${haxelib:wgrender-hx}" />
+
+    <files id="haxe">
+        <compilerflag value="-I${WGRENDER}/include" />
+        <compilerflag value="-I${WGRHX}/host" />
+    </files>
+
+    <!-- The guest ABI glue. hxcpp compiles it, so a native build needs no separate
+         C step of its own. -->
+    <files id="wgrguest">
+        <compilerflag value="-I${WGRENDER}/include" />
+        <compilerflag value="-I${WGRHX}/host" />
+        <file name="${WGRHX}/host/wgr_guest.c" />
+    </files>
+
+    <target id="haxe">
+        <files id="wgrguest" />
+
+        <lib name="${WGRENDER}/build/desktop/libwgrender.a" unless="emscripten" />
+        <lib name="${WGRENDER}/build/webgl2-nothreads/libwgrender.a" if="emscripten" />
+
+        <lib name="-lGL" if="linux" />
+        <lib name="-lX11" if="linux" />
+        <lib name="-lXi" if="linux" />
+        <lib name="-lXcursor" if="linux" />
+        <lib name="-lXrandr" if="linux" />
+        <lib name="-lasound" if="linux" />
+        <lib name="-ldl" if="linux" />
+        <lib name="-lm" unless="windows" />
+        <lib name="-lpthread" unless="windows" />
+
+        <!-- macOS: sokol wants frameworks rather than plain libraries -->
+        <flag value="-framework" if="macos" />
+        <flag value="Cocoa" if="macos" />
+        <flag value="-framework" if="macos" />
+        <flag value="Metal" if="macos" />
+        <flag value="-framework" if="macos" />
+        <flag value="MetalKit" if="macos" />
+        <flag value="-framework" if="macos" />
+        <flag value="QuartzCore" if="macos" />
+        <flag value="-framework" if="macos" />
+        <flag value="AudioToolbox" if="macos" />
+    </target>
+</xml>

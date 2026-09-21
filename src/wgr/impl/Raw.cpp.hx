@@ -159,11 +159,22 @@ extern class CTextureWrap {}
 @:include("wgr.h") @:native("wgr_tonemap_t") @:structAccess @:unreflective
 extern class CTonemap {}
 
-// Where wgrender is on this machine and how to link it: the app's build writes
-// that file and passes -D WGR_BUILD_XML. It rides here because every program
+// Where wgrender is and how to link it. This rides here because every program
 // that touches wgrender at all reaches this class, so -dce full cannot strip it
 // out from under the build the way it can any class in the API layer.
-@:buildXml('<include name="${WGR_BUILD_XML}" />')
+//
+// A checkout defines WGR_BUILD_XML and points it at whatever wgrender it is
+// working against -- the examples and test/check.py each write one. An install
+// has none and falls through to project/Build.xml, which links the wgrender-c
+// submodule under project/lib.
+//
+// The switch is on WGR_BUILD_XML rather than on the `wgrender_hx` define that
+// -lib sets, because the in-repo examples use -lib too: that define says which
+// binding is in use, not which wgrender to link against.
+@:buildXml('
+	<include name="${WGR_BUILD_XML}" if="WGR_BUILD_XML" />
+	<include name="${haxelib:wgrender-hx}/project/Build.xml" unless="WGR_BUILD_XML" />
+')
 @:keep @:unreflective @:include("wgr.h")
 extern class Raw {
 	@:native("wgr_init_values")

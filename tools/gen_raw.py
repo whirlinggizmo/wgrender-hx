@@ -324,11 +324,22 @@ def emit_cpp(enums, structs, functions):
         lines.append(f'@:include("wgr.h") @:native("{e}") @:structAccess @:unreflective\n'
                      f'extern class {hx(e, enums, "cpp")} {{}}\n')
     lines.append(
-        "// Where wgrender is on this machine and how to link it: the app's build writes\n"
-        "// that file and passes -D WGR_BUILD_XML. It rides here because every program\n"
+        "// Where wgrender is and how to link it. This rides here because every program\n"
         "// that touches wgrender at all reaches this class, so -dce full cannot strip it\n"
         "// out from under the build the way it can any class in the API layer.\n"
-        '@:buildXml(\'<include name="${WGR_BUILD_XML}" />\')\n'
+        "//\n"
+        "// A checkout defines WGR_BUILD_XML and points it at whatever wgrender it is\n"
+        "// working against -- the examples and test/check.py each write one. An install\n"
+        "// has none and falls through to project/Build.xml, which links the wgrender-c\n"
+        "// submodule under project/lib.\n"
+        "//\n"
+        "// The switch is on WGR_BUILD_XML rather than on the `wgrender_hx` define that\n"
+        "// -lib sets, because the in-repo examples use -lib too: that define says which\n"
+        "// binding is in use, not which wgrender to link against.\n"
+        "@:buildXml('\n"
+        '\t<include name="${WGR_BUILD_XML}" if="WGR_BUILD_XML" />\n'
+        '\t<include name="${haxelib:wgrender-hx}/project/Build.xml" unless="WGR_BUILD_XML" />\n'
+        "')\n"
         '@:keep @:unreflective @:include("wgr.h")\nextern class Raw {')
     lines.append('\n'.join(body))
     lines.append(MANUAL_CPP)
