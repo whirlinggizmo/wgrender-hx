@@ -190,7 +190,9 @@ def main():
     elif command == 'serve':
         serve()
     elif command == 'compare':
-        subprocess.run([str(LIB / 'tools/compare.py')], check=True)
+        # compare.py prints what is missing and why; a traceback on top of that adds
+        # a stack trace to a message that was already the answer.
+        return subprocess.run([str(LIB / 'tools/compare.py')]).returncode
     elif command == 'bench':
         bench()
     else:

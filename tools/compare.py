@@ -44,6 +44,9 @@ def main():
     if not dirs:
         dirs = sorted(d for d in (LIB / 'examples').iterdir()
                       if (d / 'build.py').exists() and (d / 'out/web').exists())
+    if not C_BUILD.exists():
+        sys.exit(f'no C builds to compare against at {C_BUILD}\n'
+                 f'  make -C {WGRENDER} wasm-all WEB_THREADS=0')
     rows = []
     for d in dirs:
         name = d.name
@@ -54,8 +57,7 @@ def main():
             print(f'{name}: not built (./build.py all)', file=sys.stderr)
             continue
         if c is None:
-            print(f'{name}: no C build at {C_BUILD} (make -C wgrender-c wasm-all WEB_THREADS=0)',
-                  file=sys.stderr)
+            print(f'{name}: wgrender has no C build of it', file=sys.stderr)
             continue
         guest = measure(site / f'{name}.js')
         rows.append((name, c, hx, guest))
