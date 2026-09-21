@@ -79,7 +79,13 @@ Nim and Beef ports).
 
 ## Status
 
-A spike, not a release. It covers the slice of wgrender the `simple` example uses —
-not 2D sprites and shapes, particles, materials, custom shaders, the environment,
-events or gamepads. `KeyboardState` is unmarshalled on js. The guest fault policy
+A spike, not a release. It covers what the `simple` and `particles` examples use —
+not 2D sprites, materials, custom shaders, the environment, events or gamepads, and
+only the grid from `wgr_shape3d.h`. `KeyboardState` is unmarshalled on js.
+
+Of wgrender's 466 public functions, a header parser could render about 90%
+mechanically; the rest fall into three patterns this already implements by hand (a
+`C<Enum>` extern plus a `@:to` cast, a scratch read for a struct return, and the
+callback/`void*` calls the guest ABI replaces). Generating the whole surface from the
+headers is the obvious next step. The guest fault policy
 defaults to log-and-continue.

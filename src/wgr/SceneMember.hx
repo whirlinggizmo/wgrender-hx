@@ -2,7 +2,8 @@ package wgr;
 
 // wgr_scene.h
 
-/** What `Scene.add` takes: a `Model`, `Sprite3D`, `Text2D`, `Text3D` or `Light`. **/
+/** What `Scene.add` takes: a `Model`, `Sprite3D`, `Text2D`, `Text3D`, `Emitter2D`,
+	`Emitter3D` or `Light`. **/
 abstract SceneMember(Handle) to Handle {
 	@:to inline function toRaw():WgrHandle
 		return (this : Int);
@@ -20,5 +21,11 @@ abstract SceneMember(Handle) to Handle {
 		return cast v;
 
 	@:from static inline function ofText3D(v:Text3D):SceneMember
+		return cast v;
+
+	@:from static inline function ofEmitter2D(v:Emitter2D):SceneMember
+		return cast v;
+
+	@:from static inline function ofEmitter3D(v:Emitter3D):SceneMember
 		return cast v;
 }

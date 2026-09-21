@@ -92,6 +92,9 @@ extern class CKeycode {}
 @:include("wgr.h") @:native("wgr_text_align_t") @:structAccess @:unreflective
 extern class CTextAlign {}
 
+@:include("wgr.h") @:native("wgr_alpha_mode_t") @:structAccess @:unreflective
+extern class CAlphaMode {}
+
 @:include("wgr.h") @:native("wgr_pick_result_t") @:structAccess @:unreflective
 extern class CPickResult {
 	var hit:Bool;
@@ -369,4 +372,156 @@ extern class Raw {
 	static function wgr_input_get_key(key:CKeycode):Int;
 	@:native("wgr_input_get_keyboard_state")
 	static function wgr_input_get_keyboard_state():CKeyboardState;
+
+	// --- particles and immediate 3D (wgr_emitter3d.h, wgr_emitter2d.h, wgr_shape3d.h,
+	//     wgr_debug.h, wgr_render.h) — generated from the headers ---
+	@:native("wgr_emitter3d_create")
+	static function wgr_emitter3d_create(texture:WgrHandle):WgrHandle;
+	@:native("wgr_emitter3d_destroy")
+	static function wgr_emitter3d_destroy(emitter:WgrHandle):Void;
+	@:native("wgr_emitter3d_set_source")
+	static function wgr_emitter3d_set_source(emitter:WgrHandle, x:Single, y:Single, width:Single, height:Single):Bool;
+	@:native("wgr_emitter3d_set_frames")
+	static function wgr_emitter3d_set_frames(emitter:WgrHandle, columns:Int, rows:Int, count:Int, per_second:Single):Bool;
+	@:native("wgr_emitter3d_set_position")
+	static function wgr_emitter3d_set_position(emitter:WgrHandle, x:Single, y:Single, z:Single):Bool;
+	@:native("wgr_emitter3d_jump")
+	static function wgr_emitter3d_jump(emitter:WgrHandle, x:Single, y:Single, z:Single):Bool;
+	@:native("wgr_emitter3d_set_rate")
+	static function wgr_emitter3d_set_rate(emitter:WgrHandle, per_second:Single):Bool;
+	@:native("wgr_emitter3d_burst")
+	static function wgr_emitter3d_burst(emitter:WgrHandle, count:Int):Bool;
+	@:native("wgr_emitter3d_set_emitting")
+	static function wgr_emitter3d_set_emitting(emitter:WgrHandle, emitting:Bool):Bool;
+	@:native("wgr_emitter3d_is_emitting")
+	static function wgr_emitter3d_is_emitting(emitter:WgrHandle):Bool;
+	@:native("wgr_emitter3d_set_max")
+	static function wgr_emitter3d_set_max(emitter:WgrHandle, count:Int):Bool;
+	@:native("wgr_emitter3d_set_life")
+	static function wgr_emitter3d_set_life(emitter:WgrHandle, min_seconds:Single, max_seconds:Single):Bool;
+	@:native("wgr_emitter3d_prewarm")
+	static function wgr_emitter3d_prewarm(emitter:WgrHandle, seconds:Single):Bool;
+	@:native("wgr_emitter3d_set_spawn_box")
+	static function wgr_emitter3d_set_spawn_box(emitter:WgrHandle, half_x:Single, half_y:Single, half_z:Single):Bool;
+	@:native("wgr_emitter3d_set_spawn_sphere")
+	static function wgr_emitter3d_set_spawn_sphere(emitter:WgrHandle, radius:Single):Bool;
+	@:native("wgr_emitter3d_set_velocity")
+	static function wgr_emitter3d_set_velocity(emitter:WgrHandle, x:Single, y:Single, z:Single, spread:Single, speed_variance:Single):Bool;
+	@:native("wgr_emitter3d_set_gravity")
+	static function wgr_emitter3d_set_gravity(emitter:WgrHandle, x:Single, y:Single, z:Single):Bool;
+	@:native("wgr_emitter3d_set_drag")
+	static function wgr_emitter3d_set_drag(emitter:WgrHandle, per_second:Single):Bool;
+	@:native("wgr_emitter3d_set_inherit_velocity")
+	static function wgr_emitter3d_set_inherit_velocity(emitter:WgrHandle, fraction:Single):Bool;
+	@:native("wgr_emitter3d_set_size")
+	static function wgr_emitter3d_set_size(emitter:WgrHandle, start:Single, end:Single, variance:Single):Bool;
+	@:native("wgr_emitter3d_set_color")
+	static function wgr_emitter3d_set_color(emitter:WgrHandle, start:WgrColor, end:WgrColor):Bool;
+	@:native("wgr_emitter3d_add_size_key")
+	static function wgr_emitter3d_add_size_key(emitter:WgrHandle, t:Single, size:Single):Bool;
+	@:native("wgr_emitter3d_clear_size_keys")
+	static function wgr_emitter3d_clear_size_keys(emitter:WgrHandle):Bool;
+	@:native("wgr_emitter3d_add_color_key")
+	static function wgr_emitter3d_add_color_key(emitter:WgrHandle, t:Single, color:WgrColor):Bool;
+	@:native("wgr_emitter3d_clear_color_keys")
+	static function wgr_emitter3d_clear_color_keys(emitter:WgrHandle):Bool;
+	@:native("wgr_emitter3d_add_palette_color")
+	static function wgr_emitter3d_add_palette_color(emitter:WgrHandle, color:WgrColor):Bool;
+	@:native("wgr_emitter3d_clear_palette")
+	static function wgr_emitter3d_clear_palette(emitter:WgrHandle):Bool;
+	@:native("wgr_emitter3d_set_spin")
+	static function wgr_emitter3d_set_spin(emitter:WgrHandle, min:Single, max:Single):Bool;
+	@:native("wgr_emitter3d_set_stretch")
+	static function wgr_emitter3d_set_stretch(emitter:WgrHandle, seconds:Single):Bool;
+	@:native("wgr_emitter3d_set_alpha_mode")
+	static function wgr_emitter3d_set_alpha_mode(emitter:WgrHandle, mode:CAlphaMode, cutoff:Single):Bool;
+	@:native("wgr_emitter3d_set_seed")
+	static function wgr_emitter3d_set_seed(emitter:WgrHandle, seed:UInt32):Bool;
+	@:native("wgr_emitter3d_get_count")
+	static function wgr_emitter3d_get_count(emitter:WgrHandle):Int;
+	@:native("wgr_emitter3d_clear")
+	static function wgr_emitter3d_clear(emitter:WgrHandle):Void;
+	@:native("wgr_emitter3d_set_visible")
+	static function wgr_emitter3d_set_visible(emitter:WgrHandle, visible:Bool):Bool;
+	@:native("wgr_emitter3d_draw")
+	static function wgr_emitter3d_draw(emitter:WgrHandle):Void;
+	@:native("wgr_emitter2d_create")
+	static function wgr_emitter2d_create(texture:WgrHandle):WgrHandle;
+	@:native("wgr_emitter2d_destroy")
+	static function wgr_emitter2d_destroy(emitter:WgrHandle):Void;
+	@:native("wgr_emitter2d_set_source")
+	static function wgr_emitter2d_set_source(emitter:WgrHandle, x:Single, y:Single, width:Single, height:Single):Bool;
+	@:native("wgr_emitter2d_set_frames")
+	static function wgr_emitter2d_set_frames(emitter:WgrHandle, columns:Int, rows:Int, count:Int, per_second:Single):Bool;
+	@:native("wgr_emitter2d_set_position")
+	static function wgr_emitter2d_set_position(emitter:WgrHandle, x:Single, y:Single):Bool;
+	@:native("wgr_emitter2d_jump")
+	static function wgr_emitter2d_jump(emitter:WgrHandle, x:Single, y:Single):Bool;
+	@:native("wgr_emitter2d_set_rate")
+	static function wgr_emitter2d_set_rate(emitter:WgrHandle, per_second:Single):Bool;
+	@:native("wgr_emitter2d_burst")
+	static function wgr_emitter2d_burst(emitter:WgrHandle, count:Int):Bool;
+	@:native("wgr_emitter2d_set_emitting")
+	static function wgr_emitter2d_set_emitting(emitter:WgrHandle, emitting:Bool):Bool;
+	@:native("wgr_emitter2d_is_emitting")
+	static function wgr_emitter2d_is_emitting(emitter:WgrHandle):Bool;
+	@:native("wgr_emitter2d_set_max")
+	static function wgr_emitter2d_set_max(emitter:WgrHandle, count:Int):Bool;
+	@:native("wgr_emitter2d_set_life")
+	static function wgr_emitter2d_set_life(emitter:WgrHandle, min_seconds:Single, max_seconds:Single):Bool;
+	@:native("wgr_emitter2d_prewarm")
+	static function wgr_emitter2d_prewarm(emitter:WgrHandle, seconds:Single):Bool;
+	@:native("wgr_emitter2d_set_spawn_box")
+	static function wgr_emitter2d_set_spawn_box(emitter:WgrHandle, half_width:Single, half_height:Single):Bool;
+	@:native("wgr_emitter2d_set_spawn_circle")
+	static function wgr_emitter2d_set_spawn_circle(emitter:WgrHandle, radius:Single):Bool;
+	@:native("wgr_emitter2d_set_velocity")
+	static function wgr_emitter2d_set_velocity(emitter:WgrHandle, x:Single, y:Single, spread:Single, speed_variance:Single):Bool;
+	@:native("wgr_emitter2d_set_gravity")
+	static function wgr_emitter2d_set_gravity(emitter:WgrHandle, x:Single, y:Single):Bool;
+	@:native("wgr_emitter2d_set_drag")
+	static function wgr_emitter2d_set_drag(emitter:WgrHandle, per_second:Single):Bool;
+	@:native("wgr_emitter2d_set_inherit_velocity")
+	static function wgr_emitter2d_set_inherit_velocity(emitter:WgrHandle, fraction:Single):Bool;
+	@:native("wgr_emitter2d_set_size")
+	static function wgr_emitter2d_set_size(emitter:WgrHandle, start:Single, end:Single, variance:Single):Bool;
+	@:native("wgr_emitter2d_set_color")
+	static function wgr_emitter2d_set_color(emitter:WgrHandle, start:WgrColor, end:WgrColor):Bool;
+	@:native("wgr_emitter2d_add_size_key")
+	static function wgr_emitter2d_add_size_key(emitter:WgrHandle, t:Single, size:Single):Bool;
+	@:native("wgr_emitter2d_clear_size_keys")
+	static function wgr_emitter2d_clear_size_keys(emitter:WgrHandle):Bool;
+	@:native("wgr_emitter2d_add_color_key")
+	static function wgr_emitter2d_add_color_key(emitter:WgrHandle, t:Single, color:WgrColor):Bool;
+	@:native("wgr_emitter2d_clear_color_keys")
+	static function wgr_emitter2d_clear_color_keys(emitter:WgrHandle):Bool;
+	@:native("wgr_emitter2d_add_palette_color")
+	static function wgr_emitter2d_add_palette_color(emitter:WgrHandle, color:WgrColor):Bool;
+	@:native("wgr_emitter2d_clear_palette")
+	static function wgr_emitter2d_clear_palette(emitter:WgrHandle):Bool;
+	@:native("wgr_emitter2d_set_spin")
+	static function wgr_emitter2d_set_spin(emitter:WgrHandle, min:Single, max:Single):Bool;
+	@:native("wgr_emitter2d_set_stretch")
+	static function wgr_emitter2d_set_stretch(emitter:WgrHandle, seconds:Single):Bool;
+	@:native("wgr_emitter2d_set_alpha_mode")
+	static function wgr_emitter2d_set_alpha_mode(emitter:WgrHandle, mode:CAlphaMode, cutoff:Single):Bool;
+	@:native("wgr_emitter2d_set_seed")
+	static function wgr_emitter2d_set_seed(emitter:WgrHandle, seed:UInt32):Bool;
+	@:native("wgr_emitter2d_get_count")
+	static function wgr_emitter2d_get_count(emitter:WgrHandle):Int;
+	@:native("wgr_emitter2d_clear")
+	static function wgr_emitter2d_clear(emitter:WgrHandle):Void;
+	@:native("wgr_emitter2d_set_visible")
+	static function wgr_emitter2d_set_visible(emitter:WgrHandle, visible:Bool):Bool;
+	@:native("wgr_emitter2d_draw")
+	static function wgr_emitter2d_draw(emitter:WgrHandle):Void;
+	@:native("wgr_shape3d_draw_grid")
+	static function wgr_shape3d_draw_grid(slices:Int, spacing:Single, color:WgrColor):Void;
+	@:native("wgr_debug_enable_fps")
+	static function wgr_debug_enable_fps(x:Int, y:Int, font_size:Int):Void;
+	/** void, so the generator skips them; they take and return nothing. **/
+	@:native("wgr_render_begin_mode_3d")
+	static function wgr_render_begin_mode_3d():Void;
+	@:native("wgr_render_end_mode_3d")
+	static function wgr_render_end_mode_3d():Void;
 }
