@@ -21,13 +21,27 @@ abstract Light(Handle) from Handle to Handle {
 
 	public var castsShadows(get, set):Bool;
 
-	/** How far from the camera this light's shadows are drawn. **/
+	/** How far from the camera this light's shadows are drawn. Refused at or below 0. **/
 	public var shadowDistance(never, set):Float;
 
-	/** The shadow map's resolution in texels. **/
+	/**
+		The shadow map's resolution in pixels each way, 2048 by default. Clamped to
+		256..4096 and rounded down to a power of two, so 100 becomes 256 and 9000
+		becomes 4096; a size below 1 is refused instead, since that is not a size.
+		Bigger is sharper and slower, and costs twice the memory each step.
+
+		wgrender has no getter for it, so what a size was clamped to can't be read back.
+
+		The casting lights in a scene share one map and all get the largest size any of
+		them asked for, so keep them the same unless you mean it.
+	**/
 	public var shadowMapSize(never, set):Int;
 
-	/** 0..1. **/
+	/**
+		How dark this light's shadows are: 0 none, 1 full. A value outside 0..1 is
+		refused rather than clamped, unlike `shadowMapSize`, so the strength keeps
+		whatever it had.
+	**/
 	public var shadowStrength(never, set):Float;
 
 	public var shadowColor(never, set):Color;
