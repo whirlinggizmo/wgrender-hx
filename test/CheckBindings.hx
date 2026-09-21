@@ -689,6 +689,80 @@ class CheckBindings {
 		near(Asset.getProgress(group), 0, "an empty group has made no progress");
 	}
 
+	/**
+		The light getters (wgrender 73356f7). Every one of these clamps was unobservable
+		from outside wgrender until they landed: the setter returned a bool that said
+		"accepted" without saying what it accepted.
+	**/
+	static function checkLightGetters():Void {
+		final l = new Light(Spot);
+		eq(l.kind, LightKind.Spot, "a light knows what kind it was made as");
+
+		// what is held, not what was passed: a direction comes back normalized
+		l.direction = new Vec3(0, -4, 0);
+		near(l.direction.y, -1, "direction is held normalized");
+		near(l.direction.x, 0, "on the other axes too");
+
+		l.position = new Vec3(1, 2, 3);
+		near(l.position.x, 1, "position x reads back");
+		near(l.position.y, 2, "position y reads back");
+		near(l.position.z, 3, "position z reads back — the vec3 is not transposed");
+
+		l.color = Color.GOLD;
+		eq((l.color : Int), (Color.GOLD : Int), "color reads back");
+		l.intensity = 2.5;
+		near(l.intensity, 2.5, "intensity reads back");
+		l.intensity = -5;
+		near(l.intensity, 0, "a negative intensity is held as 0");
+		l.range = -5;
+		near(l.range, 0, "and so is a negative range");
+		l.range = 10;
+		near(l.range, 10, "a real range reads back");
+
+		// the cone clamps to 0..pi/2
+		check(l.setSpotCone(0.1, 3), "a cone past pi/2 is accepted");
+		near(l.spotOuterAngle, Math.PI / 2, "and clamped to pi/2");
+		near(l.spotInnerAngle, 0.1, "the inner angle is left alone");
+
+		// the shadow map: clamped to 256..4096 and floored to a power of two
+		check(l.shadowMapSize == 2048, "the default map size is 2048");
+		l.shadowMapSize = 64;
+		eq(l.shadowMapSize, 256, "64 clamps up to 256");
+		l.shadowMapSize = 9000;
+		eq(l.shadowMapSize, 4096, "9000 clamps down to 4096");
+		l.shadowMapSize = 1500;
+		eq(l.shadowMapSize, 1024, "1500 floors to 1024, not 2048");
+		l.shadowMapSize = 0;
+		eq(l.shadowMapSize, 1024, "0 is refused, so it keeps what it had");
+
+		// strength clamps now, where it used to refuse
+		l.shadowStrength = 1.5;
+		near(l.shadowStrength, 1, "a strength past 1 clamps");
+		l.shadowStrength = -1;
+		near(l.shadowStrength, 0, "and below 0 clamps the other way");
+		l.shadowStrength = 0.25;
+		near(l.shadowStrength, 0.25, "one in range is kept");
+
+		l.shadowDistance = 20;
+		near(l.shadowDistance, 20, "shadow distance reads back");
+		l.shadowDistance = -1;
+		near(l.shadowDistance, 20, "and a negative one is refused, keeping the last");
+
+		l.shadowColor = Color.SKYBLUE;
+		eq((l.shadowColor : Int), (Color.SKYBLUE : Int), "shadow color reads back");
+
+		check(l.setShadowBias(2, 6), "a bias is set");
+		near(l.shadowBiasConstant, 2, "the constant part reads back");
+		near(l.shadowBiasSlope, 6, "and the slope part — the pair is not swapped");
+
+		// a dead handle reads 0 rather than the last value
+		l.destroy();
+		near(l.intensity, 0, "a destroyed light reads 0, not stale state");
+
+		final none:Light = Handle.NONE;
+		near(none.range, 0, "and so does a none handle");
+	}
+
 	/** What the header sweep of 2026-09-21 says wgrender promises. **/
 	static function checkSweptBehaviour():Void {
 		// emitters: max is 1..65536 and a value outside is refused, not clamped
@@ -792,6 +866,7 @@ class CheckBindings {
 		checkEvents();
 		checkPick();
 		checkSweptBehaviour();
+		checkLightGetters();
 	}
 
 	static function onFrame(dt:Float, tickFraction:Float):Void {

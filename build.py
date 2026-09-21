@@ -165,6 +165,10 @@ def check():
     # failure mode: it would declare an API that no longer exists.
     run([LIB / 'tools/gen_raw.py', '--check', WGRENDER])
     run([LIB / 'tools/coverage.py', '--check', WGRENDER])
+    # wgrender's headers name every value a setter refuses (its AGENTS.md makes that a
+    # contract). This fails if one of those sentences isn't repeated in the binding's
+    # own docs -- the link that broke when "capped at 65536" became a wrong API shape.
+    run([LIB / 'tools/setters.py', '--check', WGRENDER])
     print('wgrender (headless)')
     run(make('all', 'HEADLESS=1'))
     build = ROOT / 'build'
