@@ -37,6 +37,9 @@ ROOT = pathlib.Path(__file__).resolve().parent
 WGRENDER = pathlib.Path(os.environ.get('WGRENDER_DIR',
                                        ROOT / '../../github/whirlinggizmo/wgrender-c')).resolve()
 HAXE = os.environ.get('HAXE', 'haxe')
+# The wgr binding, its generator and its host glue are the wgrender-hx haxelib.
+LIB = pathlib.Path(subprocess.run(['haxelib', 'path', 'wgrender-hx'], check=True, capture_output=True,
+                                  text=True).stdout.split('\n')[0].strip()).parent.resolve()
 
 # Desktop link libraries, as in wgrender's examples/Makefile.
 DESKTOP_LIBS = ['-lGL', '-lX11', '-lXi', '-lXcursor', '-lXrandr', '-lasound', '-ldl', '-lm', '-lpthread']
@@ -158,6 +161,9 @@ def check():
     audio, and WGR_HEADLESS_FRAMES runs a fixed number of frames and returns, so the
     checks can assert values rather than only compile.
     """
+    # The binding is generated from wgrender's headers, so a stale one is a real
+    # failure mode: it would declare an API that no longer exists.
+    run([LIB / 'tools/gen_raw.py', '--check', WGRENDER])
     print('wgrender (headless)')
     run(make('all', 'HEADLESS=1'))
     build = ROOT / 'build'
