@@ -32,6 +32,7 @@ src/wgr/impl/         the C surface and the guest ABI, chosen by target
 host/wgr_guest.{c,h}  the guest ABI: wgrender as a host, four ops
 tools/gen_raw.py      writes BOTH impl/Raw.*.hx whole, from wgrender's include/*.h
 tools/gen_keys.py     regenerates wgr.Key from wgrender's wgr_keys.h
+tools/coverage.py     what the binding reaches, and what wrapping next buys
 ```
 
 Every handle kind is an `abstract` over `Int` and every method is `inline`, so the API
@@ -120,9 +121,15 @@ examples:
 | six to ten | `fetch`, `meshes`, `pick`, `lights`, `loading` |
 | more | `shadows`, `sprite2d`, `2d`, `touch`, `clay`, `postprocess`, `text3d`, `window`, `ui`, `shaders` |
 
-The unwrapped work is mostly 2D sprites, the retained shape objects, the environment,
-render targets, events and gamepads — all callable through `Raw` today.
-`KeyboardState` is unmarshalled on js.
+`tools/coverage.py` prints that, keeps it current, and ranks what to wrap next by how
+many examples it unblocks — today `shape3d` (9), `sprite2d` (6), then `mesh`, `scene`,
+`texture` and `sprite3d` (5 each).
+
+It also holds the list of things deliberately *not* reached on js — twelve calls that
+take a C function pointer or a `void *`, plus `wgr_input_get_keyboard_state`, whose
+512 ints want a heap reader rather than a copy per frame. `--check` fails if one of
+them turns up in `Raw.js.hx` after all, so a decision and a to-do stay distinguishable.
+That idea is taken whole from librl's `tools/audit_binding_parity.py`.
 
 ## Regenerating the C surface
 

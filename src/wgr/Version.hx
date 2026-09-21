@@ -25,15 +25,16 @@ class Version {
 		return Raw.wgr_version_string();
 
 	/**
-		True when the running library is one this binding was generated for. Logs the
-		mismatch, so a caller that ignores the result still leaves a trace.
+		True when the running library is one this binding was generated for. A false
+		stops `GuestAbi.start`, so this logs at fatal rather than leaving a trace for
+		someone to find later.
 	**/
 	public static function check():Bool {
 		final major = Raw.wgr_version_major();
 		final minor = Raw.wgr_version_minor();
 		if (major == BuiltVersion.MAJOR && minor == BuiltVersion.MINOR)
 			return true;
-		Log.error('wgrender ${runtime()} does not match the $BUILT this binding was generated '
+		Log.fatal('wgrender ${runtime()} does not match the $BUILT this binding was generated '
 			+ 'against (${BuiltVersion.COMMIT}) — regenerate with tools/gen_raw.py');
 		return false;
 	}

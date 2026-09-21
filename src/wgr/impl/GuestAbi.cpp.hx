@@ -64,10 +64,19 @@ class GuestAbi {
 	static function shutdownOp():Int
 		return 0;
 
-	/** Checked here because it is the one point both routes pass through. **/
-	public static function start(width:Int, height:Int, title:String, flags:Int):Void {
-		Version.check();
+	/**
+		Refuses on a version mismatch rather than starting: unlike a frame fault, it is
+		known before anything runs, it is total — every call may be wrong — and there is
+		no recovering from it. Starting anyway would turn one clear error into a pile of
+		confusing ones. (librl's BOOT_ERR_VERSION_MISMATCH does the same.)
+
+		Checked here because it is the one point both routes pass through.
+	**/
+	public static function start(width:Int, height:Int, title:String, flags:Int):Bool {
+		if (!Version.check())
+			return false;
 		GuestRaw.wgr_guest_start(width, height, title, flags);
+		return true;
 	}
 
 	/** Make a file local; the host calls the asset op with `id` when it is. **/
