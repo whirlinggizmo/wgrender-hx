@@ -155,7 +155,8 @@ class Input {
 
 	/**
 		How far a stick has to leave the middle to count, 0 to 0.9; 0.15 by default.
-		Past it the values rescale so they still reach 1 at the edge.
+		Past it the values rescale so they still reach 1 at the edge. A radius outside
+		that range is refused.
 	**/
 	public static inline function setGamepadDeadzone(radius:Float):Bool
 		return Raw.wgr_input_set_gamepad_deadzone(radius);

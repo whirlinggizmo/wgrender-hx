@@ -18,6 +18,8 @@ class Text {
 		What `Text.draw`/`measure` use, and what a none font means everywhere else
 		(`Font.draw`, `Text2D`, `Text3D`). None goes back to wgrender's built-in font,
 		JetBrains Mono, printable ASCII only. The default font holds its own reference.
+
+		A handle that isn't a loaded font is refused, and wgrender says so in the log.
 	**/
 	public static var defaultFont(get, set):Font;
 

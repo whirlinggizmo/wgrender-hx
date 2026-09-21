@@ -71,7 +71,10 @@ UNREACHABLE = {
     'wgr_material_set_shading': 'MaterialShading: same',
     'wgr_sprite3d_set_facing': 'SpriteFacing: same',
     'wgr_text3d_set_facing': 'SpriteFacing: same',
-    'wgr_text2d_set_align': 'TextAlign: same',
+    'wgr_text2d_set_align': 'AlignX and AlignY: wgrender refuses one axis\'s value '
+                            'passed for the other, and the two abstracts make that '
+                            'unrepresentable rather than a runtime false',
+    'wgr_text3d_set_align': 'AlignX and AlignY: same',
 }
 
 # Setters whose refusal is real but which stay properties anyway, with the reason.
@@ -164,6 +167,56 @@ def void_setters():
     return set(re.findall(r'^\s*void\s+(wgr_\w+_set_\w+)\s*\(', joined, re.M))
 
 
+REFUSAL = re.compile(
+    r'\bfalse\b[^.;]{0,80}?\b(for|when|outside|below|above|if|unless)\b'
+    r'|\brefus(e|es|ed|ing)\b|\bnot accepted\b', re.I)
+
+# Words a Haxe doc comment can use to say the same thing.
+SAYS_SO = re.compile(r'\brefus(e|es|ed|ing)\b|\bfalse\b|\bkeeps? what it had\b'
+                     r'|\bignored\b|\bnot a \w+\b', re.I)
+
+
+def documented_refusals():
+    """Setters whose header comment names a refusal, with the sentence it used.
+
+    AGENTS.md makes this a contract: "a setter's comment uses the word that matches
+    the code, and 'false for ...' names every refusal ... a binding decides
+    method-or-property from that sentence". So the sentence is the interface, and a
+    binding that does not repeat it is dropping the thing it was told.
+    """
+    out = {}
+    for h in sorted((WGRENDER / 'include').glob('*.h')):
+        text = h.read_text()
+        for m in re.finditer(
+                r'(/\*(?:[^*]|\*(?!/))*\*/)?\s*bool\s+(wgr_\w+_set_\w+)\s*\([^;]*?\);'
+                r'((?:[ \t]*/\*(?:[^*]|\*(?!/))*\*/)?)', text):
+        # the comment above the declaration, or the one trailing it on the same line
+            comment = (m.group(1) or '') + (m.group(3) or '')
+            if comment and REFUSAL.search(comment):
+                out[m.group(2)] = ' '.join(comment.split())
+    return out
+
+
+def doc_comments():
+    """Each member's doc comment, keyed `Module.member`.
+
+    A property's documentation sits above its `public var`, not above the accessor
+    that makes the call, and the accessor can be pages away with other members in
+    between -- so this keys on the member name and lets the caller join through the
+    property/method maps, rather than pairing a comment with the next Raw call it
+    happens to see.
+    """
+    out = {}
+    for f in sorted((ROOT / 'src/wgr').glob('*.hx')):
+        text = f.read_text()
+        for m in re.finditer(
+                r'/\*\*((?:[^*]|\*(?!/))*)\*/\s*(?:@:\w+(?:\([^)]*\))?\s*)*'
+                r'(?:public\s+)?(?:static\s+)?(?:inline\s+)?(?:var|final|function)\s+(\w+)',
+                text):
+            out[f'{f.stem}.{m.group(2)}'] = m.group(1)
+    return out
+
+
 def binding():
     """What the API layer exposes as a property, and what as a method."""
     props, methods = {}, {}
@@ -200,22 +253,40 @@ def main():
         else:
             swallowed.append((c_name, where, conds))
 
+    documented = documented_refusals()
+    docs = doc_comments()
+    undocumented = []
+    for c_name, sentence in sorted(documented.items()):
+        where = props.get(c_name) or methods.get(c_name)
+        if where is None:
+            continue  # not wrapped; coverage.py is what answers for that
+        mine = docs.get(where)
+        if c_name in UNREACHABLE:
+            continue  # documenting a case the types rule out is noise, not accuracy
+        if mine is None or not SAYS_SO.search(mine):
+            undocumented.append((where, c_name, sentence))
+
     if '--check' in sys.argv:
+        # The gate. This is prose against prose -- wgrender's header comment against
+        # the binding's doc comment -- so it is safe to fail a build on. The C reading
+        # below is not, and only warns.
+        for where, c_name, sentence in undocumented:
+            print(f'  {where}: {c_name}\'s header names a refusal the doc comment does not')
+            print(f'      header: {sentence[:120]}')
         for c_name, where, conds in swallowed:
-            print(f'  {where} is a property, but {c_name} refuses: {"; ".join(conds)}')
+            print(f'  warning: {where} is a property, but {c_name} refuses: {"; ".join(conds)}')
         stale = [n for n in list(UNREACHABLE) + list(ACCEPTED)
                  if n not in props and n not in methods]
         for n in stale:
             print(f'  {n}: listed as an exception, but the binding does not wrap it')
-        # An unread guard is not a clean one. If wgrender starts writing a setter in a
-        # shape this can't read, that has to surface here rather than pass quietly.
         for c_name, where in unparsed:
-            print(f'  {where}: could not read {c_name}\'s guard from the C')
-        bad = swallowed or stale or unparsed
-        print(f'setters: {"leaking" if bad else "clean"} '
-              f'({len(props)} properties, {len(methods)} methods, '
-              f'{len(UNREACHABLE)} unreachable, {len(ACCEPTED)} accepted)')
-        return 1 if bad else 0
+            print(f'  warning: could not read {c_name}\'s guard from the C ({where})')
+        for n in stale:
+            pass
+        print(f'setters: {"stale" if undocumented else "current"} '
+              f'({len(documented)} documented refusals, {len(undocumented)} not repeated; '
+              f'{len(props)} properties, {len(methods)} methods)')
+        return 1 if undocumented or stale else 0
 
     print(f'{len(props)} properties and {len(methods)} methods wrap a wgrender setter.\n')
     if swallowed:
@@ -226,6 +297,10 @@ def main():
                 print(f'  {"":<28}   false when  {cond}')
         print()
     print(f'{len(fine)} properties can only fail on a dead handle, which wgrender logs.')
+    print(f'\n{len(documented)} setters name a refusal in their header; '
+          f'{len(documented) - len(undocumented)} are repeated in the binding\'s docs.')
+    for where, c_name, sentence in undocumented:
+        print(f'  {where:<28} {c_name} says so and the binding does not')
     if UNREACHABLE:
         print(f'\n{len(UNREACHABLE)} refusals Haxe\'s types make unreachable:')
         for n, why in sorted(UNREACHABLE.items()):

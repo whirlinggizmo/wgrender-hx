@@ -105,6 +105,10 @@ abstract Material(Handle) from Handle to Handle {
 	inline function get_alphaMode():AlphaMode
 		return AlphaMode.of(Raw.wgr_material_get_alpha_mode(this));
 
+	/**
+		How it uses alpha; `cutoff` applies to `Mask`. `Add` is not supported for
+		materials yet and is refused — additive belongs to sprites and particles.
+	**/
 	public inline function setAlphaMode(mode:AlphaMode, cutoff:Float = 0.5):Bool
 		return Raw.wgr_material_set_alpha_mode(this, mode, cutoff);
 

@@ -25,7 +25,7 @@ abstract Emitter3D(Handle) from Handle to Handle {
 	/** Particles alive now. **/
 	public var count(get, never):Int;
 
-	/** Made per second while emitting. **/
+	/** Made per second while emitting; 0 for bursts only. A negative rate is refused. **/
 	public var rate(never, set):Float;
 
 	/** Velocity lost per second — particles that slow down rather than coast. **/
