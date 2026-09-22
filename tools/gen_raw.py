@@ -223,13 +223,19 @@ def layout(structs, name):
 DIGEST_TAG = '// wgrender-headers: '
 
 
-def provenance():
-    """What wgrender this was generated from, and a digest that moves when it does."""
-    headers = sorted((WGRENDER / 'include').glob('*.h'))
+def header_digest(wgrender):
+    """A digest of wgrender's public headers: it moves when any of them does."""
+    headers = sorted((wgrender / 'include').glob('*.h'))
     digest = hashlib.sha256()
     for h in headers:
         digest.update(h.name.encode())
         digest.update(h.read_bytes())
+    return digest.hexdigest()[:16], len(headers)
+
+
+def provenance():
+    """What wgrender this was generated from, and a digest that moves when it does."""
+    digest, count = header_digest(WGRENDER)
     version = re.findall(r'#define WGR_VERSION_(?:MAJOR|MINOR|PATCH)\s+(\d+)',
                          (WGRENDER / 'include/wgr_version.h').read_text())
     try:
@@ -237,7 +243,7 @@ def provenance():
                                 check=True, capture_output=True, text=True).stdout.strip()
     except Exception:
         commit = 'unknown'
-    return '.'.join(version) or '?', commit, digest.hexdigest()[:16], len(headers)
+    return '.'.join(version) or '?', commit, digest, count
 
 
 def header_comment():
@@ -552,7 +558,30 @@ def check():
         print('  run tools/gen_raw.py')
         return 1
     print(f'wgrender at {commit}, {count} headers: the binding is current ({digest})')
-    return 0
+    return check_submodule(digest)
+
+
+def check_submodule(digest):
+    """The vendored wgrender has to be the one the binding was generated from.
+
+    A checkout works against the sibling wgrender-c and never looks at the submodule,
+    so regenerating against a newer wgrender leaves the pin behind without a word --
+    and then the first person to `haxelib git` this gets a STALE binding on their
+    first build, because an install has only the submodule. That happened, and this is
+    so it cannot happen quietly again: the check runs on the dev path, where it can be
+    fixed, rather than on the install path, where it cannot.
+    """
+    vendored = ROOT / 'project/lib/wgrender-c'
+    if not (vendored / 'include/wgr.h').exists() or vendored.resolve() == WGRENDER.resolve():
+        return 0  # no submodule checked out, or it is what was just checked
+    theirs, _ = header_digest(vendored)
+    if theirs == digest:
+        return 0
+    print(f'but the vendored wgrender ({vendored.relative_to(ROOT)}) is a different one:\n'
+          f'  its headers are {theirs}, the binding was generated from {digest}\n'
+          '  an install has only this one, so it would see a STALE binding\n'
+          f'  git -C {vendored.relative_to(ROOT)} checkout <the commit the binding is for>')
+    return 1
 
 
 def emit_built_version():
