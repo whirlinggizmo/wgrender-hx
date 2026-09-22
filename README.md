@@ -11,13 +11,13 @@ targets from one API:
 import wgr.*;
 
 final mesh = Mesh.create(path);
-model = new Model(mesh);      // wgrender's rule: object from resource, resource from path
-mesh.release();               // the model holds its own reference
-model.animationLoop = true;
-model.tint = Color.RAYWHITE;
-scene.add(model);             // takes a Model, Sprite3D, Text2D, Text3D or Light
+model = Model.create(mesh);            // wgrender's rule: object from resource, resource from path
+Mesh.release(mesh);                    // the model holds its own reference
+Model.setAnimationLoop(model, true);
+Model.setTint(model, Color.RAYWHITE);
+Scene.add(scene, model);               // takes a Model, Sprite3D, Text2D, Text3D or Light
 
-if (pick.handle == model) ... // the untyped pick handle still compares to typed ones
+if (pick.handle == model) ...          // the untyped pick handle still compares to typed ones
 ```
 
 ## Layout
@@ -51,16 +51,31 @@ tools/gcbench.mjs     allocation and GC per frame, traced from V8
 tools/drive.mjs       run a built example and fail on anything the console calls an error
 ```
 
-Every handle kind is an `abstract` over `Int` and every method is `inline`, so the API
+Every operation is a static named after the C call it makes, taking the handle first:
+`wgr_model_set_tint` is `Model.setTint`, `wgr_model_is_visible` is `Model.isVisible`,
+`wgr_window_has_fullscreen` is `Window.hasFullscreen`. The name is the mapping, which
+is what lets the binding be audited mechanically (`tools/refusals.py --check`) and what
+keeps a second binding in step — a property has no counterpart in Lua or Nim, and it
+cannot return the `Bool` a wgrender setter uses to refuse.
+
+A member that only reads struct data keeps its shape, because there is no C name to
+mirror: `Vec3.x`, `MouseState`, `KeyboardState.isPressed`, `Handle.isNone`.
+
+Every handle kind is an `abstract` over `Int` and every member is `inline`, so the API
 layer compiles away: a call costs what the C call costs. The only allocations are the
 small value objects (`Vec2`, `Vec3`, `MouseState`, `PickResult`) the wrappers return.
+The typed abstracts are free too, and they earn their place twice: a `Mesh` where a
+`Texture` belongs is a compile error, and so is a bare literal `0` where `Handle.NONE`
+is accepted — which makes "0 is a value you pass on purpose" enforceable rather than
+documented. See `docs/handles.md`.
 
 ### Why handles aren't `null`
 
 A handle is 0 when it refers to nothing, and `isNone` reports that — rather than the
-`model != null` a Haxe developer would reach for first.
+`model != null` a Haxe developer would reach for first — `Model.isNone(model)`, or
+`Handle.isNone` on an untyped one.
 
-0 is a value you *pass*, not only one you get back. `new Model(Handle.NONE)` is an
+0 is a value you *pass*, not only one you get back. `Model.create(Handle.NONE)` is an
 empty model that joins the scene immediately and is given its mesh when the asset
 arrives, so the frame loop never asks whether it has loaded — which is how `model`,
 `materials`, `lights`, `sprite2d` and `text3d` are all written, following the C.

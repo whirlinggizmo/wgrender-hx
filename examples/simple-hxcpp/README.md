@@ -194,29 +194,37 @@ Two layers, the same split the Nim port uses:
 - **`wgr/Wgr.hx`** — the layer you actually write against.
 
 The design goal was that the whole wrapper compile away. Every handle type is an
-`abstract` over `Int`, every method is `inline`, so a call costs exactly what the C
+`abstract` over `Int`, every member is `inline`, so a call costs exactly what the C
 call costs; the only allocations are the small value objects (`Vec2`, `Vec3`,
 `MouseState`, `PickResult`) the wrappers hand back.
 
-What that buys, compared with a flat C-shaped façade:
+The API is flat: every operation is a static named after the C call it makes, taking
+the handle first. The typed abstracts stay, so the shape is C's and the types are
+Haxe's:
 
 ```haxe
-// one abstract per handle kind, carrying that kind's methods — a Mesh where a
-// Texture belongs is a compile error, and properties stand in for C's setters
+// one abstract per handle kind — a Mesh where a Texture belongs is a compile error,
+// and so is a bare literal 0 where Handle.NONE is accepted
 final mesh = Mesh.create(path);
-model = new Model(mesh);     // wgrender's rule: object from resource, resource from path
-mesh.release();              // the model holds its own reference
-model.animationLoop = true;
-model.tint = Color.RAYWHITE;
-model.setTransform(new Vec3(0, 0, 0));
-scene.add(model);            // takes a Model, Sprite3D or Light, and nothing else
+model = Model.create(mesh);            // wgrender's rule: object from resource, resource from path
+Mesh.release(mesh);                    // the model holds its own reference
+Model.setAnimationLoop(model, true);
+Model.setTint(model, Color.RAYWHITE);
+Model.setTransform(model, new Vec3(0, 0, 0));
+Scene.add(scene, model);               // takes a Model, Sprite3D or Light, and nothing else
 
 // closures, not function pointers plus a void*
-Asset.ensureAsync(path).then(path -> { ... }, path -> Log.error('failed: $path'));
+AssetTask.then(Asset.ensureAsync(path), path -> { ... }, path -> Log.error('failed: $path'));
 
 // the pick result's untyped handle still compares against typed ones
 if (pick.handle == model) ...
 ```
+
+Why flat rather than methods and properties: the name is then the mapping, so the
+binding can be audited mechanically and a second binding in Lua or Nim mirrors it
+without translation — and a property setter cannot return the `Bool` a wgrender setter
+uses to refuse, which was silently discarded in nine places. `docs/handles.md` has the
+measurements; it cost nothing, either in bytes or per frame.
 
 Two places where the Haxe types say more than the C ones:
 
