@@ -77,19 +77,19 @@ class UiButton {
 		this.y = y;
 		this.width = width;
 		this.height = height;
-		shape = new Shape2D();
-		shape.setRectangle(width, height, 10);
-		shape.setTransform(new Vec2(x, y));
-		scene.add(shape, layer);
+		shape = Shape2D.create();
+		Shape2D.setRectangle(shape, width, height, 10);
+		Shape2D.setTransform(shape, new Vec2(x, y));
+		Scene.add(scene, shape, layer);
 
 		// centered on the button, so the label needs no measuring
-		label = new Text2D(Handle.NONE);
-		label.text = text;
-		label.size = textSize;
-		label.setAlign(Center, Middle);
-		label.position = new Vec2(x + width * 0.5, y + height * 0.5);
-		label.pickable = false; // the rectangle under it takes the pointer
-		scene.add(label, layer + 1);
+		label = Text2D.create(Handle.NONE);
+		Text2D.setText(label, text);
+		Text2D.setSize(label, textSize);
+		Text2D.setAlign(label, Center, Middle);
+		Text2D.setPosition(label, new Vec2(x + width * 0.5, y + height * 0.5));
+		Text2D.setPickable(label, false); // the rectangle under it takes the pointer
+		Scene.add(scene, label, layer + 1);
 	}
 
 	/**
@@ -97,30 +97,30 @@ class UiButton {
 		frame. A disabled button still blocks the pointer; it just doesn't react.
 	**/
 	public function update(scene:Scene, theme:UiTheme):Bool {
-		final on = shape.enabled;
-		final held = Ui.isActive(scene.getPress(shape));
-		final over = Ui.isActive(scene.getHover(shape));
-		shape.color = !on ? theme.disabled : held ? theme.pressed : over ? theme.hover : theme.idle;
-		label.color = on ? theme.text : theme.textDisabled;
-		return on && scene.isClicked(shape);
+		final on = Shape2D.isEnabled(shape);
+		final held = Ui.isActive(Scene.getPress(scene, shape));
+		final over = Ui.isActive(Scene.getHover(scene, shape));
+		Shape2D.setColor(shape, !on ? theme.disabled : held ? theme.pressed : over ? theme.hover : theme.idle);
+		Text2D.setColor(label, on ? theme.text : theme.textDisabled);
+		return on && Scene.isClicked(scene, shape);
 	}
 
 	public var enabled(get, set):Bool;
 
 	inline function get_enabled():Bool
-		return shape.enabled;
+		return Shape2D.isEnabled(shape);
 
 	inline function set_enabled(v:Bool):Bool {
-		shape.enabled = v;
+		Shape2D.setEnabled(shape, v);
 		return v;
 	}
 
 	public inline function setText(text:String):Void
-		label.text = text;
+		Text2D.setText(label, text);
 
 	public function destroy():Void {
-		label.destroy();
-		shape.destroy();
+		Text2D.destroy(label);
+		Shape2D.destroy(shape);
 	}
 }
 
@@ -142,21 +142,21 @@ class UiBar {
 		this.y = y;
 		this.width = width;
 		this.height = height;
-		track = new Shape2D();
-		track.setRectangle(width, height, height * 0.5);
-		track.setTransform(new Vec2(x, y));
-		track.outline = 2;
-		track.pickable = false;
-		scene.add(track, layer + 1); // over the fill
+		track = Shape2D.create();
+		Shape2D.setRectangle(track, width, height, height * 0.5);
+		Shape2D.setTransform(track, new Vec2(x, y));
+		Shape2D.setOutline(track, 2);
+		Shape2D.setPickable(track, false);
+		Scene.add(scene, track, layer + 1); // over the fill
 
-		fill = new Shape2D();
-		fill.pickable = false;
-		scene.add(fill, layer);
+		fill = Shape2D.create();
+		Shape2D.setPickable(fill, false);
+		Scene.add(scene, fill, layer);
 
-		knob = new Shape2D();
-		knob.setCircle(height * 0.34);
-		knob.pickable = false;
-		scene.add(knob, layer + 1);
+		knob = Shape2D.create();
+		Shape2D.setCircle(knob, height * 0.34);
+		Shape2D.setPickable(knob, false);
+		Scene.add(scene, knob, layer + 1);
 	}
 
 	/**
@@ -169,20 +169,20 @@ class UiBar {
 		final length = width * clamped;
 		final any = clamped > 0.0;
 
-		track.color = theme.track;
-		fill.setRectangle(length > height ? length : height, height, round);
-		fill.setTransform(new Vec2(x, y));
-		fill.color = theme.fill;
-		fill.visible = any;
-		knob.setTransform(new Vec2(x + (length > round ? length - round : round), y + round));
-		knob.color = theme.knob;
-		knob.visible = any;
+		Shape2D.setColor(track, theme.track);
+		Shape2D.setRectangle(fill, length > height ? length : height, height, round);
+		Shape2D.setTransform(fill, new Vec2(x, y));
+		Shape2D.setColor(fill, theme.fill);
+		Shape2D.setVisible(fill, any);
+		Shape2D.setTransform(knob, new Vec2(x + (length > round ? length - round : round), y + round));
+		Shape2D.setColor(knob, theme.knob);
+		Shape2D.setVisible(knob, any);
 	}
 
 	public function destroy():Void {
-		knob.destroy();
-		fill.destroy();
-		track.destroy();
+		Shape2D.destroy(knob);
+		Shape2D.destroy(fill);
+		Shape2D.destroy(track);
 	}
 }
 
@@ -212,21 +212,21 @@ class UiList {
 		this.height = height;
 		this.rowHeight = rowHeight;
 		for (name in names) {
-			final row = new Shape2D();
-			row.setRectangle(width, rowHeight - 4.0, 6);
-			scene.add(row, rowLayer);
+			final row = Shape2D.create();
+			Shape2D.setRectangle(row, width, rowHeight - 4.0, 6);
+			Scene.add(scene, row, rowLayer);
 			rows.push(row);
 
-			final label = new Text2D(Handle.NONE);
-			label.text = name;
-			label.size = textSize;
-			label.setAlign(Left, Middle);
-			label.pickable = false;
-			scene.add(label, rowLayer + 1);
+			final label = Text2D.create(Handle.NONE);
+			Text2D.setText(label, name);
+			Text2D.setSize(label, textSize);
+			Text2D.setAlign(label, Left, Middle);
+			Text2D.setPickable(label, false);
+			Scene.add(scene, label, rowLayer + 1);
 			labels.push(label);
 		}
-		scene.setClip(rowLayer, x, y, width, height);
-		scene.setClip(rowLayer + 1, x, y, width, height);
+		Scene.setClip(scene, rowLayer, x, y, width, height);
+		Scene.setClip(scene, rowLayer + 1, x, y, width, height);
 		place();
 	}
 
@@ -234,8 +234,8 @@ class UiList {
 	function place():Void {
 		for (i in 0...rows.length) {
 			final rowY = y + i * rowHeight - scroll;
-			rows[i].setTransform(new Vec2(x, rowY));
-			labels[i].position = new Vec2(x + 12, rowY + rowHeight * 0.5);
+			Shape2D.setTransform(rows[i], new Vec2(x, rowY));
+			Text2D.setPosition(labels[i], new Vec2(x + 12, rowY + rowHeight * 0.5));
 		}
 	}
 
@@ -253,20 +253,20 @@ class UiList {
 		}
 		place();
 		for (i in 0...rows.length) {
-			final over = Ui.isActive(scene.getHover(rows[i]));
-			if (scene.isClicked(rows[i]))
+			final over = Ui.isActive(Scene.getHover(scene, rows[i]));
+			if (Scene.isClicked(scene, rows[i]))
 				selected = i;
-			rows[i].color = selected == i ? theme.rowSelected : over ? theme.hover : theme.row;
-			labels[i].color = theme.text;
+			Shape2D.setColor(rows[i], selected == i ? theme.rowSelected : over ? theme.hover : theme.row);
+			Text2D.setColor(labels[i], theme.text);
 		}
 		return selected;
 	}
 
 	public function destroy():Void {
 		for (label in labels)
-			label.destroy();
+			Text2D.destroy(label);
 		for (row in rows)
-			row.destroy();
+			Shape2D.destroy(row);
 		rows.resize(0);
 		labels.resize(0);
 		selected = -1;

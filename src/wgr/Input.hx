@@ -10,16 +10,20 @@ class Input {
 	public static inline var MAX_TOUCHES = 8;
 
 	/** In logical pixels, top-left origin. **/
-	public static var mousePosition(get, never):Vec2;
+	public static inline function getMousePosition():Vec2
+		return Vec2.of(Raw.wgr_input_get_mouse_position());
 
 	/** How far it moved this frame (or tick). **/
-	public static var mouseDelta(get, never):Vec2;
+	public static inline function getMouseDelta():Vec2
+		return Vec2.of(Raw.wgr_input_get_mouse_delta());
 
 	/** This frame's (or tick's) wheel; fractional on trackpads. **/
-	public static var mouseWheel(get, never):Float;
+	public static inline function getMouseWheel():Float
+		return Raw.wgr_input_get_mouse_wheel();
 
 	/** The horizontal wheel, same units. **/
-	public static var mouseWheelX(get, never):Float;
+	public static inline function getMouseWheelX():Float
+		return Raw.wgr_input_get_mouse_wheel_x();
 
 	/**
 		Whether game controls — camera drags, 3D selection, hotkeys — should leave the
@@ -32,43 +36,33 @@ class Input {
 		true. A UI lays out in the frame callback, after that frame's ticks, so a tick
 		sees the previous frame's value.
 	**/
-	public static var pointerCaptured(get, set):Bool;
-
-	/** The same for the keyboard — a text field with focus, say. **/
-	public static var keyboardCaptured(get, set):Bool;
-
-	/** Fingers down, plus those lifted this frame (or tick). **/
-	public static var touchCount(get, never):Int;
-
-	static inline function get_mousePosition():Vec2
-		return Vec2.of(Raw.wgr_input_get_mouse_position());
-
-	static inline function get_mouseDelta():Vec2
-		return Vec2.of(Raw.wgr_input_get_mouse_delta());
-
-	static inline function get_mouseWheel():Float
-		return Raw.wgr_input_get_mouse_wheel();
-
-	static inline function get_mouseWheelX():Float
-		return Raw.wgr_input_get_mouse_wheel_x();
-
-	static inline function get_pointerCaptured():Bool
+	public static inline function isPointerCaptured():Bool
 		return Raw.wgr_input_is_pointer_captured();
 
-	static inline function set_pointerCaptured(v:Bool):Bool {
-		Raw.wgr_input_set_pointer_captured(v);
-		return v;
-	}
+	/**
+		Whether game controls — camera drags, 3D selection, hotkeys — should leave the
+		pointer alone because a UI has it. Advisory: wgrender keeps reporting input, and
+		game code is what checks this first.
 
-	static inline function get_keyboardCaptured():Bool
+		It is captured while a press that started on a 2D member of an interactive scene
+		is held, and while the game's UI says so. A UI's own captures are sticky: set
+		one every frame from the UI's hit-testing, and clear it when that stops being
+		true. A UI lays out in the frame callback, after that frame's ticks, so a tick
+		sees the previous frame's value.
+	**/
+	public static inline function setPointerCaptured(value:Bool):Void
+		Raw.wgr_input_set_pointer_captured(value);
+
+	/** The same for the keyboard — a text field with focus, say. **/
+	public static inline function isKeyboardCaptured():Bool
 		return Raw.wgr_input_is_keyboard_captured();
 
-	static inline function set_keyboardCaptured(v:Bool):Bool {
-		Raw.wgr_input_set_keyboard_captured(v);
-		return v;
-	}
+	/** The same for the keyboard — a text field with focus, say. **/
+	public static inline function setKeyboardCaptured(value:Bool):Void
+		Raw.wgr_input_set_keyboard_captured(value);
 
-	static inline function get_touchCount():Int
+	/** Fingers down, plus those lifted this frame (or tick). **/
+	public static inline function getTouchCount():Int
 		return Raw.wgr_input_get_touch_count();
 
 	/** Hide the cursor and keep it in the window — mouse-look. `mouseDelta` still moves. **/

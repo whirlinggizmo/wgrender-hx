@@ -71,23 +71,23 @@ class RenderTarget {
 
 		pixelView = Texture.createTarget(PIXEL_W, PIXEL_H);
 		// nearest, so enlarging it keeps the pixels square rather than smearing them
-		pixelView.setSampling(Clamp, Clamp, Nearest);
+		Texture.setSampling(pixelView, Clamp, Clamp, Nearest);
 		minimap = Texture.createTarget(MINIMAP, MINIMAP);
 		label = Texture.createTarget(LABEL_W, LABEL_H);
 
-		scene = new Scene();
-		camera = new Camera3D(Perspective);
-		camera.setView(new Vec3(0, 6.0, 10.0), new Vec3(0, 0.8, 0));
-		topCamera = new Camera3D(Orthographic);
+		scene = Scene.create();
+		camera = Camera3D.create(Perspective);
+		Camera3D.setView(camera, new Vec3(0, 6.0, 10.0), new Vec3(0, 0.8, 0));
+		topCamera = Camera3D.create(Orthographic);
 		// looking down, with -z up the map
-		topCamera.setView(new Vec3(0, 12, 0), new Vec3(0, 0, 0), new Vec3(0, 0, -1));
-		topCamera.orthoHeight = 9.0;
+		Camera3D.setView(topCamera, new Vec3(0, 12, 0), new Vec3(0, 0, 0), new Vec3(0, 0, -1));
+		Camera3D.setOrthoHeight(topCamera, 9.0);
 
-		final sun = new Light(Directional);
-		sun.direction = new Vec3(-0.5, -1.0, -0.4);
-		sun.intensity = 3.0;
-		scene.add(sun);
-		scene.setAmbient(Color.WHITE, 0.25);
+		final sun = Light.create(Directional);
+		Light.setDirection(sun, new Vec3(-0.5, -1.0, -0.4));
+		Light.setIntensity(sun, 3.0);
+		Scene.add(scene, sun);
+		Scene.setAmbient(scene, Color.WHITE, 0.25);
 
 		addModels();
 		load(GUMSHOE_PATH, ASSET_GUMSHOE);
@@ -101,31 +101,31 @@ class RenderTarget {
 	}
 
 	static function model(position:Vec3, scaleY:Float, scale:Float, material:Material):Model {
-		final m = new Model(Handle.NONE); // the mesh arrives later
-		m.setTransform(position, null, new Vec3(scale, scaleY, scale));
-		if (!material.isNone) {
-			m.setMaterial(0, material);
-			material.release(); // the model keeps its own reference
+		final m = Model.create(Handle.NONE); // the mesh arrives later
+		Model.setTransform(m, position, null, new Vec3(scale, scaleY, scale));
+		if (!Material.isNone(material)) {
+			Model.setMaterial(m, 0, material);
+			Material.release(material); // the model keeps its own reference
 		}
-		scene.add(m);
+		Scene.add(scene, m);
 		return m;
 	}
 
 	static function addModels():Void {
 		// ground: a flattened sphere
-		final groundMaterial = new Material(Pbr);
-		groundMaterial.setBaseColor(0.25, 0.3, 0.25, 1.0);
-		groundMaterial.metallic = 0.0;
+		final groundMaterial = Material.create(Pbr);
+		Material.setBaseColor(groundMaterial, 0.25, 0.3, 0.25, 1.0);
+		Material.setMetallic(groundMaterial, 0.0);
 		ground = model(new Vec3(0, -0.05, 0), 0.1, 8.0, groundMaterial);
 
-		gumshoe = new Model(Handle.NONE);
-		gumshoe.animation = 3;
-		scene.add(gumshoe);
+		gumshoe = Model.create(Handle.NONE);
+		Model.setAnimation(gumshoe, 3);
+		Scene.add(scene, gumshoe);
 
 		// The globe wears the label: a target texture used like any other texture.
-		final globeMaterial = new Material(Unlit);
-		globeMaterial.setTexture("base_color_texture", label);
-		globeMaterial.setVec2("base_color_texture_scale", 2.0, 1.0); // twice around
+		final globeMaterial = Material.create(Unlit);
+		Material.setTexture(globeMaterial, "base_color_texture", label);
+		Material.setVec2(globeMaterial, "base_color_texture_scale", 2.0, 1.0); // twice around
 		globe = model(new Vec3(2.2, 1.2, 0), 1.6, 1.6, globeMaterial);
 	}
 
@@ -137,14 +137,14 @@ class RenderTarget {
 		switch id {
 			case ASSET_GUMSHOE:
 				final mesh = Mesh.create(path);
-				gumshoe.setMesh(mesh);
-				mesh.release();
+				Model.setMesh(gumshoe, mesh);
+				Mesh.release(mesh);
 
 			case ASSET_SPHERE:
 				final mesh = Mesh.create(path);
-				globe.setMesh(mesh);
-				ground.setMesh(mesh);
-				mesh.release();
+				Model.setMesh(globe, mesh);
+				Model.setMesh(ground, mesh);
+				Mesh.release(mesh);
 
 			case ASSET_FONT:
 				font = Font.create(path);
@@ -154,7 +154,7 @@ class RenderTarget {
 	/** A texture with a 2px frame and a caption above it. **/
 	static function panel(texture:Texture, x:Float, y:Float, w:Float, h:Float, caption:String):Void {
 		Shape2D.drawRectangle(x - 2, y - 2, w + 4, h + 4, frameColor);
-		texture.draw(x, y, w, h, Color.WHITE);
+		Texture.draw(texture, x, y, w, h, Color.WHITE);
 		Text.draw(caption, Std.int(x), Std.int(y) - 20, 16, Color.LIGHTGRAY);
 	}
 
@@ -165,18 +165,18 @@ class RenderTarget {
 		elapsed += dt;
 		final gx = Math.cos(elapsed * 0.6) * 2.5;
 		final gz = Math.sin(elapsed * 0.6) * 2.5;
-		gumshoe.setTransform(new Vec3(gx, 0, gz), new Vec3(0, -elapsed * 0.6, 0),
+		Model.setTransform(gumshoe, new Vec3(gx, 0, gz), new Vec3(0, -elapsed * 0.6, 0),
 			new Vec3(0.6, 0.6, 0.6)); // walks in a circle
-		gumshoe.animate(dt);
-		globe.setTransform(new Vec3(-2.2, 1.2, 0), new Vec3(0, elapsed * 0.8, 0), new Vec3(1.6, 1.6, 1.6));
+		Model.animate(gumshoe, dt);
+		Model.setTransform(globe, new Vec3(-2.2, 1.2, 0), new Vec3(0, elapsed * 0.8, 0), new Vec3(1.6, 1.6, 1.6));
 
 		Render.begin();
 
 		// 1. the label first, so the views below use this frame's text
 		if (Render.beginTexture(label)) {
 			Render.clearBackground(labelBackground);
-			if (!font.isNone)
-				font.draw("wgrender", 20, 14, 64, Color.RAYWHITE);
+			if (!Font.isNone(font))
+				Font.draw(font, "wgrender", 20, 14, 64, Color.RAYWHITE);
 			Text.draw('t = ${fixed(elapsed, 1)}', 24, 92, 16, Color.GOLD);
 			Render.endTexture();
 		}
@@ -184,16 +184,16 @@ class RenderTarget {
 		// 2. a low-resolution view of the scene
 		if (Render.beginTexture(pixelView)) {
 			Render.clearBackground(background);
-			scene.activeCamera = camera;
-			scene.draw();
+			Scene.setActiveCamera(scene, camera);
+			Scene.draw(scene);
 			Render.endTexture();
 		}
 
 		// 3. the minimap, from above
 		if (Render.beginTexture(minimap)) {
 			Render.clearBackground(minimapBackground);
-			scene.activeCamera = topCamera;
-			scene.draw();
+			Scene.setActiveCamera(scene, topCamera);
+			Scene.draw(scene);
 			Render.endTexture();
 		}
 

@@ -6,13 +6,12 @@ package wgr;
 	`Emitter3D`, `Shape2D`, `Shape3D` or `Light`. **/
 abstract SceneMember(Handle) to Handle {
 	/** Whether there is a member here at all — `Scene.hovered` returns none for nothing. **/
-	public var isNone(get, never):Bool;
-
 	@:to inline function toRaw():WgrHandle
 		return (this : Int);
 
-	inline function get_isNone():Bool
-		return (this : Handle).isNone;
+	/** Whether this refers to nothing; tolerates a field never assigned, on js. **/
+	public static inline function isNone(member:SceneMember):Bool
+		return (member : Handle).isNone;
 
 	/**
 		A handle wgrender handed back, as a member. Not `@:from` on purpose: going the

@@ -77,16 +77,16 @@ class EnvironmentDemo {
 		bar = Color.rgba(0, 0, 0, 150);
 		target = new Vec3(0, 0.3, 0);
 
-		camera = new Camera3D(Perspective);
-		scene = new Scene();
-		scene.activeCamera = camera;
+		camera = Camera3D.create(Perspective);
+		scene = Scene.create();
+		Scene.setActiveCamera(scene, camera);
 
 		addSpheres();
 
-		gumshoe = new Model(Handle.NONE);
-		gumshoe.setTransform(new Vec3(1.3, -1.3, 0), new Vec3(0, 0.4, 0), new Vec3(0.3, 0.3, 0.3));
-		gumshoe.animation = 3;
-		scene.add(gumshoe);
+		gumshoe = Model.create(Handle.NONE);
+		Model.setTransform(gumshoe, new Vec3(1.3, -1.3, 0), new Vec3(0, 0.4, 0), new Vec3(0.3, 0.3, 0.3));
+		Model.setAnimation(gumshoe, 3);
+		Scene.add(scene, gumshoe);
 
 		applyEnvironment();
 		for (i in 0...ENVIRONMENT_PATHS.length)
@@ -102,15 +102,15 @@ class EnvironmentDemo {
 	}
 
 	static function sphere(x:Float, y:Float, r:Float, g:Float, b:Float, metallic:Float, roughness:Float):Model {
-		final model = new Model(Handle.NONE); // the mesh arrives later
-		model.setTransform(new Vec3(x, y, 0));
-		final material = new Material(Pbr);
-		material.setBaseColor(r, g, b, 1.0);
-		material.metallic = metallic;
-		material.roughness = roughness;
-		model.setMaterial(0, material);
-		material.release();
-		scene.add(model);
+		final model = Model.create(Handle.NONE); // the mesh arrives later
+		Model.setTransform(model, new Vec3(x, y, 0));
+		final material = Material.create(Pbr);
+		Material.setBaseColor(material, r, g, b, 1.0);
+		Material.setMetallic(material, metallic);
+		Material.setRoughness(material, roughness);
+		Model.setMaterial(model, 0, material);
+		Material.release(material);
+		Scene.add(scene, model);
 		spheres.push(model);
 		return model;
 	}
@@ -123,16 +123,16 @@ class EnvironmentDemo {
 			sphere(x, 0.6, 1.0, 0.77, 0.34, 1.0, roughness); // gold
 		}
 		final normalMapped = sphere(-1.3, -0.7, 0.9, 0.9, 0.9, 0.0, 0.3);
-		tiles = normalMapped.getMaterial(0); // borrowed: the model's own material
+		tiles = Model.getMaterial(normalMapped, 0); // borrowed: the model's own material
 	}
 
 	/** All three settings together, because any of them changing re-applies the lot. **/
 	static function applyEnvironment():Void {
 		final env = environmentIndex < environments.length ? environments[environmentIndex] : Handle.NONE;
-		scene.setEnvironment(env, 1.0, rotation);
+		Scene.setEnvironment(scene, env, 1.0, rotation);
 		final showBackground = blurIndex < BLURS.length;
-		scene.setBackground(showBackground ? env : Handle.NONE, showBackground ? BLURS[blurIndex] : 0.0);
-		scene.setTonemap(TONEMAPS[tonemapIndex], exposure);
+		Scene.setBackground(scene, showBackground ? env : Handle.NONE, showBackground ? BLURS[blurIndex] : 0.0);
+		Scene.setTonemap(scene, TONEMAPS[tonemapIndex], exposure);
 	}
 
 	static function onAsset(id:Int, path:String, ok:Bool):Void {
@@ -144,18 +144,18 @@ class EnvironmentDemo {
 			case ASSET_SPHERE:
 				final mesh = Mesh.create(path);
 				for (model in spheres)
-					model.setMesh(mesh);
-				mesh.release();
+					Model.setMesh(model, mesh);
+				Mesh.release(mesh);
 
 			case ASSET_GUMSHOE:
 				final mesh = Mesh.create(path);
-				gumshoe.setMesh(mesh);
-				mesh.release();
+				Model.setMesh(gumshoe, mesh);
+				Mesh.release(mesh);
 
 			case ASSET_NORMAL_MAP:
 				final texture = Texture.create(path);
-				tiles.normalTexture = texture;
-				texture.release();
+				Material.setNormalTexture(tiles, texture);
+				Texture.release(texture);
 
 			default:
 				// an environment: preparing its lighting is the slow part, done once
@@ -205,13 +205,13 @@ class EnvironmentDemo {
 			applyEnvironment();
 
 		elapsed += dt;
-		camera.setView(new Vec3(Math.sin(elapsed * 0.15) * 7.5, 1.2, Math.cos(elapsed * 0.15) * 7.5), target);
-		gumshoe.animate(dt);
+		Camera3D.setView(camera, new Vec3(Math.sin(elapsed * 0.15) * 7.5, 1.2, Math.cos(elapsed * 0.15) * 7.5), target);
+		Model.animate(gumshoe, dt);
 
 		Render.begin();
 		Render.clearBackground(background);
-		scene.draw();
-		Shape2D.drawRectangle(0, 0, Window.screenSize.x, 60, bar);
+		Scene.draw(scene);
+		Shape2D.drawRectangle(0, 0, Window.getScreenSize().x, 60, bar);
 		Text.draw("wgrender environment lighting: reflections, background and tone mapping", 12, 12, 16,
 			Color.RAYWHITE);
 		Text.draw('[E] ${ENVIRONMENT_NAMES[environmentIndex]}   [B] background ${BLUR_NAMES[blurIndex]}   '

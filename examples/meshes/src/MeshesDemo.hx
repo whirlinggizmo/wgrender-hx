@@ -61,14 +61,14 @@ class MeshesDemo {
 		Asset.setHost(Assets.defaultBase());
 		target = new Vec3(0, 0.4, 0);
 
-		camera = new Camera3D(Perspective);
-		scene = new Scene();
-		scene.activeCamera = camera;
-		scene.setAmbient(Color.WHITE, 0.25);
-		final sun = new Light(Directional);
-		sun.direction = new Vec3(-0.5, -1.0, -0.4);
-		sun.intensity = 3.0;
-		scene.add(sun);
+		camera = Camera3D.create(Perspective);
+		scene = Scene.create();
+		Scene.setActiveCamera(scene, camera);
+		Scene.setAmbient(scene, Color.WHITE, 0.25);
+		final sun = Light.create(Directional);
+		Light.setDirection(sun, new Vec3(-0.5, -1.0, -0.4));
+		Light.setIntensity(sun, 3.0);
+		Scene.add(scene, sun);
 
 		addFloor();
 		addShapes();
@@ -80,15 +80,15 @@ class MeshesDemo {
 
 	static function addFloor():Void {
 		final plane = Mesh.plane(12.0, 12.0, 0);
-		final floor = new Model(plane);
-		plane.release(); // the model holds its own reference
-		final ground = new Material(Pbr);
-		ground.setBaseColor(0.06, 0.06, 0.07, 1.0);
-		ground.metallic = 0.0;
-		ground.roughness = 0.9;
-		floor.setMaterial(-1, ground); // -1: every slot
-		ground.release();
-		scene.add(floor);
+		final floor = Model.create(plane);
+		Mesh.release(plane); // the model holds its own reference
+		final ground = Material.create(Pbr);
+		Material.setBaseColor(ground, 0.06, 0.06, 0.07, 1.0);
+		Material.setMetallic(ground, 0.0);
+		Material.setRoughness(ground, 0.9);
+		Model.setMaterial(floor, -1, ground); // -1: every slot
+		Material.release(ground);
+		Scene.add(scene, floor);
 	}
 
 	static function addShapes():Void {
@@ -96,19 +96,19 @@ class MeshesDemo {
 		for (i in 0...SHAPE_COUNT) {
 			final shape = all[i];
 			final x = (i - (SHAPE_COUNT - 1) * 0.5) * SPACING;
-			final model = new Model(shape.mesh);
-			shape.mesh.release();
-			model.setTransform(new Vec3(x, shape.y, 0));
+			final model = Model.create(shape.mesh);
+			Mesh.release(shape.mesh);
+			Model.setTransform(model, new Vec3(x, shape.y, 0));
 
-			final material = new Material(Pbr);
-			material.setBaseColor(shape.r, shape.g, shape.b, 1.0);
-			material.metallic = 0.0;
-			material.roughness = 0.45;
-			material.setVec2("normal_texture_scale", 2.0, 2.0); // the tiles repeat
-			model.setMaterial(0, material);
-			material.release(); // the model keeps it alive
+			final material = Material.create(Pbr);
+			Material.setBaseColor(material, shape.r, shape.g, shape.b, 1.0);
+			Material.setMetallic(material, 0.0);
+			Material.setRoughness(material, 0.45);
+			Material.setVec2(material, "normal_texture_scale", 2.0, 2.0); // the tiles repeat
+			Model.setMaterial(model, 0, material);
+			Material.release(material); // the model keeps it alive
 			materials.push(material);
-			scene.add(model);
+			Scene.add(scene, model);
 		}
 	}
 
@@ -121,8 +121,8 @@ class MeshesDemo {
 			return;
 		final texture = Texture.create(path);
 		for (material in materials)
-			material.normalTexture = texture;
-		texture.release(); // the materials hold their own references
+			Material.setNormalTexture(material, texture);
+		Texture.release(texture); // the materials hold their own references
 	}
 
 	static function onFrame(dt:Float):Void {
@@ -132,11 +132,11 @@ class MeshesDemo {
 			orbit = !orbit;
 		if (orbit)
 			angle += dt * 0.2;
-		camera.setView(new Vec3(9.0 * Math.sin(angle), 3.5, 9.0 * Math.cos(angle)), target);
+		Camera3D.setView(camera, new Vec3(9.0 * Math.sin(angle), 3.5, 9.0 * Math.cos(angle)), target);
 
 		Render.begin();
 		Render.clearBackground(Color.rgba(20, 22, 28, 255));
-		scene.draw();
+		Scene.draw(scene);
 		Text.draw("wgrender generated meshes: plane, cube, sphere, cylinder, cone, capsule, torus", 12, 36, 20,
 			Color.RAYWHITE);
 		Text.draw(orbit ? "O: stop the camera   ESC: quit" : "O: turn the camera   ESC: quit", 12, 64, 16,

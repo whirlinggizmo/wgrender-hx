@@ -18,16 +18,20 @@ package wgr;
 	- fullscreen on the web only takes effect during a user gesture.
 **/
 class Window {
-	public static var title(never, set):String;
+	public static inline function setTitle(value:String):Void
+		Raw.wgr_window_set_title(value);
 
 	/** Whether the user has asked to close it — the X, or the window manager. **/
-	public static var closeRequested(get, never):Bool;
+	public static inline function closeRequested():Bool
+		return Raw.wgr_window_close_requested() != 0;
 
 	/** The drawable area in logical pixels. **/
-	public static var screenSize(get, never):Vec2;
+	public static inline function getScreenSize():Vec2
+		return Vec2.of(Raw.wgr_window_get_screen_size());
 
 	/** Where it sits on the desktop; (0, 0) where there is no such thing. **/
-	public static var position(get, never):Vec2;
+	public static inline function getPosition():Vec2
+		return Vec2.of(Raw.wgr_window_get_position());
 
 	/**
 		Whether the window is fullscreen *now*. Setting it asks; it does not arrive on
@@ -45,51 +49,7 @@ class Window {
 		outcome -- and the outcome is the whole question. `hasFullscreen` says whether
 		there is anything to ask for.
 	**/
-	public static var fullscreen(get, never):Bool;
-
-	/**
-		Whether this platform has fullscreen at all: true on the desktop, false
-		headless, and on the web the browser's own answer -- false in an iframe without
-		`allowfullscreen`, or under a permissions policy that forbids it.
-
-		Ask this to decide whether to offer the button, rather than learning it from a
-		refused `requestFullscreen`. It does not cover the web's other condition, a user
-		gesture, which only the request itself can meet.
-	**/
-	public static var hasFullscreen(get, never):Bool;
-
-	/**
-		Hiding it doesn't stop the loop — the program keeps running either way.
-
-		A property and nothing else: wgrender's setter returns `true` on every platform
-		it has, so a method form would return a constant and read like a question that
-		had been asked.
-	**/
-	public static var visible(get, set):Bool;
-
-	public static var focused(get, never):Bool;
-
-	/** Monitors the platform reports; 1 on the web. **/
-	public static var monitorCount(get, never):Int;
-
-	/** Which one the window is on. **/
-	public static var monitor(get, set):Int;
-
-	static inline function set_title(v:String):String {
-		Raw.wgr_window_set_title(v);
-		return v;
-	}
-
-	static inline function get_closeRequested():Bool
-		return Raw.wgr_window_close_requested() != 0;
-
-	static inline function get_screenSize():Vec2
-		return Vec2.of(Raw.wgr_window_get_screen_size());
-
-	static inline function get_position():Vec2
-		return Vec2.of(Raw.wgr_window_get_position());
-
-	static inline function get_fullscreen():Bool
+	public static inline function isFullscreen():Bool
 		return Raw.wgr_window_is_fullscreen();
 
 	/**
@@ -102,35 +62,53 @@ class Window {
 	public static inline function requestFullscreen(fullscreen:Bool):Bool
 		return Raw.wgr_window_request_fullscreen(fullscreen);
 
-	static inline function get_hasFullscreen():Bool
+	/**
+		Whether this platform has fullscreen at all: true on the desktop, false
+		headless, and on the web the browser's own answer -- false in an iframe without
+		`allowfullscreen`, or under a permissions policy that forbids it.
+
+		Ask this to decide whether to offer the button, rather than learning it from a
+		refused `requestFullscreen`. It does not cover the web's other condition, a user
+		gesture, which only the request itself can meet.
+	**/
+	public static inline function hasFullscreen():Bool
 		return Raw.wgr_window_has_fullscreen();
 
-	static inline function get_visible():Bool
+	/**
+		Hiding it doesn't stop the loop — the program keeps running either way.
+
+		A property and nothing else: wgrender's setter returns `true` on every platform
+		it has, so a method form would return a constant and read like a question that
+		had been asked.
+	**/
+	public static inline function isVisible():Bool
 		return Raw.wgr_window_is_visible();
 
-	static inline function set_visible(v:Bool):Bool {
-		Raw.wgr_window_set_visible(v);
-		return v;
-	}
+	/**
+		Hiding it doesn't stop the loop — the program keeps running either way.
+
+		A property and nothing else: wgrender's setter returns `true` on every platform
+		it has, so a method form would return a constant and read like a question that
+		had been asked.
+	**/
+	public static inline function setVisible(value:Bool):Bool
+		return Raw.wgr_window_set_visible(value);
 
 
-	static inline function get_focused():Bool
+	public static inline function isFocused():Bool
 		return Raw.wgr_window_is_focused();
 
-	static inline function get_monitorCount():Int
+	/** Monitors the platform reports; 1 on the web. **/
+	public static inline function getMonitorCount():Int
 		return Raw.wgr_window_get_monitor_count();
 
-	static inline function get_monitor():Int
+	/** Which one the window is on. **/
+	public static inline function getMonitor():Int
 		return Raw.wgr_window_get_monitor();
 
-	static inline function set_monitor(v:Int):Int {
-		Raw.wgr_window_set_monitor(v);
-		return v;
-	}
-
-	/** The drawable area in logical pixels. **/
-	public static inline function getScreenSize():Vec2
-		return Vec2.of(Raw.wgr_window_get_screen_size());
+	/** Which one the window is on. **/
+	public static inline function setMonitor(value:Int):Bool
+		return Raw.wgr_window_set_monitor(value);
 
 	public static inline function setSize(width:Int, height:Int):Bool
 		return Raw.wgr_window_set_size(width, height);
@@ -141,10 +119,6 @@ class Window {
 	**/
 	public static inline function setPosition(x:Int, y:Int):Bool
 		return Raw.wgr_window_set_position(x, y);
-
-	/** Move the window to that monitor, centered. **/
-	public static inline function setMonitor(monitor:Int):Bool
-		return Raw.wgr_window_set_monitor(monitor);
 
 	public static inline function getMonitorSize(monitor:Int):Vec2
 		return Vec2.of(Raw.wgr_window_get_monitor_size(monitor));

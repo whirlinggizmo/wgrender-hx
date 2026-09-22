@@ -16,7 +16,7 @@
 //   - the gumshoe (a 3D member) lights up on hover; clicking it starts or stops its
 //     animation
 //   - dragging anywhere else orbits the camera; a drag that starts on a button doesn't
-//     (`Input.pointerCaptured`)
+//     (`Input.isPointerCaptured()`)
 //   - the header is immediate drawing, next to all that retained UI: the panel's
 //     nine-slice texture drawn directly, and a rounded, bordered status pill
 //
@@ -90,7 +90,7 @@ class UiDemo {
 	}
 
 	static function placeCamera():Void
-		camera.setView(new Vec3(Math.sin(yaw) * 5.0, 1.6, Math.cos(yaw) * 5.0), new Vec3(0, 0.9, 0));
+		Camera3D.setView(camera, new Vec3(Math.sin(yaw) * 5.0, 1.6, Math.cos(yaw) * 5.0), new Vec3(0, 0.9, 0));
 
 	static function onInit():Void {
 		Asset.setHost(Assets.defaultBase());
@@ -101,47 +101,47 @@ class UiDemo {
 		pillEdge = Color.rgba(90, 105, 140, 255);
 		panelTexture = Handle.NONE;
 
-		camera = new Camera3D(Perspective);
+		camera = Camera3D.create(Perspective);
 		placeCamera();
-		scene = new Scene();
-		scene.activeCamera = camera;
-		scene.setAmbient(Color.WHITE, 0.35);
-		scene.interactive = true;
+		scene = Scene.create();
+		Scene.setActiveCamera(scene, camera);
+		Scene.setAmbient(scene, Color.WHITE, 0.35);
+		Scene.setInteractive(scene, true);
 
-		sun = new Light(Directional);
-		sun.direction = new Vec3(-0.4, -1.0, -0.6);
-		scene.add(sun, 0);
+		sun = Light.create(Directional);
+		Light.setDirection(sun, new Vec3(-0.4, -1.0, -0.6));
+		Scene.add(scene, sun, 0);
 
-		gumshoe = new Model(Handle.NONE);
-		gumshoe.animation = 3;
-		scene.add(gumshoe, 0);
+		gumshoe = Model.create(Handle.NONE);
+		Model.setAnimation(gumshoe, 3);
+		Scene.add(scene, gumshoe, 0);
 
 		// the panel: one 48x48 texture with 16 px borders, stretched to any size
-		panel = new Sprite2D(Handle.NONE);
-		panel.setNineSlice(16, 16, 16, 16);
-		panel.setPivot(0, 0);
-		panel.position = new Vec2(PANEL_X, PANEL_Y);
-		panel.setSize(PANEL_WIDTH, PANEL_HEIGHT);
-		scene.add(panel, LAYER_PANEL); // pickable, so presses on it don't orbit
+		panel = Sprite2D.create(Handle.NONE);
+		Sprite2D.setNineSlice(panel, 16, 16, 16, 16);
+		Sprite2D.setPivot(panel, 0, 0);
+		Sprite2D.setPosition(panel, new Vec2(PANEL_X, PANEL_Y));
+		Sprite2D.setSize(panel, PANEL_WIDTH, PANEL_HEIGHT);
+		Scene.add(scene, panel, LAYER_PANEL); // pickable, so presses on it don't orbit
 
-		divider = new Shape2D();
-		divider.setLine(new Vec2(0, 0), new Vec2(220, 0), 2);
-		divider.setTransform(new Vec2(30, 300));
-		divider.color = theme.disabled;
-		divider.pickable = false;
-		scene.add(divider, LAYER_CONTROL);
+		divider = Shape2D.create();
+		Shape2D.setLine(divider, new Vec2(0, 0), new Vec2(220, 0), 2);
+		Shape2D.setTransform(divider, new Vec2(30, 300));
+		Shape2D.setColor(divider, theme.disabled);
+		Shape2D.setPickable(divider, false);
+		Scene.add(scene, divider, LAYER_CONTROL);
 
 		bar = new UiBar(scene, LAYER_CONTROL, 30, 320, 220, 18);
 
 		// wrapped note: laid out inside 220 pixels, breaking between words
-		note = new Text2D(Handle.NONE);
-		note.text = "Every click fills the bar. The list below is clipped to the panel: scroll it with the wheel.";
-		note.size = 14;
-		note.maxWidth = 220;
-		note.position = new Vec2(30, 352);
-		note.color = theme.textDisabled;
-		note.pickable = false;
-		scene.add(note, LAYER_LABEL);
+		note = Text2D.create(Handle.NONE);
+		Text2D.setText(note, "Every click fills the bar. The list below is clipped to the panel: scroll it with the wheel.");
+		Text2D.setSize(note, 14);
+		Text2D.setMaxWidth(note, 220);
+		Text2D.setPosition(note, new Vec2(30, 352));
+		Text2D.setColor(note, theme.textDisabled);
+		Text2D.setPickable(note, false);
+		Scene.add(scene, note, LAYER_LABEL);
 
 		for (i in 0...LABELS.length)
 			buttons.push(new UiButton(scene, LAYER_CONTROL, LABELS[i], 30, 100.0 + 60.0 * i, 220, 44, 18));
@@ -160,18 +160,18 @@ class UiDemo {
 		switch (id) {
 			case GUMSHOE_ID:
 				final mesh = Mesh.create(path);
-				gumshoe.setMesh(mesh);
-				mesh.release();
+				Model.setMesh(gumshoe, mesh);
+				Mesh.release(mesh);
 			case PANEL_ID:
 				panelTexture = Texture.create(path); // kept: the header draws it too
-				panel.setTexture(panelTexture);
+				Sprite2D.setTexture(panel, panelTexture);
 		}
 	}
 
 	static function onFrame(dt:Float):Void {
 		final keys = Input.getKeyboardState();
 		final mouse = Input.getMouseState();
-		final hovered = scene.hovered;
+		final hovered = Scene.getHovered(scene);
 
 		if (keys.isPressed(Escape))
 			Wgr.requestQuit();
@@ -190,32 +190,32 @@ class UiDemo {
 		final selected = list.update(scene, theme, mouse.wheel);
 
 		// the 3D model
-		final hover = scene.getHover(gumshoe);
-		gumshoe.tint = Ui.isActive(hover) ? highlight : Color.WHITE;
-		if (scene.isClicked(gumshoe))
+		final hover = Scene.getHover(scene, gumshoe);
+		Model.setTint(gumshoe, Ui.isActive(hover) ? highlight : Color.WHITE);
+		if (Scene.isClicked(scene, gumshoe))
 			animating = !animating;
 		if (animating)
-			gumshoe.animate(dt);
+			Model.animate(gumshoe, dt);
 
 		// orbit, unless the press started on UI
-		if (mouse.left == ButtonState.Down && !Input.pointerCaptured) {
+		if (mouse.left == ButtonState.Down && !Input.isPointerCaptured()) {
 			yaw -= mouse.dx * 0.01;
 			placeCamera();
 		}
 
 		Render.begin();
 		Render.clearBackground(background);
-		scene.draw();
+		Scene.draw(scene);
 		// the header is immediate drawing, next to the retained panel below it: the same
 		// nine-slice texture as the panel, and a rounded, bordered pill for the status
-		panelTexture.drawNineSlice(0, 0, 0, 0, 16, 16, 16, 16, 10, 6, 640, 62);
+		Texture.drawNineSlice(panelTexture, 0, 0, 0, 0, 16, 16, 16, 16, 10, 6, 640, 62);
 		Shape2D.drawRoundedRectangle(18, 40, 624, 22, 11, pill);
 		Shape2D.drawBorder(18, 40, 624, 22, 1, 1, 1, 1, 11, 11, 11, 11, pillEdge);
 		Text.draw("wgrender ui: hover, press and click 2D and 3D members", 22, 15, 20, theme.text);
-		final what = hovered.isNone ? "nothing" : same(hovered, gumshoe) ? "gumshoe" : same(hovered,
+		final what = SceneMember.isNone(hovered) ? "nothing" : same(hovered, gumshoe) ? "gumshoe" : same(hovered,
 			panel) ? "the panel" : "UI";
 		Text.draw('clicks: $clicks   selected: ${selected < 0 ? "nothing" : ROW_NAMES[selected]}   '
-			+ 'hovered: $what   pointer captured: ${Input.pointerCaptured ? "yes" : "no"}', 28, 43, 15,
+			+ 'hovered: $what   pointer captured: ${Input.isPointerCaptured() ? "yes" : "no"}', 28, 43, 15,
 			theme.textDisabled);
 		Render.end();
 	}

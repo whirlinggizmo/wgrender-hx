@@ -14,18 +14,17 @@ package wgr;
 	Use with `Scene.setEnvironment`, `Scene.setBackground` and `Scene.setTonemap`.
 **/
 abstract Environment(Handle) from Handle to Handle {
-	public var isNone(get, never):Bool;
-
 	@:to inline function toRaw():WgrHandle
 		return (this : Int);
 
-	inline function get_isNone():Bool
-		return (this : Handle).isNone;
+	/** Whether this refers to nothing; tolerates a field never assigned, on js. **/
+	public static inline function isNone(environment:Environment):Bool
+		return (environment : Handle).isNone;
 
 	public static inline function create(path:String):Environment
 		return (Raw.wgr_environment_create(path) : Handle);
 
 	/** Drop this reference; the data goes when the last one does. **/
-	public inline function release():Void
-		Raw.wgr_environment_release(this);
+	public static inline function release(environment:Environment):Void
+		Raw.wgr_environment_release(environment);
 }

@@ -15,117 +15,93 @@ package wgr;
 	neither drawn nor picked.
 **/
 abstract Sprite2D(Handle) from Handle to Handle {
-	public var isNone(get, never):Bool;
+	@:to inline function toRaw():WgrHandle
+		return (this : Int);
+
+	/** Whether this refers to nothing; tolerates a field never assigned, on js. **/
+	public static inline function isNone(sprite2D:Sprite2D):Bool
+		return (sprite2D : Handle).isNone;
+
+	/** `texture` may be none and set later with `setTexture`. **/
+	public static inline function create(texture:Texture):Sprite2D
+		return (Raw.wgr_sprite2d_create(texture) : Handle);
 
 	/** Where the pivot goes, in logical pixels. **/
-	public var position(never, set):Vec2;
+	public static inline function setPosition(sprite2D:Sprite2D, value:Vec2):Bool
+		return Raw.wgr_sprite2d_set_position(sprite2D, value.x, value.y);
 
 	/** Radians around the pivot; positive turns clockwise, since y points down. **/
-	public var rotation(never, set):Float;
+	public static inline function setRotation(sprite2D:Sprite2D, value:Float):Bool
+		return Raw.wgr_sprite2d_set_rotation(sprite2D, value);
 
 	/** Multiplies the size. A negative component flips it on that axis. **/
-	public var scale(never, set):Vec2;
+	public static inline function setScale(sprite2D:Sprite2D, value:Vec2):Bool
+		return Raw.wgr_sprite2d_set_scale(sprite2D, value.x, value.y);
 
-	public var tint(never, set):Color;
+	public static inline function setTint(sprite2D:Sprite2D, value:Color):Bool
+		return Raw.wgr_sprite2d_set_tint(sprite2D, value);
 
 	/** Drawn at all. **/
-	public var visible(get, set):Bool;
+	public static inline function isVisible(sprite2D:Sprite2D):Bool
+		return Raw.wgr_sprite2d_is_visible(sprite2D);
+
+	/** Drawn at all. **/
+	public static inline function setVisible(sprite2D:Sprite2D, value:Bool):Bool
+		return Raw.wgr_sprite2d_set_visible(sprite2D, value);
 
 	/** Whether a pick can hit it. Default: it can. **/
-	public var pickable(get, set):Bool;
+	public static inline function isPickable(sprite2D:Sprite2D):Bool
+		return Raw.wgr_sprite2d_is_pickable(sprite2D);
+
+	/** Whether a pick can hit it. Default: it can. **/
+	public static inline function setPickable(sprite2D:Sprite2D, value:Bool):Bool
+		return Raw.wgr_sprite2d_set_pickable(sprite2D, value);
 
 	/**
 		Enabled (the default): a hit reacts — hover, press and click in an interactive
 		scene. Disabled: still drawn and still picked, and it still blocks the pointer,
 		but it doesn't react.
 	**/
-	public var enabled(get, set):Bool;
+	public static inline function isEnabled(sprite2D:Sprite2D):Bool
+		return Raw.wgr_sprite2d_is_enabled(sprite2D);
+
+	/**
+		Enabled (the default): a hit reacts — hover, press and click in an interactive
+		scene. Disabled: still drawn and still picked, and it still blocks the pointer,
+		but it doesn't react.
+	**/
+	public static inline function setEnabled(sprite2D:Sprite2D, value:Bool):Bool
+		return Raw.wgr_sprite2d_set_enabled(sprite2D, value);
 
 	/** How it uses its texture's alpha. Set it with `setAlphaMode`. **/
-	public var alphaMode(get, never):AlphaMode;
-
-	@:to inline function toRaw():WgrHandle
-		return (this : Int);
-
-	inline function get_isNone():Bool
-		return (this : Handle).isNone;
-
-	/** `texture` may be none and set later with `setTexture`. **/
-	public inline function new(texture:Texture)
-		this = (Raw.wgr_sprite2d_create(texture) : Handle);
-
-	inline function set_position(v:Vec2):Vec2 {
-		Raw.wgr_sprite2d_set_position(this, v.x, v.y);
-		return v;
-	}
-
-	inline function set_rotation(v:Float):Float {
-		Raw.wgr_sprite2d_set_rotation(this, v);
-		return v;
-	}
-
-	inline function set_scale(v:Vec2):Vec2 {
-		Raw.wgr_sprite2d_set_scale(this, v.x, v.y);
-		return v;
-	}
-
-	inline function set_tint(v:Color):Color {
-		Raw.wgr_sprite2d_set_tint(this, v);
-		return v;
-	}
-
-	inline function get_visible():Bool
-		return Raw.wgr_sprite2d_is_visible(this);
-
-	inline function set_visible(v:Bool):Bool {
-		Raw.wgr_sprite2d_set_visible(this, v);
-		return v;
-	}
-
-	inline function get_pickable():Bool
-		return Raw.wgr_sprite2d_is_pickable(this);
-
-	inline function set_pickable(v:Bool):Bool {
-		Raw.wgr_sprite2d_set_pickable(this, v);
-		return v;
-	}
-
-	inline function get_enabled():Bool
-		return Raw.wgr_sprite2d_is_enabled(this);
-
-	inline function set_enabled(v:Bool):Bool {
-		Raw.wgr_sprite2d_set_enabled(this, v);
-		return v;
-	}
-
-	inline function get_alphaMode():AlphaMode
-		return AlphaMode.of(Raw.wgr_sprite2d_get_alpha_mode(this));
+	public static inline function getAlphaMode(sprite2D:Sprite2D):AlphaMode
+		return AlphaMode.of(Raw.wgr_sprite2d_get_alpha_mode(sprite2D));
 
 	/** The sprite takes its own reference; a none texture leaves it nothing to draw. **/
-	public inline function setTexture(texture:Texture):Bool
-		return Raw.wgr_sprite2d_set_texture(this, texture);
+	public static inline function setTexture(sprite2D:Sprite2D, texture:Texture):Bool
+		return Raw.wgr_sprite2d_set_texture(sprite2D, texture);
 
 	/**
 		The region of the texture to show, in texture pixels — for sprite sheets and
 		atlases. A width or height at or below 0 goes back to the whole texture.
 	**/
-	public inline function setSource(x:Float, y:Float, width:Float, height:Float):Bool
-		return Raw.wgr_sprite2d_set_source(this, x, y, width, height);
+	public static inline function setSource(sprite2D:Sprite2D, x:Float, y:Float, width:Float, height:Float):Bool
+		return Raw.wgr_sprite2d_set_source(sprite2D, x, y, width, height);
 
 	/**
 		Its on-screen size in logical pixels, before scale. A width or height at or
 		below 0 means the source region's own size, which is the default.
 	**/
-	public inline function setSize(width:Float, height:Float):Bool
-		return Raw.wgr_sprite2d_set_size(this, width, height);
+	public static inline function setSize(sprite2D:Sprite2D, width:Float, height:Float):Bool
+		return Raw.wgr_sprite2d_set_size(sprite2D, width, height);
 
 	/**
 		The point `position` refers to and `rotation` turns around, **as a fraction of
 		the sprite** rather than in pixels: (0, 0) is its top-left and (1, 1) its
 		bottom-right. Default (0.5, 0.5), the center.
 	**/
-	public inline function setPivot(x:Float, y:Float):Bool
-		return Raw.wgr_sprite2d_set_pivot(this, x, y);
+	public static inline function setPivot(sprite2D:Sprite2D, x:Float, y:Float):Bool
+		return Raw.wgr_sprite2d_set_pivot(sprite2D, x, y);
 
 	/**
 		Nine-slice: borders in source pixels that keep their size when the sprite is
@@ -135,16 +111,16 @@ abstract Sprite2D(Handle) from Handle to Handle {
 		size with `setSize`. Picks hit the whole rectangle: the alpha test is skipped
 		while a sprite is sliced.
 	**/
-	public inline function setNineSlice(left:Float, top:Float, right:Float, bottom:Float):Bool
-		return Raw.wgr_sprite2d_set_nine_slice(this, left, top, right, bottom);
+	public static inline function setNineSlice(sprite2D:Sprite2D, left:Float, top:Float, right:Float, bottom:Float):Bool
+		return Raw.wgr_sprite2d_set_nine_slice(sprite2D, left, top, right, bottom);
 
 	/**
 		How it uses its texture's alpha; `Blend` by default. Blended, `Add` for glows,
 		`Opaque` to ignore alpha, or `Mask` to cut out texels below `cutoff` (0..1). 2D
 		sprites always draw in order — the mode only changes how they are blended.
 	**/
-	public inline function setAlphaMode(mode:AlphaMode, cutoff:Float = 0):Bool
-		return Raw.wgr_sprite2d_set_alpha_mode(this, mode, cutoff);
+	public static inline function setAlphaMode(sprite2D:Sprite2D, mode:AlphaMode, cutoff:Float = 0):Bool
+		return Raw.wgr_sprite2d_set_alpha_mode(sprite2D, mode, cutoff);
 
 	/**
 		Draw it with a material instead of wgrender's sprite shader; a none material
@@ -152,22 +128,22 @@ abstract Sprite2D(Handle) from Handle to Handle {
 		— `wgr_world_pos` is the pixel, and the scene's lights don't reach 2D. On a
 		nine-sliced sprite, `wgr_uv1` spans each slice.
 	**/
-	public inline function setMaterial(material:Material):Bool
-		return Raw.wgr_sprite2d_set_material(this, material);
+	public static inline function setMaterial(sprite2D:Sprite2D, material:Material):Bool
+		return Raw.wgr_sprite2d_set_material(sprite2D, material);
 
 	/** What it draws with, borrowed; none when it's on the built-in sprite shader. **/
-	public inline function getMaterial():Material
-		return (Raw.wgr_sprite2d_get_material(this) : Handle);
+	public static inline function getMaterial(sprite2D:Sprite2D):Material
+		return (Raw.wgr_sprite2d_get_material(sprite2D) : Handle);
 
 	/** Let picks pass through texels whose alpha is below `threshold` (0..1). **/
-	public inline function setPickAlphaTest(enable:Bool, threshold:Float = 0.5):Bool
-		return Raw.wgr_sprite2d_set_pick_alpha_test(this, enable, threshold);
+	public static inline function setPickAlphaTest(sprite2D:Sprite2D, enable:Bool, threshold:Float = 0.5):Bool
+		return Raw.wgr_sprite2d_set_pick_alpha_test(sprite2D, enable, threshold);
 
 	/** Draw it once, now, outside any scene, in call order. **/
-	public inline function draw():Void
-		Raw.wgr_sprite2d_draw(this);
+	public static inline function draw(sprite2D:Sprite2D):Void
+		Raw.wgr_sprite2d_draw(sprite2D);
 
 	/** Also takes it out of every scene it's in. **/
-	public inline function destroy():Void
-		Raw.wgr_sprite2d_destroy(this);
+	public static inline function destroy(sprite2D:Sprite2D):Void
+		Raw.wgr_sprite2d_destroy(sprite2D);
 }

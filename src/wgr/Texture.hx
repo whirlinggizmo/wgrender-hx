@@ -4,27 +4,12 @@ package wgr;
 
 /** A loaded image: reference counted, shared. **/
 abstract Texture(Handle) from Handle to Handle {
-	public var isNone(get, never):Bool;
-
 	@:to inline function toRaw():WgrHandle
 		return (this : Int);
 
-	inline function get_isNone():Bool
-		return (this : Handle).isNone;
-
-	/** Its size in pixels. **/
-	public var size(get, never):Vec2;
-
-	/**
-		Stands in for a texture that failed to load — a glTF file's missing image, say,
-		which still loads the model, with a warning. Built in: a magenta and black
-		checker. Setting one takes a reference; set `Handle.NONE` to restore the
-		built-in. Only affects resources loaded after the call.
-	**/
-	public static var placeholder(get, set):Texture;
-
-	/** The 1x1 white texture, for a material or sprite that wants no image. **/
-	public static var defaultTexture(get, never):Texture;
+	/** Whether this refers to nothing; tolerates a field never assigned, on js. **/
+	public static inline function isNone(texture:Texture):Bool
+		return (texture : Handle).isNone;
 
 	/**
 		Load an image. A path ending `.ktx` names a texture compressed for GPUs: the
@@ -44,52 +29,64 @@ abstract Texture(Handle) from Handle to Handle {
 	public static inline function createTarget(width:Int, height:Int):Texture
 		return (Raw.wgr_texture_create_target(width, height) : Handle);
 
-	static inline function get_defaultTexture():Texture
+	/** The 1x1 white texture, for a material or sprite that wants no image. **/
+	public static inline function getDefault():Texture
 		return (Raw.wgr_texture_get_default() : Handle);
 
-	static inline function get_placeholder():Texture
+	/**
+		Stands in for a texture that failed to load — a glTF file's missing image, say,
+		which still loads the model, with a warning. Built in: a magenta and black
+		checker. Setting one takes a reference; set `Handle.NONE` to restore the
+		built-in. Only affects resources loaded after the call.
+	**/
+	public static inline function getPlaceholder():Texture
 		return (Raw.wgr_texture_get_placeholder() : Handle);
 
-	static inline function set_placeholder(v:Texture):Texture {
-		Raw.wgr_texture_set_placeholder(v);
-		return v;
-	}
+	/**
+		Stands in for a texture that failed to load — a glTF file's missing image, say,
+		which still loads the model, with a warning. Built in: a magenta and black
+		checker. Setting one takes a reference; set `Handle.NONE` to restore the
+		built-in. Only affects resources loaded after the call.
+	**/
+	public static inline function setPlaceholder(value:Texture):Bool
+		return Raw.wgr_texture_set_placeholder(value);
 
-	inline function get_size():Vec2
-		return Vec2.of(Raw.wgr_texture_get_size(this));
+	/** Its size in pixels. **/
+	public static inline function getSize(texture:Texture):Vec2
+		return Vec2.of(Raw.wgr_texture_get_size(texture));
 
 	/**
 		Draw it once, axis-aligned, top-left at (`x`, `y`) in logical pixels — no object
 		needed. A `width` or `height` at or below 0 uses the texture's own. Outside 3D
 		mode, in call order. For rotation, a source region or picking, use `Sprite2D`.
 	**/
-	public inline function draw(x:Float, y:Float, width:Float = 0, height:Float = 0, tint:Color = Color.WHITE):Void
-		Raw.wgr_texture_draw(this, x, y, width, height, tint);
+	public static inline function draw(texture:Texture, x:Float, y:Float, width:Float = 0, height:Float = 0, tint:Color = Color.WHITE):Void
+		Raw.wgr_texture_draw(texture, x, y, width, height, tint);
 
 	/**
 		A region of it — `source` in texture pixels, a zero size meaning all of it —
 		drawn into the rectangle at (`x`, `y`). For icons and panels cut from an atlas.
 	**/
-	public inline function drawRegion(sourceX:Float, sourceY:Float, sourceWidth:Float, sourceHeight:Float, x:Float,
+	public static inline function drawRegion(texture:Texture, sourceX:Float, sourceY:Float, sourceWidth:Float, sourceHeight:Float, x:Float,
 			y:Float, width:Float = 0, height:Float = 0, tint:Color = Color.WHITE):Void
-		Raw.wgr_texture_draw_ex(this, sourceX, sourceY, sourceWidth, sourceHeight, x, y, width, height, tint);
+		Raw.wgr_texture_draw_ex(texture, sourceX, sourceY, sourceWidth, sourceHeight, x, y, width, height, tint);
 
 	/**
 		The same region, nine-sliced: the borders keep their size, the edges stretch
 		along one axis and the middle along both — a skinned panel or button at any
 		size. Borders that don't fit shrink to fit; all four at 0 draws the plain region.
 	**/
-	public inline function drawNineSlice(sourceX:Float, sourceY:Float, sourceWidth:Float, sourceHeight:Float,
+	public static inline function drawNineSlice(texture:Texture, sourceX:Float, sourceY:Float, sourceWidth:Float, sourceHeight:Float,
 			left:Float, top:Float, right:Float, bottom:Float, x:Float, y:Float, width:Float = 0, height:Float = 0,
 			tint:Color = Color.WHITE):Void
-		Raw.wgr_texture_draw_nine_slice(this, sourceX, sourceY, sourceWidth, sourceHeight, left, top, right, bottom, x,
+		Raw.wgr_texture_draw_nine_slice(texture, sourceX, sourceY, sourceWidth, sourceHeight, left, top, right, bottom, x,
 			y, width, height, tint);
 
 	/** How this texture repeats and filters wherever it is used. **/
-	public inline function setSampling(wrapU:TextureWrap, wrapV:TextureWrap, filter:TextureFilter):Bool
-		return Raw.wgr_texture_set_sampling(this, wrapU, wrapV, filter);
+	public static inline function setSampling(texture:Texture, wrapU:TextureWrap, wrapV:TextureWrap, filter:TextureFilter):Bool
+		return Raw.wgr_texture_set_sampling(texture, wrapU, wrapV, filter);
 
 	/** Drop this reference; the data goes when the last one does. **/
-	public inline function release():Void
-		Raw.wgr_texture_release(this);
+	public static inline function release(texture:Texture):Void
+		Raw.wgr_texture_release(texture);
 }

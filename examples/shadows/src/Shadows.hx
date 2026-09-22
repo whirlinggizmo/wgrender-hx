@@ -75,64 +75,64 @@ class Shadows {
 		Asset.setHost(Assets.defaultBase());
 		TINTS = [Color.rgba(0, 0, 0, 255), Color.rgba(30, 60, 100, 255), Color.rgba(100, 50, 30, 255)];
 		target = new Vec3(0, 1.2, 0);
-		camera = new Camera3D(Perspective);
-		scene = new Scene();
-		scene.activeCamera = camera;
-		scene.setAmbient(Color.rgba(140, 170, 225, 255), 0.25);
+		camera = Camera3D.create(Perspective);
+		scene = Scene.create();
+		Scene.setActiveCamera(scene, camera);
+		Scene.setAmbient(scene, Color.rgba(140, 170, 225, 255), 0.25);
 
 		addLights();
 		addScenery();
 
-		gumshoe = new Model(Handle.NONE);
-		gumshoe.setTransform(new Vec3(0, 0, 0));
-		scene.add(gumshoe);
+		gumshoe = Model.create(Handle.NONE);
+		Model.setTransform(gumshoe, new Vec3(0, 0, 0));
+		Scene.add(scene, gumshoe);
 		if (!GuestAbi.loadAsset(GUMSHOE_PATH, ASSET_GUMSHOE))
 			Log.error('failed to queue asset: $GUMSHOE_PATH');
 		Debug.enableFps(12, 10, 16);
 	}
 
 	static function addLights():Void {
-		sun = new Light(Directional);
-		sun.direction = new Vec3(-0.75, -0.85, -0.35);
-		sun.color = Color.rgba(255, 244, 224, 255);
-		sun.intensity = 3.2;
-		sun.castsShadows = true;
-		sun.shadowDistance = distance;
-		sun.shadowMapSize = MAP_SIZES[sizeIndex];
-		sun.shadowStrength = strength;
-		sun.shadowColor = TINTS[tintIndex];
-		scene.add(sun);
+		sun = Light.create(Directional);
+		Light.setDirection(sun, new Vec3(-0.75, -0.85, -0.35));
+		Light.setColor(sun, Color.rgba(255, 244, 224, 255));
+		Light.setIntensity(sun, 3.2);
+		Light.setCastsShadows(sun, true);
+		Light.setShadowDistance(sun, distance);
+		Light.setShadowMapSize(sun, MAP_SIZES[sizeIndex]);
+		Light.setShadowStrength(sun, strength);
+		Light.setShadowColor(sun, TINTS[tintIndex]);
+		Scene.add(scene, sun);
 
 		// A second caster, circling the scene and shadowing through its own cone.
 		// Both share the map, so both use the same size.
-		spot = new Light(Spot);
-		spot.color = Color.rgba(150, 210, 255, 255);
-		spot.intensity = 260.0;
-		spot.range = 24.0;
-		spot.setSpotCone(0.30, 0.44);
-		spot.castsShadows = true;
-		spot.shadowMapSize = MAP_SIZES[sizeIndex];
-		spot.shadowDistance = 24.0;
-		scene.add(spot);
+		spot = Light.create(Spot);
+		Light.setColor(spot, Color.rgba(150, 210, 255, 255));
+		Light.setIntensity(spot, 260.0);
+		Light.setRange(spot, 24.0);
+		Light.setSpotCone(spot, 0.30, 0.44);
+		Light.setCastsShadows(spot, true);
+		Light.setShadowMapSize(spot, MAP_SIZES[sizeIndex]);
+		Light.setShadowDistance(spot, 24.0);
+		Scene.add(scene, spot);
 
-		spotMarker = new Shape3D();
-		spotMarker.setSphere(0.16);
-		spotMarker.color = Color.rgba(150, 210, 255, 255);
-		scene.add(spotMarker);
+		spotMarker = Shape3D.create();
+		Shape3D.setSphere(spotMarker, 0.16);
+		Shape3D.setColor(spotMarker, Color.rgba(150, 210, 255, 255));
+		Scene.add(scene, spotMarker);
 	}
 
 	/** A model of `mesh` at `position` in one colour, added to the scene. **/
 	static function place(mesh:Mesh, position:Vec3, r:Float, g:Float, b:Float, roughness:Float):Model {
-		final model = new Model(mesh);
-		mesh.release(); // the model holds it
-		model.setTransform(position);
-		final material = new Material(Pbr);
-		material.setBaseColor(r, g, b, 1.0);
-		material.metallic = 0.0;
-		material.roughness = roughness;
-		model.setMaterial(-1, material);
-		material.release();
-		scene.add(model);
+		final model = Model.create(mesh);
+		Mesh.release(mesh); // the model holds it
+		Model.setTransform(model, position);
+		final material = Material.create(Pbr);
+		Material.setBaseColor(material, r, g, b, 1.0);
+		Material.setMetallic(material, 0.0);
+		Material.setRoughness(material, roughness);
+		Model.setMaterial(model, -1, material);
+		Material.release(material);
+		Scene.add(scene, model);
 		return model;
 	}
 
@@ -145,8 +145,8 @@ class Shadows {
 		place(Mesh.cube(1.0, 1.0, 1.0), new Vec3(3.8, 0.5, 1.4), 0.3, 0.5, 0.85, 0.6);
 
 		// one that casts nothing, and one that nothing shadows
-		place(Mesh.sphere(0.6, 24, 48), new Vec3(-2.0, 0.6, 2.4), 0.95, 0.85, 0.3, 0.35).castsShadow = false;
-		place(Mesh.sphere(0.6, 24, 48), new Vec3(-2.6, 0.6, -1.2), 0.9, 0.3, 0.5, 0.35).receivesShadow = false;
+		Model.setCastsShadow(place(Mesh.sphere(0.6, 24, 48), new Vec3(-2.0, 0.6, 2.4), 0.95, 0.85, 0.3, 0.35), false);
+		Model.setReceivesShadow(place(Mesh.sphere(0.6, 24, 48), new Vec3(-2.6, 0.6, -1.2), 0.9, 0.3, 0.5, 0.35), false);
 	}
 
 	static function onAsset(id:Int, path:String, ok:Bool):Void {
@@ -157,10 +157,10 @@ class Shadows {
 		if (id != ASSET_GUMSHOE)
 			return;
 		final mesh = Mesh.create(path);
-		gumshoe.setMesh(mesh);
-		mesh.release();
-		gumshoe.animation = 3;
-		gumshoe.animationLoop = true;
+		Model.setMesh(gumshoe, mesh);
+		Mesh.release(mesh);
+		Model.setAnimation(gumshoe, 3);
+		Model.setAnimationLoop(gumshoe, true);
 	}
 
 	static function handleKeys(dt:Float):Void {
@@ -168,36 +168,36 @@ class Shadows {
 			Wgr.requestQuit();
 		if (Input.isKeyPressed(Digit1)) {
 			shadows = !shadows;
-			sun.castsShadows = shadows;
+			Light.setCastsShadows(sun, shadows);
 		}
 		if (Input.isKeyPressed(Digit2)) {
 			spotShadows = !spotShadows;
-			spot.castsShadows = spotShadows;
+			Light.setCastsShadows(spot, spotShadows);
 		}
 		if (Input.isKeyPressed(O))
 			orbit = !orbit;
 		if (Input.isKeyPressed(S)) {
 			strength = strength > 0.9 ? 0.65 : (strength > 0.5 ? 0.35 : 1.0);
-			sun.shadowStrength = strength;
+			Light.setShadowStrength(sun, strength);
 		}
 		if (Input.isKeyPressed(T)) {
 			tintIndex = (tintIndex + 1) % TINTS.length;
-			sun.shadowColor = TINTS[tintIndex];
+			Light.setShadowColor(sun, TINTS[tintIndex]);
 		}
 		if (Input.isKeyPressed(M)) {
 			sizeIndex = (sizeIndex + 1) % MAP_SIZES.length;
-			sun.shadowMapSize = MAP_SIZES[sizeIndex];
-			spot.shadowMapSize = MAP_SIZES[sizeIndex];
+			Light.setShadowMapSize(sun, MAP_SIZES[sizeIndex]);
+			Light.setShadowMapSize(spot, MAP_SIZES[sizeIndex]);
 		}
 		if (Input.isKeyDown(Up) || Input.isKeyDown(Down)) {
 			final step = Input.isKeyDown(Up) ? dt * 20.0 : -dt * 20.0;
 			distance = Math.max(2.0, Math.min(distance + step, 200.0));
-			sun.shadowDistance = distance;
+			Light.setShadowDistance(sun, distance);
 		}
 		if (Input.isKeyDown(LeftBracket) || Input.isKeyDown(RightBracket)) {
 			final step = Input.isKeyDown(RightBracket) ? dt * 4.0 : -dt * 4.0;
 			bias = Math.max(0.0, Math.min(bias + step, 16.0));
-			sun.setShadowBias(bias, bias * 4.0);
+			Light.setShadowBias(sun, bias, bias * 4.0);
 		}
 	}
 
@@ -205,20 +205,20 @@ class Shadows {
 		handleKeys(dt);
 
 		elapsed += dt;
-		gumshoe.animate(dt);
+		Model.animate(gumshoe, dt);
 		// the spot circles overhead, always aimed at the middle of the scene
 		final sx = 7.0 * Math.sin(elapsed * 0.35);
 		final sz = 7.0 * Math.cos(elapsed * 0.35);
-		spot.position = new Vec3(sx, 6.5, sz);
-		spot.direction = new Vec3(-sx, -6.5, -sz);
-		spotMarker.setTransform(new Vec3(sx, 6.5, sz));
+		Light.setPosition(spot, new Vec3(sx, 6.5, sz));
+		Light.setDirection(spot, new Vec3(-sx, -6.5, -sz));
+		Shape3D.setTransform(spotMarker, new Vec3(sx, 6.5, sz));
 		if (orbit)
 			angle += dt * 0.18;
-		camera.setView(new Vec3(11.0 * Math.sin(angle), 5.0, 11.0 * Math.cos(angle)), target);
+		Camera3D.setView(camera, new Vec3(11.0 * Math.sin(angle), 5.0, 11.0 * Math.cos(angle)), target);
 
 		Render.begin();
 		Render.clearBackground(Color.rgba(120, 150, 200, 255));
-		scene.draw();
+		Scene.draw(scene);
 		Text.draw("wgrender shadows: a directional light casting into a depth map", 12, 36, 20, Color.RAYWHITE);
 		Text.draw('[1] sun ${shadows ? "on" : "off"}   [2] spot ${spotShadows ? "on" : "off"}   '
 			+ 'map ${MAP_SIZES[sizeIndex]}   distance ${Math.round(distance)}   '

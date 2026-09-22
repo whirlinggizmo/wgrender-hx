@@ -84,20 +84,20 @@ class World2D {
 
 		centreX = WORLD_W * 0.5;
 		centreY = WORLD_H * 0.5;
-		camera = new Camera3D(Orthographic);
+		camera = Camera3D.create(Orthographic);
 		placeCamera();
 
-		scene = new Scene();
-		scene.activeCamera = camera;
-		scene.interactive = true;
+		scene = Scene.create();
+		Scene.setActiveCamera(scene, camera);
+		Scene.setInteractive(scene, true);
 
 		if (!GuestAbi.loadAsset(TILES_PATH, ASSET_TILES))
 			Log.error('failed to queue asset: $TILES_PATH');
 	}
 
 	static function placeCamera():Void {
-		camera.setView(new Vec3(centreX, centreY, 10.0), new Vec3(centreX, centreY, 0.0));
-		camera.orthoHeight = zoom;
+		Camera3D.setView(camera, new Vec3(centreX, centreY, 10.0), new Vec3(centreX, centreY, 0.0));
+		Camera3D.setOrthoHeight(camera, zoom);
 	}
 
 	/** A small hand-made map: water along the bottom, a sand shore, stone paths. **/
@@ -117,14 +117,14 @@ class World2D {
 	**/
 	static function addSprite(cell:Array<Float>, x:Float, y:Float, z:Float, width:Float, height:Float, pivotY:Float,
 			layer:Int):Sprite3D {
-		final sprite = new Sprite3D(texture);
-		sprite.facing = Free;
-		sprite.setSource(cell[0], cell[1], cell[2], cell[3]);
-		sprite.setExtent(width, height);
-		sprite.setPivot(0.5, pivotY);
-		sprite.setTransform(new Vec3(x, y, z));
-		sprite.setAlphaMode(layer == LAYER_GROUND ? Opaque : Mask, 0.5);
-		scene.add(sprite, layer);
+		final sprite = Sprite3D.create(texture);
+		Sprite3D.setFacing(sprite, Free);
+		Sprite3D.setSource(sprite, cell[0], cell[1], cell[2], cell[3]);
+		Sprite3D.setExtent(sprite, width, height);
+		Sprite3D.setPivot(sprite, 0.5, pivotY);
+		Sprite3D.setTransform(sprite, new Vec3(x, y, z));
+		Sprite3D.setAlphaMode(sprite, layer == LAYER_GROUND ? Opaque : Mask, 0.5);
+		Scene.add(scene, sprite, layer);
 		return sprite;
 	}
 
@@ -132,10 +132,10 @@ class World2D {
 		// The pivot is the bottom edge, so a prop stands on its cell whatever its height.
 		final prop = addSprite(cell, x, y - 0.5, 0.1, width, height, 1.0, LAYER_PROPS);
 		if (coin) {
-			prop.setPickAlphaTest(true, 0.5);
+			Sprite3D.setPickAlphaTest(prop, true, 0.5);
 			coins.push(prop);
 		} else {
-			prop.pickable = false;
+			Sprite3D.setPickable(prop, false);
 		}
 	}
 
@@ -148,7 +148,7 @@ class World2D {
 			return;
 		texture = Texture.create(path);
 		// pixel art: keep the texels crisp when zoomed in
-		texture.setSampling(Clamp, Clamp, Nearest);
+		Texture.setSampling(texture, Clamp, Clamp, Nearest);
 		buildWorld();
 		loaded = true;
 	}
@@ -160,7 +160,7 @@ class World2D {
 				// an edge landing exactly on a pixel boundary shows the background
 				// through as a hairline seam.
 				final tile = addSprite(tileAt(x, y), x + 0.5, y + 0.5, 0.0, 1.01, 1.01, 0.5, LAYER_GROUND);
-				tile.pickable = false;
+				Sprite3D.setPickable(tile, false);
 			}
 		}
 		for (i in 0...7) // trees: 16x32 cells drawn 1x2
@@ -198,11 +198,11 @@ class World2D {
 	/** Hover lights a coin up, a click collects it -- both from the scene, not a pick. **/
 	static function updateCoins():Void {
 		for (coin in coins) {
-			final hover = scene.getHover(coin);
-			coin.tint = hover == Pressed || hover == Down ? highlight : Color.WHITE;
-			if (scene.isClicked(coin)) {
-				coin.visible = false;
-				coin.pickable = false;
+			final hover = Scene.getHover(scene, coin);
+			Sprite3D.setTint(coin, hover == Pressed || hover == Down ? highlight : Color.WHITE);
+			if (Scene.isClicked(scene, coin)) {
+				Sprite3D.setVisible(coin, false);
+				Sprite3D.setPickable(coin, false);
 				collected++;
 			}
 		}
@@ -211,7 +211,7 @@ class World2D {
 	static function onFrame(dt:Float):Void {
 		final keys = Input.getKeyboardState();
 		final mouse = Input.getMouseState();
-		final screen = Window.screenSize;
+		final screen = Window.getScreenSize();
 
 		if (keys.isPressed(Escape))
 			Wgr.requestQuit();
@@ -222,7 +222,7 @@ class World2D {
 
 		Render.begin();
 		Render.clearBackground(background);
-		scene.draw();
+		Scene.draw(scene);
 		Render.beginMode2D(); // back to screen space for the HUD
 		Shape2D.drawRectangle(0, 0, screen.x, 88, shade);
 		Text.draw("wgrender 2d: an orthographic camera over sprite3d tiles", 20, 20, 20, textColor);

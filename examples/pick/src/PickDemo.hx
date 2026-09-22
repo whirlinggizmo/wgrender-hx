@@ -49,29 +49,29 @@ class PickDemo {
 		Asset.setHost(Assets.defaultBase());
 		background = Color.rgba(24, 26, 34, 255);
 
-		camera = new Camera3D(Perspective);
-		camera.setView(new Vec3(11.0, 9.0, 11.0), new Vec3(0, 2.0, 0));
-		scene = new Scene();
-		scene.activeCamera = camera;
+		camera = Camera3D.create(Perspective);
+		Camera3D.setView(camera, new Vec3(11.0, 9.0, 11.0), new Vec3(0, 2.0, 0));
+		scene = Scene.create();
+		Scene.setActiveCamera(scene, camera);
 
 		// scenes start unlit: a sun and some ambient, so the model can be seen
-		final sun = new Light(Directional);
-		sun.direction = new Vec3(-0.6, -1.0, -0.5);
-		sun.intensity = 3.0;
-		scene.add(sun);
-		scene.setAmbient(Color.WHITE, 0.3);
+		final sun = Light.create(Directional);
+		Light.setDirection(sun, new Vec3(-0.6, -1.0, -0.5));
+		Light.setIntensity(sun, 3.0);
+		Scene.add(scene, sun);
+		Scene.setAmbient(scene, Color.WHITE, 0.3);
 
-		cube = new Shape3D();
-		cube.setCube(new Vec3(2.0, 2.0, 2.0));
-		cube.setTransform(new Vec3(-3.5, 1.0, 0), new Vec3(0, 0.6, 0));
-		cube.color = Color.ORANGE;
-		scene.add(cube);
+		cube = Shape3D.create();
+		Shape3D.setCube(cube, new Vec3(2.0, 2.0, 2.0));
+		Shape3D.setTransform(cube, new Vec3(-3.5, 1.0, 0), new Vec3(0, 0.6, 0));
+		Shape3D.setColor(cube, Color.ORANGE);
+		Scene.add(scene, cube);
 
-		sphere = new Shape3D();
-		sphere.setSphere(1.5);
-		sphere.setTransform(new Vec3(3.5, 1.5, 0));
-		sphere.color = Color.GOLD;
-		scene.add(sphere);
+		sphere = Shape3D.create();
+		Shape3D.setSphere(sphere, 1.5);
+		Shape3D.setTransform(sphere, new Vec3(3.5, 1.5, 0));
+		Shape3D.setColor(sphere, Color.GOLD);
+		Scene.add(scene, sphere);
 
 		load(LOGO_PATH, ASSET_LOGO);
 		load(MODEL_PATH, ASSET_MODEL);
@@ -91,32 +91,32 @@ class PickDemo {
 		switch id {
 			case ASSET_LOGO:
 				final texture = Texture.create(path);
-				sprite = new Sprite3D(texture);
-				texture.release(); // the sprite holds its own reference
-				if (sprite.isNone)
+				sprite = Sprite3D.create(texture);
+				Texture.release(texture); // the sprite holds its own reference
+				if (Sprite3D.isNone(sprite))
 					return;
-				sprite.size = 4.0;
-				sprite.facing = Camera;
-				sprite.tint = Color.WHITE;
-				sprite.setTransform(new Vec3(0, 3.0, 4.0));
+				Sprite3D.setSize(sprite, 4.0);
+				Sprite3D.setFacing(sprite, Camera);
+				Sprite3D.setTint(sprite, Color.WHITE);
+				Sprite3D.setTransform(sprite, new Vec3(0, 3.0, 4.0));
 				// the transparent parts of the logo let the click through
-				sprite.setPickAlphaTest(true, 0.5);
-				scene.add(sprite, 1);
+				Sprite3D.setPickAlphaTest(sprite, true, 0.5);
+				Scene.add(scene, sprite, 1);
 
 			case ASSET_MODEL:
 				final mesh = Mesh.create(path);
-				model = new Model(mesh);
-				mesh.release(); // the model holds its own reference
-				if (model.isNone)
+				model = Model.create(mesh);
+				Mesh.release(mesh); // the model holds its own reference
+				if (Model.isNone(model))
 					return;
-				model.setTransform(new Vec3(0, 0, -4.0));
-				model.tint = Color.RAYWHITE;
-				scene.add(model);
+				Model.setTransform(model, new Vec3(0, 0, -4.0));
+				Model.setTint(model, Color.RAYWHITE);
+				Scene.add(scene, model);
 		}
 	}
 
 	static function kindName(handle:Handle):String {
-		return switch handle.kind {
+		return switch Handle.getKind(handle) {
 			case Shape3D: "shape";
 			case Sprite3D: "sprite3d";
 			case Model: "model";
@@ -138,17 +138,17 @@ class PickDemo {
 			return;
 		// The kind is the test, not a list of known handles: only a shape can be
 		// recoloured, and `kind` answers that for any handle at all.
-		if (selected.kind == Shape3D)
-			(selected : Shape3D).color = restingColor(selected);
+		if (Handle.getKind(selected) == Shape3D)
+			Shape3D.setColor((selected : Shape3D), restingColor(selected));
 		selected = hit;
-		if (selected.kind == Shape3D)
-			(selected : Shape3D).color = Color.RAYWHITE;
+		if (Handle.getKind(selected) == Shape3D)
+			Shape3D.setColor((selected : Shape3D), Color.RAYWHITE);
 	}
 
 	static function onFrame(dt:Float):Void {
 		final mouse = Input.getMouseState();
 		if (mouse.left == ButtonState.Pressed) {
-			last = scene.pick(mouse.x, mouse.y);
+			last = Scene.pick(scene, mouse.x, mouse.y);
 			select(last.hit ? last.handle : Handle.NONE);
 		}
 
@@ -157,7 +157,7 @@ class PickDemo {
 		Render.beginMode3D();
 		Shape3D.drawGrid(24, 1.0, Color.DARKGRAY);
 		Render.endMode3D();
-		scene.draw();
+		Scene.draw(scene);
 
 		Text.draw("wgrender + sokol — picking", 12, 36, 24, Color.RAYWHITE);
 		Text.draw("click cube / sphere / sprite / model", 12, 70, 16, Color.LIGHTGRAY);

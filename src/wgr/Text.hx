@@ -21,14 +21,17 @@ class Text {
 
 		A handle that isn't a loaded font is refused, and wgrender says so in the log.
 	**/
-	public static var defaultFont(get, set):Font;
-
-	static inline function get_defaultFont():Font
+	public static inline function getDefaultFont():Font
 		return (Raw.wgr_text_get_default_font() : Handle);
 
-	static inline function set_defaultFont(v:Font):Font {
-		Raw.wgr_text_set_default_font(v);
-		return v;
-	}
+	/**
+		What `Text.draw`/`measure` use, and what a none font means everywhere else
+		(`Font.draw`, `Text2D`, `Text3D`). None goes back to wgrender's built-in font,
+		JetBrains Mono, printable ASCII only. The default font holds its own reference.
+
+		A handle that isn't a loaded font is refused, and wgrender says so in the log.
+	**/
+	public static inline function setDefaultFont(value:Font):Bool
+		return Raw.wgr_text_set_default_font(value);
 
 }

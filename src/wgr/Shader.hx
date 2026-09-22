@@ -11,18 +11,17 @@ package wgr;
 	its parameters and textures are then set by the names your shader gives them.
 **/
 abstract Shader(Handle) from Handle to Handle {
-	public var isNone(get, never):Bool;
-
 	@:to inline function toRaw():WgrHandle
 		return (this : Int);
 
-	inline function get_isNone():Bool
-		return (this : Handle).isNone;
+	/** Whether this refers to nothing; tolerates a field never assigned, on js. **/
+	public static inline function isNone(shader:Shader):Bool
+		return (shader : Handle).isNone;
 
 	public static inline function create(path:String):Shader
 		return (Raw.wgr_shader_create(path) : Handle);
 
 	/** Drop this reference; the data goes when the last one does. **/
-	public inline function release():Void
-		Raw.wgr_shader_release(this);
+	public static inline function release(shader:Shader):Void
+		Raw.wgr_shader_release(shader);
 }

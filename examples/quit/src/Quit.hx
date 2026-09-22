@@ -62,10 +62,10 @@ class Quit {
 		}
 		if (id == ASSET_BGM) {
 			final audio = Audio.create(path);
-			music = new Sound(audio);
-			audio.release(); // the sound keeps its own reference
-			music.loop = true;
-			music.play();
+			music = Sound.create(audio);
+			Audio.release(audio); // the sound keeps its own reference
+			Sound.setLoop(music, true);
+			Sound.play(music);
 		}
 	}
 
