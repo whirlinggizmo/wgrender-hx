@@ -173,18 +173,6 @@ class Asset {
 			Wgr.report("an asset ping callback", e);
 	}
 
-	#if cpp
-	@:allow(wgr.AssetTask)
-	static function addTask(task:Handle, onSuccess:(path:String) -> Void, ?onFailure:(path:String) -> Void):Bool {
-		final id = nextId++;
-		pending.set(id, {onSuccess: onSuccess, onFailure: onFailure});
-		final ok = Raw.wgr_asset_add_task(task, cpp.Callable.fromStaticFunction(successTrampoline),
-			cpp.Callable.fromStaticFunction(failureTrampoline), Native.toUser(id)) == 0;
-		if (!ok)
-			pending.remove(id);
-		return ok;
-	}
-
 	/**
 		Download a missing asset. wgrender calls `fetch` when a file isn't local yet,
 		there is somewhere to download it from, and the platform has no downloader of
@@ -198,12 +186,34 @@ class Asset {
 		curl, WinHTTP and NSURLSession all hand you anyway, and the directories above
 		the destination already exist.
 
-		Without one, a miss on desktop fails as it always has. hxcpp only — the web has
-		the browser.
+		Without one, a miss on desktop fails as it always has.
+
+		Returns false on the web, where there is nothing to install: the browser is the
+		downloader, and wgrender fetches a miss itself. It compiles there so that a
+		program wanting a fetcher on desktop does not have to put `#if` around the one
+		line that says so — the parts that really are native, like reading an
+		environment variable or running a program, are Haxe's own business and guard
+		themselves.
 	**/
 	public static function setFetcher(fetch:(request:Handle, url:String, destPath:String) -> Void):Bool {
+		#if cpp
 		fetcher = fetch;
 		return Raw.wgr_asset_set_fetcher(cpp.Callable.fromStaticFunction(fetchTrampoline), Native.nullPtr());
+		#else
+		return false;
+		#end
+	}
+
+	#if cpp
+	@:allow(wgr.AssetTask)
+	static function addTask(task:Handle, onSuccess:(path:String) -> Void, ?onFailure:(path:String) -> Void):Bool {
+		final id = nextId++;
+		pending.set(id, {onSuccess: onSuccess, onFailure: onFailure});
+		final ok = Raw.wgr_asset_add_task(task, cpp.Callable.fromStaticFunction(successTrampoline),
+			cpp.Callable.fromStaticFunction(failureTrampoline), Native.toUser(id)) == 0;
+		if (!ok)
+			pending.remove(id);
+		return ok;
 	}
 
 	static function fetchTrampoline(request:WgrHandle, url:ConstCharStar, destPath:ConstCharStar,

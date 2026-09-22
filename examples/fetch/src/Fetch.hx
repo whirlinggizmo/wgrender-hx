@@ -20,11 +20,11 @@
 // anyway. Downloads land in the cache directory and the next run finds them there,
 // which is the job the browser's cache does on the web.
 //
-// This is the one example where the two targets genuinely differ rather than differing
-// at the edges. `Asset.setFetcher` takes a C function pointer and a `void *`, so it is
-// one of the ten calls the js target does not have -- and does not need, because on
-// the web the browser is the fetcher. So the whole desktop branch is behind `#if cpp`,
-// and the guest ABI has nothing to do with it either way.
+// The guards here are Haxe's, not wgrender's, and that distinction is the point.
+// `Asset.setFetcher` compiles on both targets and answers false on the web, where
+// there is nothing to install -- the browser is the downloader. What needs `#if sys`
+// is reading an environment variable and running curl, which are facts about the
+// standard library rather than about the binding.
 //
 //   ESC  quit
 import wgr.*;
@@ -63,10 +63,10 @@ class Fetch {
 		sprite.position = new Vec2(512, 380);
 		Debug.enableFps(12, 10, 16);
 
-		#if js
-		host = Assets.defaultBase(); // the browser fetches
-		remote = true;
-		#else
+		#if sys
+		// Native: pick a host, check something is serving there, and install a
+		// downloader. Sys.getEnv and Sys.command are what need the guard -- they are
+		// Haxe's, not wgrender's -- while Asset.setFetcher compiles either way.
 		final wanted = Sys.getEnv("WGRENDER_ASSET_HOST");
 		host = wanted != null ? wanted : DEFAULT_HOST;
 		remote = hostIsUp(host);
@@ -76,6 +76,9 @@ class Fetch {
 		} else {
 			host = Assets.defaultBase(); // the local directory
 		}
+		#else
+		host = Assets.defaultBase(); // the browser fetches
+		remote = true;
 		#end
 		Asset.setHost(host);
 
@@ -83,7 +86,7 @@ class Fetch {
 			Log.error('failed to queue asset: $TEXTURE_PATH');
 	}
 
-	#if cpp
+	#if sys
 	/** Download `url` to `destPath`, then say how it went. A real one would not block. **/
 	static function fetchWithCurl(request:Handle, url:String, destPath:String):Void {
 		final ok = Sys.command("curl", ["-fsS", "--max-time", "30", "-o", destPath, url]) == 0;
@@ -118,7 +121,7 @@ class Fetch {
 		Text.draw("wgrender fetch: the desktop build downloads what the browser downloads", 12, 36, 20,
 			Color.RAYWHITE);
 		Text.draw('host: $host', 12, 64, 16, Color.LIGHTGRAY);
-		#if cpp
+		#if sys
 		Text.draw(remote ? 'downloaded $downloads file(s) into $CACHE_DIR   (delete it and re-run: they come back)'
 			: 'no host reachable — reading ${Assets.defaultBase()} locally instead', 12, 86, 16, Color.LIGHTGRAY);
 		#end
