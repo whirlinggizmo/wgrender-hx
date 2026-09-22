@@ -70,6 +70,26 @@ A field needs no initialiser either way: `isNone` treats js's `undefined` as non
 on hxcpp (an uninitialised `Int` static is 0) and quietly wrong on js (`undefined == 0`
 is `false`).
 
+**`isNone` is the only test that is right on both targets.** `h == 0` and
+`h == Handle.NONE` compile, and are right on hxcpp and right on js for a field that was
+assigned — but both say `false` for an uninitialised field on js, for the same
+`undefined == 0` reason. Measured, not reasoned:
+
+| on js | uninitialised | assigned `Handle.NONE` |
+|---|---|---|
+| `h == 0` | `false` | `true` |
+| `h == Handle.NONE` | `false` | `true` |
+| `h.isNone` | `true` | `true` |
+
+The 0 is promoted at the typed abstract (`Int` → `Handle` → `Model`), so an operator
+overload on `Handle` never sees the comparison and cannot correct it.
+
+Note what this does *not* argue. The abstract does not prevent `== 0` — the table above
+is measured with it in place. It only makes `isNone` discoverable, because `h.` offers
+it. A flattened API would carry the same check as a free function,
+`Handle.isNone(h)`, with the same `undefined` tolerance inside it; what it would lose
+is the autocomplete, not the correctness.
+
 ## The two shapes
 
 An **all-in-one** app calls `Wgr.initValues` / `setInit` / `setFrame` / `run` and is

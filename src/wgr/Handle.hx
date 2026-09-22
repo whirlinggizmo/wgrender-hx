@@ -7,6 +7,17 @@ abstract Handle(Int) from Int to Int {
 	/** The zero handle: not created (yet), or creation failed. Assignable to any kind. **/
 	public static final NONE:Handle = 0;
 
+	/**
+		Whether this is the zero handle. **The only test that is correct on both
+		targets** — `h == 0` and `h == Handle.NONE` are not.
+
+		On js an uninitialised field is `undefined`, and `undefined == 0` is `false`, so
+		both comparisons report a handle for something never assigned. They compile, and
+		they are right on hxcpp and right on js for a field that *was* assigned, which
+		is what makes them worth naming here. Promoting the 0 happens at the typed
+		abstract (`Int` -> `Handle` -> `Model`), so an operator overload on `Handle`
+		cannot intercept it; there is nothing to fix but the habit.
+	**/
 	public var isNone(get, never):Bool;
 
 	inline function get_isNone():Bool
