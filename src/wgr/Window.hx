@@ -29,6 +29,17 @@ class Window {
 	/** Where it sits on the desktop; (0, 0) where there is no such thing. **/
 	public static var position(get, never):Vec2;
 
+	/**
+		Refused where the platform has no fullscreen, and said so in the log -- so the
+		property loses nothing. `setFullscreen` returns the answer for a caller that
+		wants it.
+
+		The web does support it: sokol calls `canvas.requestFullscreen()`, and the
+		browser allows that because the transient activation from the key or click that
+		led here is still live a frame later. What is *not* immediate is the reading --
+		the change arrives as a `fullscreenchange` event, so this still reports the old
+		value on the frame it was set.
+	**/
 	public static var fullscreen(get, set):Bool;
 
 	/** Hiding it doesn't stop the loop — the program keeps running either way. **/
@@ -64,6 +75,14 @@ class Window {
 		return v;
 	}
 
+	/**
+		The property, with the answer. wgrender logs a refusal either way, so this is
+		for a caller that wants to act on it rather than read about it -- wgrender's own
+		window example prints it on screen.
+	**/
+	public static inline function setFullscreen(fullscreen:Bool):Bool
+		return Raw.wgr_window_set_fullscreen(fullscreen);
+
 	static inline function get_visible():Bool
 		return Raw.wgr_window_is_visible();
 
@@ -71,6 +90,10 @@ class Window {
 		Raw.wgr_window_set_visible(v);
 		return v;
 	}
+
+	/** The property, with the answer. wgrender has no platform that refuses this yet. **/
+	public static inline function setVisible(visible:Bool):Bool
+		return Raw.wgr_window_set_visible(visible);
 
 	static inline function get_focused():Bool
 		return Raw.wgr_window_is_focused();

@@ -82,6 +82,22 @@ UNREACHABLE = {
 # Keep this empty if you can: every entry is a silent failure someone will hit.
 ACCEPTED = {}
 
+# Setters whose body delegates past what this can read -- into wgr_platform.c, or into
+# sokol -- checked by hand instead, with what the reading found. An entry here is a
+# verdict; without one these are just a warning on every build that nobody has ever
+# answered, which is how all three of these sat for as long as they did.
+#
+# The rule is unchanged: a property is right when every refusal is logged.
+DELEGATED = {
+    'wgr_window_set_visible': 'never refuses -- wgri_platform_set_window_visible '
+                              'returns true on every branch (sokol, headless, web)',
+    'wgr_window_set_fullscreen': 'refuses only where the platform has none, and '
+                                 'wgr_window.c\'s unsupported() log_warns it once',
+    'wgr_window_set_monitor': 'refuses a bad index (log_warn here and again in '
+                              'wgr_platform.c) and a Wayland desktop (can_move() '
+                              'log_infos it once) -- every path logs',
+}
+
 MACROS = {}
 
 
@@ -276,12 +292,18 @@ def main():
             print(f'      header: {sentence[:120]}')
         for c_name, where, conds in swallowed:
             print(f'  warning: {where} is a property, but {c_name} refuses: {"; ".join(conds)}')
-        stale = [n for n in list(UNREACHABLE) + list(ACCEPTED)
+        stale = [n for n in list(UNREACHABLE) + list(ACCEPTED) + list(DELEGATED)
                  if n not in props and n not in methods]
         for n in stale:
             print(f'  {n}: listed as an exception, but the binding does not wrap it')
         for c_name, where in unparsed:
+            if c_name in DELEGATED:
+                continue  # answered by hand; the report below still lists it
             print(f'  warning: could not read {c_name}\'s guard from the C ({where})')
+        for c_name in DELEGATED:
+            if c_name not in [n for n, _ in unparsed]:
+                print(f'  {c_name}: listed as delegated, but its C reads now -- '
+                      'drop the entry and let the tool judge it')
         for n in stale:
             pass
         print(f'setters: {"stale" if undocumented else "current"} '
@@ -309,6 +331,9 @@ def main():
     if unparsed:
         print(f'\n{len(unparsed)} not read from the C (delegated too far, or written another way):')
         for c_name, where in unparsed:
+            if c_name in DELEGATED:
+                print(f'  {c_name:38} {where}\n      by hand: {DELEGATED[c_name]}')
+                continue
             print(f'  {where:<28} {c_name}')
     return 0
 
