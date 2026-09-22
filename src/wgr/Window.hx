@@ -79,7 +79,7 @@ class Window {
 		return Raw.wgr_window_is_fullscreen();
 
 	static inline function set_fullscreen(v:Bool):Bool {
-		Raw.wgr_window_set_fullscreen(v);
+		Raw.wgr_window_request_fullscreen(v);
 		return v;
 	}
 
@@ -91,7 +91,7 @@ class Window {
 		here means the thing happened.
 	**/
 	public static inline function requestFullscreen(fullscreen:Bool):Bool
-		return Raw.wgr_window_set_fullscreen(fullscreen);
+		return Raw.wgr_window_request_fullscreen(fullscreen);
 
 	static inline function get_visible():Bool
 		return Raw.wgr_window_is_visible();

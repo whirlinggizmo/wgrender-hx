@@ -3,6 +3,7 @@
 
     tools/refusals.py [WGRENDER_DIR]        the report
     tools/refusals.py --json [WGRENDER_DIR] the same, as JSON on stdout
+    tools/refusals.py --require-clang       fail rather than skip when clang is missing
 
 This replaces the regular expressions that tools/setters.py used to read wgrender's
 control flow with. Those could not be trusted -- they produced one false clean (a
@@ -256,6 +257,11 @@ def main():
     argv = [a for a in sys.argv[1:] if not a.startswith('--')]
     clang = find_clang()
     if clang is None:
+        if '--require-clang' in sys.argv:
+            # What CI passes. A skip that can happen everywhere is not a gate, so the
+            # one place clang is guaranteed is the one place its absence is fatal.
+            sys.exit('refusals: no clang, and --require-clang was given. emsdk provides '
+                     'one; `emcc` on PATH or $EMSDK leads to it.')
         print('refusals: no clang found (emsdk provides one; `emcc` on PATH leads to it)')
         print('          skipping -- CI builds the web target, so it runs there')
         return 0
