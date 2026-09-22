@@ -925,14 +925,18 @@ class CheckBindings {
 	public static function main():Void {}
 	#else
 	public static function main():Void {
+		// Handlers first, on purpose: wgr_init_values memsets wgrender's runtime, so
+		// anything installed before it is wiped. Setting them after would be the safe
+		// order and would test nothing; `frames > 0` below is what catches it, and it
+		// caught nothing for as long as this ran in the safe order.
+		Wgr.setInit(onInit);
+		Wgr.setFrame(onFrame);
 		final rc = Wgr.initValues(WIDTH, HEIGHT, "check", Msaa4x | Resizable);
 		check(rc != Wgr.ERR_VERSION_MISMATCH, "initValues guards the version like the guest ABI does");
 		check(rc == 0, "initValues succeeded");
-		Wgr.setInit(onInit);
-		Wgr.setFrame(onFrame);
 		Wgr.run();
 
-		check(frames > 0, "the loop ran at least one frame");
+		check(frames > 0, "the loop ran at least one frame, with the handlers set before initValues");
 		say('${checks - failures}/$checks checks passed over $frames frames');
 		Sys.exit(failures == 0 ? 0 : 1);
 	}

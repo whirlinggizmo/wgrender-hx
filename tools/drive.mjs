@@ -6,10 +6,17 @@
 // Saves a screenshot beside the site directory, because three bugs in this port were
 // visible there and invisible to every assertion: a canvas with no CSS size, a model
 // drawn off screen, and a pivot taken as pixels instead of a fraction.
+//
+// And it now *reads* that screenshot, because "no console error" passed a build that
+// rendered nothing at all: a lifecycle bug wiped the frame callback and this said ok
+// over a black canvas. A screen of one colour is a failure whatever the console says.
+// --min-colours=1 turns it off for an example that really is one flat colour.
 import { writeFileSync } from "node:fs";
 import { homedir } from "node:os";
-import { join, resolve } from "node:path";
-import { pathToFileURL } from "node:url";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
+const { decodePng, distinctColours } =
+    await import(pathToFileURL(join(dirname(fileURLToPath(import.meta.url)), "png.mjs")).href);
 
 const arg = (name, fallback) =>
     process.argv.find((a) => a.startsWith(`--${name}=`))?.split("=").slice(1).join("=") ?? fallback;
@@ -21,6 +28,7 @@ const site = resolve(arg("site", "out/web"));
 const label = arg("label", "guest");
 const settle = Number(arg("settle", 6000));
 const click = process.argv.includes("--click");
+const minColours = Number(arg("min-colours", 2));
 
 const run = new RunProcesses(label);
 const errors = [], lines = [];
@@ -61,7 +69,12 @@ try {
     await sleep(1000);
     const shot = await page.send("Page.captureScreenshot", { format: "png" });
     const out = resolve(join(site, "../check.png"));
-    writeFileSync(out, Buffer.from(shot.data, "base64"));
+    const pixels = Buffer.from(shot.data, "base64");
+    writeFileSync(out, pixels);
+    const colours = distinctColours(decodePng(pixels));
+    if (colours < minColours)
+        errors.push(`the screen is ${colours === 1 ? "one flat colour" : `only ${colours} colours`}`
+                    + ` — nothing was drawn (${out})`);
     for (const l of lines) console.log("  " + l);
     console.log(`screenshot: ${out}`);
 } finally { await run.stop(); }

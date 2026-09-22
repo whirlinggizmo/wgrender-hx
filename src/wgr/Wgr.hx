@@ -39,7 +39,12 @@ class Wgr {
 	public static function initValues(width:Int, height:Int, title:String, ?flags:WindowFlag):Int {
 		if (!Version.check())
 			return ERR_VERSION_MISMATCH;
-		return Raw.wgr_init_values(width, height, title, flags == null ? 0 : (flags : Int));
+		final result = Raw.wgr_init_values(width, height, title, flags == null ? 0 : (flags : Int));
+		// wgrender memsets its runtime in here, so a handler set before this call is
+		// gone now. Put back whatever was registered; a program that set none gets
+		// nothing installed.
+		GuestAbi.reinstall();
+		return result;
 	}
 
 	/**

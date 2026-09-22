@@ -28,6 +28,13 @@ class GuestAbi {
 	static var onShutdown:() -> Void;
 
 	/**
+		Declare the ops, all of them at once.
+
+		Every slot is written, including `shutdown` when it is left out — so this
+		*clears* a handler set earlier by `setShutdown` or `wgr.Wgr.setCleanup`. That
+		is what "these are my ops" means, and it is the reason to reach for the
+		single-op setters instead when changing one and leaving the rest alone.
+
 		`shutdown` is optional and runs once, after the last frame, on the way out --
 		wgrender's `wgr_set_cleanup` for a guest. It is the op to release anything the
 		guest owns outside wgrender; anything wgrender owns is already being torn down.
@@ -54,6 +61,19 @@ class GuestAbi {
 		GuestRaw.wgr_guest_register(cpp.Callable.fromStaticFunction(initOp), cpp.Callable.fromStaticFunction(frameOp),
 			cpp.Callable.fromStaticFunction(assetOp), cpp.Callable.fromStaticFunction(shutdownOp));
 		GuestRaw.wgr_guest_install();
+	}
+
+	/**
+		Put the ops back after something wiped them.
+
+		`wgr_init_values` memsets wgrender's runtime, so a handler set before it is
+		gone afterwards. `wgr.Wgr.initValues` calls this on the way out. Only reapplies
+		what was actually registered: a program that never used the ops gets nothing
+		installed, and keeps whatever it set itself.
+	**/
+	public static function reinstall():Void {
+		if (opsInstalled)
+			GuestRaw.wgr_guest_install();
 	}
 
 	/**
