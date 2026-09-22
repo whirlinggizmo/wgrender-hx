@@ -138,21 +138,35 @@ def check(root, wgrender):
 
 
 def find_clang():
-    """clang, or None. emsdk's is the one the web build already uses."""
+    """clang, or None. emsdk's is the one the web build already uses.
+
+    `clang` on Windows is `clang.exe`, and both emsdk lookups below build a path by
+    hand rather than going through PATH, so they have to try the suffix themselves --
+    otherwise this finds nothing on Windows, says it is skipping, and exits 0, which
+    looks exactly like a machine with no emsdk. shutil.which needs no help: it reads
+    PATHEXT.
+    """
+    def at(directory):
+        for leaf in ('clang', 'clang.exe'):
+            candidate = directory / leaf
+            if candidate.exists():
+                return str(candidate)
+        return None
+
     emcc = shutil.which('emcc')
     if emcc:
-        candidate = Path(emcc).resolve().parent.parent / 'bin' / 'clang'
-        if candidate.exists():
-            return str(candidate)
+        found = at(Path(emcc).resolve().parent.parent / 'bin')
+        if found:
+            return found
     for name in ('clang', 'clang-23', 'clang-22', 'clang-21'):
         found = shutil.which(name)
         if found:
             return found
     emsdk = os.environ.get('EMSDK')
     if emsdk:
-        candidate = Path(emsdk) / 'upstream' / 'bin' / 'clang'
-        if candidate.exists():
-            return str(candidate)
+        found = at(Path(emsdk) / 'upstream' / 'bin')
+        if found:
+            return found
     return None
 
 
