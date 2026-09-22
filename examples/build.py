@@ -58,7 +58,7 @@ C_BUILD = WGRENDER / 'examples/build/webgl2-nothreads'
 # than a JS guest on a wgrender host -- so it has its own commands and is not driven
 # or benched with the guests.
 GUESTS = ['hello', 'hello3d', 'particles', 'simple', 'tick',
-          'quit', 'window', 'font', 'audio']
+          'quit', 'window', 'font', 'audio', 'force_fetch']
 OTHERS = ['simple-hxcpp']
 
 WHAT = {
@@ -72,6 +72,8 @@ WHAT = {
     'window': 'size, position, fullscreen and monitors, and what each platform refuses',
     'font': 'TrueType text at several sizes, measured and centred',
     'audio': 'looping mp3 and a one-shot ogg, and a stall that only the web hears',
+    'force_fetch': 'a per-call source URL and a cache bypass, under a key that '
+                   'resolves to nothing',
     'simple-hxcpp': 'the same scene the other way: Haxe through hxcpp into one wasm, '
                     'for the size comparison',
 }
