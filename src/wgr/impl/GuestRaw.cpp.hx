@@ -32,7 +32,8 @@ extern class GuestRaw {
 	@:native("wgr_guest_start")
 	static function wgr_guest_start(width:Int, height:Int, title:ConstCharStar, flags:UInt32):Int;
 	@:native("wgr_guest_asset_load")
-	static function wgr_guest_asset_load(path:ConstCharStar, id:UInt32):Int;
+	static function wgr_guest_asset_load(path:ConstCharStar, id:UInt32, fetchUrl:ConstCharStar,
+		flags:UInt32):Int;
 	@:native("wgr_guest_frame_id")
 	static function wgr_guest_frame_id():UInt32;
 	@:native("wgr_guest_faulted")

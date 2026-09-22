@@ -1,5 +1,8 @@
-package wgr.impl;
+package wgr;
 
+// The one public module that reaches into impl: the guest ABI is this
+// binding's own C, not wgrender's, so its externs live beside the generated
+// surface rather than with the API.
 import wgr.impl.GuestRaw;
 
 /**
@@ -123,9 +126,18 @@ class GuestAbi {
 		return true;
 	}
 
-	/** Make a file local; the host calls the asset op with `id` when it is. **/
-	public static inline function loadAsset(path:String, id:Int):Bool
-		return GuestRaw.wgr_guest_asset_load(path, id) != 0;
+	/**
+		Make a file local; the host calls the asset op with `id` when it is.
+
+		`fetchUrl` overrides where the bytes are downloaded from, without changing the
+		key they are cached and resolved under -- a mirror, a CDN, a signed link. It is
+		used verbatim, so a relative URL is relative to the page. `flags` is
+		wgrender's, `ForceFetch` being the one worth knowing: fetch even if the cache
+		already has it.
+	**/
+	public static inline function loadAsset(path:String, id:Int, ?fetchUrl:String, ?flags:AssetFlag):Bool
+		return GuestRaw.wgr_guest_asset_load(path, id, Native.cstr(fetchUrl),
+			flags == null ? 0 : (flags : Int)) != 0;
 
 	/** On desktop there is no page: `main` is the entry, so run the guest now. **/
 	public static function autostart(boot:(host:Dynamic) -> Void):Void

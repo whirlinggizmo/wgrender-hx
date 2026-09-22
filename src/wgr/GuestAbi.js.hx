@@ -1,4 +1,4 @@
-package wgr.impl;
+package wgr;
 
 
 /**
@@ -99,8 +99,17 @@ class GuestAbi {
 	}
 
 	/** Make a file local; the host calls the asset op with `id` when it is. **/
-	public static inline function loadAsset(path:String, id:Int):Bool
-		return Raw.wgr_guest_asset_load(path, id);
+	/**
+		Make a file local; the host calls the asset op with `id` when it is.
+
+		`fetchUrl` overrides where the bytes are downloaded from, without changing the
+		key they are cached and resolved under -- a mirror, a CDN, a signed link. It is
+		used verbatim, so a relative URL is relative to the page. `flags` is
+		wgrender's, `ForceFetch` being the one worth knowing: fetch even if the cache
+		already has it.
+	**/
+	public static inline function loadAsset(path:String, id:Int, ?fetchUrl:String, ?flags:AssetFlag):Bool
+		return Raw.wgr_guest_asset_load(path, id, fetchUrl, flags == null ? 0 : (flags : Int));
 
 	/** On js the page owns startup: web/boot.js loads the host, then calls `start`. **/
 	public static function autostart(_:(host:Dynamic) -> Void):Void {}

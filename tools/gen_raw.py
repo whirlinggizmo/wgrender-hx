@@ -465,7 +465,7 @@ typedef WgrColor = Int;
 	  `host.HEAPF32` at the point of use. Pointers survive growth; views do not.
 	- **Scratch is an arena per op.** Strings and struct-return slots come from
 	  `stackAlloc`, and the guest's op edge restores the stack pointer once when the op
-	  ends, fault or not (`wgr.impl.GuestAbi`).
+	  ends, fault or not (`wgr.GuestAbi`).
 	- **Structs come back through a pointer.** The wasm C ABI returns anything larger
 	  than a scalar through a hidden first argument, so these read the fields out of
 	  the heap rather than getting a value.
@@ -526,8 +526,8 @@ class Raw {
 		return host.UTF8ToString(pointer);
 
 	/** The guest ABI's asset op, keyed by `id` — the guest never sees a callback. **/
-	public static inline function wgr_guest_asset_load(path:String, id:Int):Bool
-		return host._wgr_guest_asset_load(cstr(path), id) != 0;
+	public static inline function wgr_guest_asset_load(path:String, id:Int, fetchUrl:String, flags:Int):Bool
+		return host._wgr_guest_asset_load(cstr(path), id, cstr(fetchUrl), flags) != 0;
 '''
 
 

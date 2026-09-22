@@ -62,8 +62,13 @@ void wgr_guest_register_tick(wgr_guest_tick_fn tick, int hz);
 int wgr_guest_start(int width, int height, const char *title, uint32_t flags);
 
 /* Make `path` local, then call the guest's asset op with `id`. The guest never sees
- * a function pointer. False if the task could not be queued (no callback follows). */
-int wgr_guest_asset_load(const char *path, uint32_t id);
+ * a function pointer. False if the task could not be queued (no callback follows).
+ *
+ * `fetch_url` and `flags` are wgr_asset_ensure_async's, passed through: NULL and 0
+ * are the plain "fetch it from the host under this key" this took before. A
+ * fetch_url downloads from exactly that URL while still caching and resolving under
+ * `path`, and WGR_ASSET_FORCE_FETCH ignores what is already cached. */
+int wgr_guest_asset_load(const char *path, uint32_t id, const char *fetch_url, uint32_t flags);
 
 /* Introspection, for tests and for a guest that wants to know. */
 uint32_t wgr_guest_frame_id(void);

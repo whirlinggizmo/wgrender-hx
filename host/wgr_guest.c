@@ -136,9 +136,9 @@ static void asset_done(const char *path, void *user, int ok)
 static void asset_ok(const char *path, void *user) { asset_done(path, user, 1); }
 static void asset_failed(const char *path, void *user) { asset_done(path, user, 0); }
 
-GUEST_EXPORT int wgr_guest_asset_load(const char *path, uint32_t id)
+GUEST_EXPORT int wgr_guest_asset_load(const char *path, uint32_t id, const char *fetch_url, uint32_t flags)
 {
-    wgr_handle_t task = wgr_asset_ensure_async(path, NULL, WGR_ASSET_NONE);
+    wgr_handle_t task = wgr_asset_ensure_async(path, fetch_url, flags);
     return wgr_asset_add_task(task, asset_ok, asset_failed, (void *)(uintptr_t)id)
            == WGR_ASSET_ADD_TASK_OK;
 }
