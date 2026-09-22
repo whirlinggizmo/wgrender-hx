@@ -4,122 +4,98 @@ package wgr;
 
 /** A `Texture` placed in the 3D scene, with its own transform, tint and facing. **/
 abstract Sprite3D(Handle) from Handle to Handle {
-	public var isNone(get, never):Bool;
-	public var facing(never, set):SpriteFacing;
-	public var tint(never, set):Color;
+	@:to inline function toRaw():WgrHandle
+		return (this : Int);
+
+	/** Whether this refers to nothing; tolerates a field never assigned, on js. **/
+	public static inline function isNone(sprite3D:Sprite3D):Bool
+		return (sprite3D : Handle).isNone;
+
+	/** The sprite takes its own reference to `texture`. **/
+	public static inline function create(texture:Texture):Sprite3D
+		return (Raw.wgr_sprite3d_create(texture) : Handle);
 
 	/** Where it is, as last set. **/
-	public var position(get, never):Vec3;
+	public static inline function getPosition(sprite3D:Sprite3D):Vec3
+		return Vec3.of(Raw.wgr_sprite3d_get_position(sprite3D));
 
 	/** Its own rotation in radians — what `Free` facing uses. **/
-	public var rotation(get, never):Vec3;
+	public static inline function getRotation(sprite3D:Sprite3D):Vec3
+		return Vec3.of(Raw.wgr_sprite3d_get_rotation(sprite3D));
 
-	public var scale(get, never):Vec3;
+	public static inline function getScale(sprite3D:Sprite3D):Vec3
+		return Vec3.of(Raw.wgr_sprite3d_get_scale(sprite3D));
 
 	/** Drawn at all. **/
-	public var visible(get, set):Bool;
+	public static inline function isVisible(sprite3D:Sprite3D):Bool
+		return Raw.wgr_sprite3d_is_visible(sprite3D);
+
+	/** Drawn at all. **/
+	public static inline function setVisible(sprite3D:Sprite3D, value:Bool):Bool
+		return Raw.wgr_sprite3d_set_visible(sprite3D, value);
 
 	/** Whether a pick can hit it. Default: it can. **/
-	public var pickable(get, set):Bool;
+	public static inline function isPickable(sprite3D:Sprite3D):Bool
+		return Raw.wgr_sprite3d_is_pickable(sprite3D);
+
+	/** Whether a pick can hit it. Default: it can. **/
+	public static inline function setPickable(sprite3D:Sprite3D, value:Bool):Bool
+		return Raw.wgr_sprite3d_set_pickable(sprite3D, value);
 
 	/**
 		Enabled (the default): a hit reacts — hover, press and click in an interactive
 		scene. Disabled: still drawn and still picked, and it still blocks the pointer,
 		but it doesn't react.
 	**/
-	public var enabled(get, set):Bool;
+	public static inline function isEnabled(sprite3D:Sprite3D):Bool
+		return Raw.wgr_sprite3d_is_enabled(sprite3D);
+
+	/**
+		Enabled (the default): a hit reacts — hover, press and click in an interactive
+		scene. Disabled: still drawn and still picked, and it still blocks the pointer,
+		but it doesn't react.
+	**/
+	public static inline function setEnabled(sprite3D:Sprite3D, value:Bool):Bool
+		return Raw.wgr_sprite3d_set_enabled(sprite3D, value);
 
 	/** How it uses its texture's alpha. Set it with `setAlphaMode`. **/
-	public var alphaMode(get, never):AlphaMode;
+	public static inline function getAlphaMode(sprite3D:Sprite3D):AlphaMode
+		return AlphaMode.of(Raw.wgr_sprite3d_get_alpha_mode(sprite3D));
 
 	/**
 		The world size of the quad before scale, square. The rectangular form is
 		`setExtent`. Default 1x1; a size at or below 0 is refused.
 	**/
-	public var size(never, set):Float;
+	public static inline function setSize(sprite3D:Sprite3D, value:Float):Bool
+		return Raw.wgr_sprite3d_set_size(sprite3D, value);
 
-	@:to inline function toRaw():WgrHandle
-		return (this : Int);
+	public static inline function setFacing(sprite3D:Sprite3D, value:SpriteFacing):Bool
+		return Raw.wgr_sprite3d_set_facing(sprite3D, value);
 
-	inline function get_isNone():Bool
-		return (this : Handle).isNone;
-
-	/** The sprite takes its own reference to `texture`. **/
-	public inline function new(texture:Texture)
-		this = (Raw.wgr_sprite3d_create(texture) : Handle);
-
-	inline function get_position():Vec3
-		return Vec3.of(Raw.wgr_sprite3d_get_position(this));
-
-	inline function get_rotation():Vec3
-		return Vec3.of(Raw.wgr_sprite3d_get_rotation(this));
-
-	inline function get_scale():Vec3
-		return Vec3.of(Raw.wgr_sprite3d_get_scale(this));
-
-	inline function get_visible():Bool
-		return Raw.wgr_sprite3d_is_visible(this);
-
-	inline function set_visible(v:Bool):Bool {
-		Raw.wgr_sprite3d_set_visible(this, v);
-		return v;
-	}
-
-	inline function get_pickable():Bool
-		return Raw.wgr_sprite3d_is_pickable(this);
-
-	inline function set_pickable(v:Bool):Bool {
-		Raw.wgr_sprite3d_set_pickable(this, v);
-		return v;
-	}
-
-	inline function get_enabled():Bool
-		return Raw.wgr_sprite3d_is_enabled(this);
-
-	inline function set_enabled(v:Bool):Bool {
-		Raw.wgr_sprite3d_set_enabled(this, v);
-		return v;
-	}
-
-	inline function get_alphaMode():AlphaMode
-		return AlphaMode.of(Raw.wgr_sprite3d_get_alpha_mode(this));
-
-	inline function set_size(v:Float):Float {
-		Raw.wgr_sprite3d_set_size(this, v);
-		return v;
-	}
-
-	inline function set_facing(v:SpriteFacing):SpriteFacing {
-		Raw.wgr_sprite3d_set_facing(this, v);
-		return v;
-	}
-
-	inline function set_tint(v:Color):Color {
-		Raw.wgr_sprite3d_set_tint(this, v);
-		return v;
-	}
+	public static inline function setTint(sprite3D:Sprite3D, value:Color):Bool
+		return Raw.wgr_sprite3d_set_tint(sprite3D, value);
 
 	/** `rotation` in radians. **/
-	public inline function setTransform(position:Vec3, ?rotation:Vec3, ?scale:Vec3):Bool {
+	public static inline function setTransform(sprite3D:Sprite3D, position:Vec3, ?rotation:Vec3, ?scale:Vec3):Bool {
 		final r = rotation != null ? rotation : Transform.NO_ROTATION;
 		final s = scale != null ? scale : Transform.UNIT_SCALE;
-		return Raw.wgr_sprite3d_set_transform(this, position.x, position.y, position.z, r.x, r.y, r.z, s.x, s.y, s.z);
+		return Raw.wgr_sprite3d_set_transform(sprite3D, position.x, position.y, position.z, r.x, r.y, r.z, s.x, s.y, s.z);
 	}
 
 	/** The sprite takes its own reference; a none texture leaves it with nothing to draw. **/
-	public inline function setTexture(texture:Texture):Bool
-		return Raw.wgr_sprite3d_set_texture(this, texture);
+	public static inline function setTexture(sprite3D:Sprite3D, texture:Texture):Bool
+		return Raw.wgr_sprite3d_set_texture(sprite3D, texture);
 
 	/** The world size of the quad before scale. A width or height at or below 0 is refused. **/
-	public inline function setExtent(width:Float, height:Float):Bool
-		return Raw.wgr_sprite3d_set_extent(this, width, height);
+	public static inline function setExtent(sprite3D:Sprite3D, width:Float, height:Float):Bool
+		return Raw.wgr_sprite3d_set_extent(sprite3D, width, height);
 
 	/**
 		The region of the texture to show, in texture pixels — for sprite sheets and
 		atlases. A width or height at or below 0 goes back to the whole texture.
 	**/
-	public inline function setSource(x:Float, y:Float, width:Float, height:Float):Bool
-		return Raw.wgr_sprite3d_set_source(this, x, y, width, height);
+	public static inline function setSource(sprite3D:Sprite3D, x:Float, y:Float, width:Float, height:Float):Bool
+		return Raw.wgr_sprite3d_set_source(sprite3D, x, y, width, height);
 
 	/**
 		The point of the quad that sits on the sprite's position and that it turns
@@ -128,8 +104,8 @@ abstract Sprite3D(Handle) from Handle to Handle {
 		down the texture, so (0.5, 1) puts the position at the bottom edge, which is
 		what a sprite standing on the ground wants.
 	**/
-	public inline function setPivot(x:Float, y:Float):Bool
-		return Raw.wgr_sprite3d_set_pivot(this, x, y);
+	public static inline function setPivot(sprite3D:Sprite3D, x:Float, y:Float):Bool
+		return Raw.wgr_sprite3d_set_pivot(sprite3D, x, y);
 
 	/**
 		How it uses its texture's alpha; `Blend` by default. In a scene, blended sprites
@@ -138,8 +114,8 @@ abstract Sprite3D(Handle) from Handle to Handle {
 		sorted, and additive ones are drawn after the blended parts, unsorted. Unsorted
 		sprites are grouped by texture, so they draw in fewer batches.
 	**/
-	public inline function setAlphaMode(mode:AlphaMode, cutoff:Float = 0):Bool
-		return Raw.wgr_sprite3d_set_alpha_mode(this, mode, cutoff);
+	public static inline function setAlphaMode(sprite3D:Sprite3D, mode:AlphaMode, cutoff:Float = 0):Bool
+		return Raw.wgr_sprite3d_set_alpha_mode(sprite3D, mode, cutoff);
 
 	/**
 		Draw it with a material instead of wgrender's sprite shader (texture x tint,
@@ -151,26 +127,26 @@ abstract Sprite3D(Handle) from Handle to Handle {
 		normal, so normal maps work on billboards. Sprites in one batch share the lights
 		chosen for where that batch is, so one far from the rest can miss a light near it.
 	**/
-	public inline function setMaterial(material:Material):Bool
-		return Raw.wgr_sprite3d_set_material(this, material);
+	public static inline function setMaterial(sprite3D:Sprite3D, material:Material):Bool
+		return Raw.wgr_sprite3d_set_material(sprite3D, material);
 
 	/** What it draws with, borrowed; none when it's on the built-in sprite shader. **/
-	public inline function getMaterial():Material
-		return (Raw.wgr_sprite3d_get_material(this) : Handle);
+	public static inline function getMaterial(sprite3D:Sprite3D):Material
+		return (Raw.wgr_sprite3d_get_material(sprite3D) : Handle);
 
 	/**
 		Make picking ignore texels whose alpha is below `threshold` (0..1), so the
 		transparent corners of a billboard don't catch the pointer. Builds a CPU alpha
 		mask from the texture's source path the first time it's needed.
 	**/
-	public inline function setPickAlphaTest(enable:Bool, threshold:Float = 0.5):Bool
-		return Raw.wgr_sprite3d_set_pick_alpha_test(this, enable, threshold);
+	public static inline function setPickAlphaTest(sprite3D:Sprite3D, enable:Bool, threshold:Float = 0.5):Bool
+		return Raw.wgr_sprite3d_set_pick_alpha_test(sprite3D, enable, threshold);
 
 	/** Draw it once, now, outside any scene. Between `Render.beginMode3D` and its end. **/
-	public inline function draw():Void
-		Raw.wgr_sprite3d_draw(this);
+	public static inline function draw(sprite3D:Sprite3D):Void
+		Raw.wgr_sprite3d_draw(sprite3D);
 
 	/** Also takes it out of every scene it's in. **/
-	public inline function destroy():Void
-		Raw.wgr_sprite3d_destroy(this);
+	public static inline function destroy(sprite3D:Sprite3D):Void
+		Raw.wgr_sprite3d_destroy(sprite3D);
 }

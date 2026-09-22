@@ -40,39 +40,39 @@ class Simple {
 
 	static function load(path:String, onReady:(path:String) -> Void):Void {
 		final onFailed = (path:String) -> Log.error('failed to import asset: $path');
-		if (!Asset.ensureAsync(path).then(onReady, onFailed))
+		if (!AssetTask.then(Asset.ensureAsync(path), onReady, onFailed))
 			onFailed(path);
 	}
 
 	static function loadAssets():Void {
 		load(BGM_PATH, path -> {
 			final audio = Audio.create(path);
-			bgm = new Sound(audio);
-			audio.release(); // the sound holds its own reference
-			bgm.loop = true;
-			bgm.play();
+			bgm = Sound.create(audio);
+			Audio.release(audio); // the sound holds its own reference
+			Sound.setLoop(bgm, true);
+			Sound.play(bgm);
 		});
 
 		load(MODEL_PATH, path -> {
 			final mesh = Mesh.create(path);
-			model = new Model(mesh);
-			mesh.release(); // the model holds its own reference
-			model.animation = 1;
-			model.animationSpeed = 1.0;
-			model.animationLoop = true;
-			model.setTransform(new Vec3(0, 0, 0));
-			model.tint = Color.RAYWHITE;
-			scene.add(model);
+			model = Model.create(mesh);
+			Mesh.release(mesh); // the model holds its own reference
+			Model.setAnimation(model, 1);
+			Model.setAnimationSpeed(model, 1.0);
+			Model.setAnimationLoop(model, true);
+			Model.setTransform(model, new Vec3(0, 0, 0));
+			Model.setTint(model, Color.RAYWHITE);
+			Scene.add(scene, model);
 		});
 
 		load(SPRITE_PATH, path -> {
 			final texture = Texture.create(path);
-			sprite = new Sprite3D(texture);
-			texture.release(); // the sprite holds its own reference
-			sprite.facing = Free; // librl's default: oriented by its rotation
-			sprite.setTransform(new Vec3(0, SPRITE_Y_OFFSET, 0));
-			sprite.tint = Color.RAYWHITE;
-			scene.add(sprite);
+			sprite = Sprite3D.create(texture);
+			Texture.release(texture); // the sprite holds its own reference
+			Sprite3D.setFacing(sprite, Free); // librl's default: oriented by its rotation
+			Sprite3D.setTransform(sprite, new Vec3(0, SPRITE_Y_OFFSET, 0));
+			Sprite3D.setTint(sprite, Color.RAYWHITE);
+			Scene.add(scene, sprite);
 		});
 
 		// Fonts are sized per draw call in wgrender, so one font handle serves any size.
@@ -91,17 +91,17 @@ class Simple {
 		message = "Hello from wgrender simple (Haxe)!";
 		platformText = 'Platform: ${Wgr.getPlatform()}';
 
-		camera = new Camera3D(Perspective); // default fov: pi/4 (45 degrees)
-		camera.setView(new Vec3(12, 12, 12), new Vec3(0, 1, 0));
-		scene = new Scene();
-		scene.activeCamera = camera;
+		camera = Camera3D.create(Perspective); // default fov: pi/4 (45 degrees)
+		Camera3D.setView(camera, new Vec3(12, 12, 12), new Vec3(0, 1, 0));
+		scene = Scene.create();
+		Scene.setActiveCamera(scene, camera);
 
 		// same lighting as librl's c-simple: a directional light plus ambient 0.25
-		final sun = new Light(Directional);
-		sun.direction = new Vec3(-0.6, -1.0, -0.5);
-		sun.intensity = 3.0;
-		scene.add(sun);
-		scene.setAmbient(Color.WHITE, 0.25);
+		final sun = Light.create(Directional);
+		Light.setDirection(sun, new Vec3(-0.6, -1.0, -0.5));
+		Light.setIntensity(sun, 3.0);
+		Scene.add(scene, sun);
+		Scene.setAmbient(scene, Color.WHITE, 0.25);
 		backgroundColor = Color.rgba(245, 245, 245, 255);
 		greyAlpha = Color.rgba(0, 0, 0, 128);
 
@@ -112,16 +112,16 @@ class Simple {
 		elapsed += dt;
 		countdownTimer -= dt;
 
-		if (!model.isNone)
-			model.animate(dt);
-		if (!sprite.isNone) {
+		if (!Model.isNone(model))
+			Model.animate(model, dt);
+		if (!Sprite3D.isNone(sprite)) {
 			final y = Math.sin(elapsed * BOB_SPEED) * BOB_HEIGHT + SPRITE_Y_OFFSET;
-			sprite.setTransform(new Vec3(0, y, 0));
+			Sprite3D.setTransform(sprite, new Vec3(0, y, 0));
 		}
 	}
 
 	static function updatePickMessage(mouse:MouseState):Void {
-		final pick = scene.pick(mouse.x, mouse.y);
+		final pick = Scene.pick(scene, mouse.x, mouse.y);
 		final what = if (!pick.hit) "" else if (pick.handle == model) "Model" else if (pick.handle == sprite)
 			"Sprite" else "";
 		if (what == "") {
@@ -134,15 +134,15 @@ class Simple {
 
 	// Draw with the TTF font once it's loaded, the built-in font until then.
 	static function drawText(font:Font, text:String, x:Float, y:Float, size:Int, color:Color):Void {
-		if (!font.isNone)
-			font.draw(text, x, y, size, color);
+		if (!Font.isNone(font))
+			Font.draw(font, text, x, y, size, color);
 		else
 			Text.draw(text, Std.int(x), Std.int(y), size, color);
 	}
 
 	static function drawCenteredMessage():Void {
 		final screen = Window.getScreenSize();
-		final size = !komikaFont.isNone ? komikaFont.measure(message,
+		final size = !Font.isNone(komikaFont) ? Font.measure(komikaFont, message,
 			KOMIKA_FONT_SIZE) : new Vec2(Text.measure(message, KOMIKA_FONT_SIZE), KOMIKA_FONT_SIZE);
 		drawText(komikaFont, message, (screen.x - size.x) / 2, (screen.y - size.y) / 2, KOMIKA_FONT_SIZE, Color.BLUE);
 	}
@@ -154,7 +154,7 @@ class Simple {
 			+ 'b:[${mouse.left}, ${mouse.right}, ${mouse.middle}]', 10, 76, DEBUG_FONT_SIZE, Color.BLACK);
 		drawText(debugFont, platformText, 10, 96, DEBUG_FONT_SIZE, Color.BLACK);
 
-		debugFont.drawFps(10, 10, DEBUG_FONT_SIZE, greyAlpha);
+		Font.drawFps(debugFont, 10, 10, DEBUG_FONT_SIZE, greyAlpha);
 	}
 
 	static function frame(dt:Float, tickFraction:Float):Void {
@@ -171,7 +171,7 @@ class Simple {
 
 		Render.begin();
 		Render.clearBackground(backgroundColor);
-		scene.draw();
+		Scene.draw(scene);
 		drawCenteredMessage();
 		drawOverlay(mouse);
 		Render.end();

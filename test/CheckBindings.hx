@@ -65,7 +65,7 @@ class CheckBindings {
 	static function checkValues():Void {
 		// a field with no initialiser is none — the thing that is quietly wrong on js
 		// if isNone only tests == 0
-		check(neverSet.isNone, "an uninitialised handle field is none");
+		check(Model.isNone(neverSet), "an uninitialised handle field is none");
 		check(Handle.NONE.isNone, "Handle.NONE is none");
 
 		// 0xRRGGBBAA, which is what every colour constant in wgr_color.h is
@@ -107,7 +107,7 @@ class CheckBindings {
 		check(mouse.x == 0 && mouse.y == 0, "no pointer in headless, so the mouse is at the origin");
 
 		// nothing in the scene yet, so a pick must miss rather than report garbage
-		final miss = scene.pick(WIDTH / 2, HEIGHT / 2);
+		final miss = Scene.pick(scene, WIDTH / 2, HEIGHT / 2);
 		check(!miss.hit, "picking an empty scene misses");
 		check(miss.handle.isNone, "a miss carries no handle");
 
@@ -120,503 +120,503 @@ class CheckBindings {
 	// --- handles, properties and the round-trips that have getters ----------
 
 	static function checkHandles():Void {
-		check(!scene.isNone, "scene created");
-		check(!camera.isNone, "camera created");
+		check(!Scene.isNone(scene), "scene created");
+		check(!Camera3D.isNone(camera), "camera created");
 
-		final light = new Light(Point);
-		check(!light.isNone, "light created");
-		check(light.enabled, "a light starts enabled");
-		light.enabled = false;
-		check(!light.enabled, "light.enabled round-trips");
-		light.enabled = true;
+		final light = Light.create(Point);
+		check(!Light.isNone(light), "light created");
+		check(Light.isEnabled(light), "a light starts enabled");
+		Light.setEnabled(light, false);
+		check(!Light.isEnabled(light), "light.enabled round-trips");
+		Light.setEnabled(light, true);
 		// Directional and spot lights cast; a point light is refused, because it would
 		// need six maps (wgr_light.c: "point lights don't cast shadows yet").
 		// NB wgr_light.h's comment still says spot is ignored too — it is out of date.
-		check(!light.castsShadows, "a light starts not casting");
-		light.castsShadows = true;
-		check(!light.castsShadows, "a point light refuses to cast: it would need a cube map");
+		check(!Light.getCastsShadows(light), "a light starts not casting");
+		Light.setCastsShadows(light, true);
+		check(!Light.getCastsShadows(light), "a point light refuses to cast: it would need a cube map");
 
-		final sun = new Light(Directional);
-		sun.castsShadows = true;
-		check(sun.castsShadows, "a directional light casts, and it round-trips");
-		sun.destroy();
+		final sun = Light.create(Directional);
+		Light.setCastsShadows(sun, true);
+		check(Light.getCastsShadows(sun), "a directional light casts, and it round-trips");
+		Light.destroy(sun);
 
-		final torch = new Light(Spot);
-		torch.setSpotCone(0.3, 0.6);
-		torch.castsShadows = true;
-		check(torch.castsShadows, "a spot light casts too — wgri_shadow_fit_spot");
-		torch.destroy();
-		light.color = Color.GOLD;
-		light.position = new Vec3(1, 2, 3);
-		light.range = 10;
-		light.setSpotCone(0.2, 0.4);
-		light.setShadowBias(0.002, 2);
-		light.shadowDistance = 50;
-		light.shadowMapSize = 512;
-		light.shadowStrength = 0.5;
-		light.shadowColor = Color.BLACK;
-		light.destroy();
+		final torch = Light.create(Spot);
+		Light.setSpotCone(torch, 0.3, 0.6);
+		Light.setCastsShadows(torch, true);
+		check(Light.getCastsShadows(torch), "a spot light casts too — wgri_shadow_fit_spot");
+		Light.destroy(torch);
+		Light.setColor(light, Color.GOLD);
+		Light.setPosition(light, new Vec3(1, 2, 3));
+		Light.setRange(light, 10);
+		Light.setSpotCone(light, 0.2, 0.4);
+		Light.setShadowBias(light, 0.002, 2);
+		Light.setShadowDistance(light, 50);
+		Light.setShadowMapSize(light, 512);
+		Light.setShadowStrength(light, 0.5);
+		Light.setShadowColor(light, Color.BLACK);
+		Light.destroy(light);
 
-		final material = new Material(Pbr);
-		check(!material.isNone, "material created");
-		eq((material.shading : Int), (MaterialShading.Pbr : Int), "a new material is Pbr");
-		material.shading = Unlit;
-		eq((material.shading : Int), (MaterialShading.Unlit : Int), "material.shading round-trips");
-		check(!material.doubleSided, "a new material is single sided");
-		material.doubleSided = true;
-		check(material.doubleSided, "material.doubleSided round-trips");
-		check(material.setFloat("roughness", 0.5), "a known parameter name is accepted");
-		check(!material.setFloat("no_such_parameter", 1), "an unknown parameter name is refused");
-		material.metallic = 0.5;
-		material.normalScale = 1;
-		material.occlusionStrength = 1;
-		material.setBaseColor(1, 1, 1);
-		material.setEmissive(0, 0, 0);
-		material.setVec2("v", 1, 2);
-		material.setInt("i", 1);
-		material.setColor("c", Color.WHITE);
-		material.setAlphaMode(Blend);
-		check(material.getShader().isNone, "a built-in material has no custom shader");
-		material.release();
+		final material = Material.create(Pbr);
+		check(!Material.isNone(material), "material created");
+		eq((Material.getShading(material) : Int), (MaterialShading.Pbr : Int), "a new material is Pbr");
+		Material.setShading(material, Unlit);
+		eq((Material.getShading(material) : Int), (MaterialShading.Unlit : Int), "material.shading round-trips");
+		check(!Material.isDoubleSided(material), "a new material is single sided");
+		Material.setDoubleSided(material, true);
+		check(Material.isDoubleSided(material), "material.doubleSided round-trips");
+		check(Material.setFloat(material, "roughness", 0.5), "a known parameter name is accepted");
+		check(!Material.setFloat(material, "no_such_parameter", 1), "an unknown parameter name is refused");
+		Material.setMetallic(material, 0.5);
+		Material.setNormalScale(material, 1);
+		Material.setOcclusionStrength(material, 1);
+		Material.setBaseColor(material, 1, 1, 1);
+		Material.setEmissive(material, 0, 0, 0);
+		Material.setVec2(material, "v", 1, 2);
+		Material.setInt(material, "i", 1);
+		Material.setColor(material, "c", Color.WHITE);
+		Material.setAlphaMode(material, Blend);
+		check(Material.getShader(material).isNone, "a built-in material has no custom shader");
+		Material.release(material);
 
 		// a resource from a path that isn't there must come back as none, not garbage
-		check(Texture.create("no/such/texture.png").isNone, "a missing texture is none");
-		check(Mesh.create("no/such/mesh.glb").isNone, "a missing mesh is none");
-		check(Audio.create("no/such/sound.mp3").isNone, "a missing sound is none");
+		check(Texture.isNone(Texture.create("no/such/texture.png")), "a missing texture is none");
+		check(Mesh.isNone(Mesh.create("no/such/mesh.glb")), "a missing mesh is none");
+		check(Audio.isNone(Audio.create("no/such/sound.mp3")), "a missing sound is none");
 	}
 
 	static function checkText():Void {
-		label = new Text2D(Handle.NONE); // no font yet: the default font
-		check(!label.isNone, "text2d created without a font");
-		label.text = "measure me";
-		label.size = 20;
-		label.position = new Vec2(10, 20);
-		label.color = Color.BLACK;
-		label.maxWidth = 0;
-		check(label.visible, "text2d starts visible");
-		label.visible = false;
-		check(!label.visible, "text2d.visible round-trips");
-		label.visible = true;
-		check(label.pickable, "text2d starts pickable");
-		label.pickable = false;
-		check(!label.pickable, "text2d.pickable round-trips");
-		label.pickable = true;
-		check(label.enabled, "text2d starts enabled");
-		label.enabled = false;
-		check(!label.enabled, "text2d.enabled round-trips");
-		label.enabled = true;
-		label.setAlign(Center, Middle);
+		label = Text2D.create(Handle.NONE); // no font yet: the default font
+		check(!Text2D.isNone(label), "text2d created without a font");
+		Text2D.setText(label, "measure me");
+		Text2D.setSize(label, 20);
+		Text2D.setPosition(label, new Vec2(10, 20));
+		Text2D.setColor(label, Color.BLACK);
+		Text2D.setMaxWidth(label, 0);
+		check(Text2D.isVisible(label), "text2d starts visible");
+		Text2D.setVisible(label, false);
+		check(!Text2D.isVisible(label), "text2d.visible round-trips");
+		Text2D.setVisible(label, true);
+		check(Text2D.isPickable(label), "text2d starts pickable");
+		Text2D.setPickable(label, false);
+		check(!Text2D.isPickable(label), "text2d.pickable round-trips");
+		Text2D.setPickable(label, true);
+		check(Text2D.isEnabled(label), "text2d starts enabled");
+		Text2D.setEnabled(label, false);
+		check(!Text2D.isEnabled(label), "text2d.enabled round-trips");
+		Text2D.setEnabled(label, true);
+		Text2D.setAlign(label, Center, Middle);
 
-		final size = label.measure();
+		final size = Text2D.measure(label);
 		check(size.x > 0 && size.y > 0, "a text2d with text measures larger than nothing");
 
-		final sign = new Text3D(Handle.NONE);
-		check(!sign.isNone, "text3d created");
-		sign.text = "world";
-		sign.size = 1.5;
-		sign.color = Color.BLUE;
-		sign.facing = CameraFixedY;
-		sign.maxWidth = 4;
-		sign.setAlign(Left, Bottom);
-		sign.setTransform(new Vec3(0, 2, 0), new Vec3(0, Math.PI, 0));
-		check(sign.visible && sign.pickable && sign.enabled, "text3d starts visible, pickable and enabled");
-		sign.destroy();
+		final sign = Text3D.create(Handle.NONE);
+		check(!Text3D.isNone(sign), "text3d created");
+		Text3D.setText(sign, "world");
+		Text3D.setSize(sign, 1.5);
+		Text3D.setColor(sign, Color.BLUE);
+		Text3D.setFacing(sign, CameraFixedY);
+		Text3D.setMaxWidth(sign, 4);
+		Text3D.setAlign(sign, Left, Bottom);
+		Text3D.setTransform(sign, new Vec3(0, 2, 0), new Vec3(0, Math.PI, 0));
+		check(Text3D.isVisible(sign) && Text3D.isPickable(sign) && Text3D.isEnabled(sign), "text3d starts visible, pickable and enabled");
+		Text3D.destroy(sign);
 	}
 
 	static function checkEmitters():Void {
 		final texture = Texture.create("no/such.png"); // none is fine: we assert on counts
-		confetti = new Emitter2D(texture);
-		check(!confetti.isNone, "emitter2d created");
-		confetti.setMax(64);
-		confetti.setLife(5, 5);
-		confetti.setVelocity(new Vec2(0, -10));
-		confetti.setGravity(new Vec2(0, 10));
-		confetti.setSize(4, 2, 0);
-		confetti.setSpin(-1, 1);
-		confetti.setColor(Color.WHITE, Color.BLACK);
-		confetti.setSource(0, 0, 8, 8);
-		confetti.setFrames(2, 2);
-		confetti.setAlphaMode(Blend);
-		confetti.setSpawnBox(1, 1);
-		confetti.setSpawnCircle(1);
-		confetti.drag = 0.5;
-		confetti.inheritVelocity = 0.5;
-		confetti.stretch = 0;
-		confetti.seed = 7;
-		confetti.addSizeKey(0, 1);
-		confetti.clearSizeKeys();
-		confetti.addColorKey(0, Color.WHITE);
-		confetti.clearColorKeys();
-		confetti.addPaletteColor(Color.RED);
-		confetti.clearPalette();
-		check(confetti.emitting, "an emitter starts emitting");
-		eq(confetti.count, 0, "no particles before a frame");
-		confetti.burst(10);
-		eq(confetti.count, 10, "burst makes particles immediately");
-		confetti.clear();
-		eq(confetti.count, 0, "clear removes them");
-		confetti.emitting = false;
-		check(!confetti.emitting, "emitter.emitting round-trips");
-		confetti.jump(new Vec2(1, 1));
-		confetti.setPosition(new Vec2(2, 2));
-		confetti.visible = true;
+		confetti = Emitter2D.create(texture);
+		check(!Emitter2D.isNone(confetti), "emitter2d created");
+		Emitter2D.setMax(confetti, 64);
+		Emitter2D.setLife(confetti, 5, 5);
+		Emitter2D.setVelocity(confetti, new Vec2(0, -10));
+		Emitter2D.setGravity(confetti, new Vec2(0, 10));
+		Emitter2D.setSize(confetti, 4, 2, 0);
+		Emitter2D.setSpin(confetti, -1, 1);
+		Emitter2D.setColor(confetti, Color.WHITE, Color.BLACK);
+		Emitter2D.setSource(confetti, 0, 0, 8, 8);
+		Emitter2D.setFrames(confetti, 2, 2);
+		Emitter2D.setAlphaMode(confetti, Blend);
+		Emitter2D.setSpawnBox(confetti, 1, 1);
+		Emitter2D.setSpawnCircle(confetti, 1);
+		Emitter2D.setDrag(confetti, 0.5);
+		Emitter2D.setInheritVelocity(confetti, 0.5);
+		Emitter2D.setStretch(confetti, 0);
+		Emitter2D.setSeed(confetti, 7);
+		Emitter2D.addSizeKey(confetti, 0, 1);
+		Emitter2D.clearSizeKeys(confetti);
+		Emitter2D.addColorKey(confetti, 0, Color.WHITE);
+		Emitter2D.clearColorKeys(confetti);
+		Emitter2D.addPaletteColor(confetti, Color.RED);
+		Emitter2D.clearPalette(confetti);
+		check(Emitter2D.isEmitting(confetti), "an emitter starts emitting");
+		eq(Emitter2D.getCount(confetti), 0, "no particles before a frame");
+		Emitter2D.burst(confetti, 10);
+		eq(Emitter2D.getCount(confetti), 10, "burst makes particles immediately");
+		Emitter2D.clear(confetti);
+		eq(Emitter2D.getCount(confetti), 0, "clear removes them");
+		Emitter2D.setEmitting(confetti, false);
+		check(!Emitter2D.isEmitting(confetti), "emitter.emitting round-trips");
+		Emitter2D.jump(confetti, new Vec2(1, 1));
+		Emitter2D.setPosition(confetti, new Vec2(2, 2));
+		Emitter2D.setVisible(confetti, true);
 
-		final spray = new Emitter3D(texture);
-		check(!spray.isNone, "emitter3d created");
-		spray.setMax(32);
-		spray.setLife(5, 5);
-		spray.setPosition(new Vec3(0, 0, 0));
-		spray.setSpawnBox(new Vec3(1, 1, 1));
-		spray.setSpawnSphere(1);
-		spray.setVelocity(new Vec3(0, 1, 0), 0.1, 0.1);
-		spray.setGravity(new Vec3(0, -9.8, 0));
-		eq(spray.count, 0, "an emitter with the default rate of 0 makes nothing");
-		spray.rate = 100;
-		spray.prewarm(0.1);
-		check(spray.count > 0, "prewarm with a rate runs the emitter forward");
-		spray.destroy();
-		confetti.destroy();
+		final spray = Emitter3D.create(texture);
+		check(!Emitter3D.isNone(spray), "emitter3d created");
+		Emitter3D.setMax(spray, 32);
+		Emitter3D.setLife(spray, 5, 5);
+		Emitter3D.setPosition(spray, new Vec3(0, 0, 0));
+		Emitter3D.setSpawnBox(spray, new Vec3(1, 1, 1));
+		Emitter3D.setSpawnSphere(spray, 1);
+		Emitter3D.setVelocity(spray, new Vec3(0, 1, 0), 0.1, 0.1);
+		Emitter3D.setGravity(spray, new Vec3(0, -9.8, 0));
+		eq(Emitter3D.getCount(spray), 0, "an emitter with the default rate of 0 makes nothing");
+		Emitter3D.setRate(spray, 100);
+		Emitter3D.prewarm(spray, 0.1);
+		check(Emitter3D.getCount(spray) > 0, "prewarm with a rate runs the emitter forward");
+		Emitter3D.destroy(spray);
+		Emitter2D.destroy(confetti);
 	}
 
 	static function checkShapes():Void {
-		final box = new Shape3D();
-		check(!box.isNone, "shape3d created");
-		check(box.setCube(new Vec3(1, 2, 3)), "a shape3d takes a cube");
-		check(box.setSphere(1), "and a sphere — the last form set wins");
-		check(box.setRectangle(2, 1), "and a filled rectangle");
-		check(box.setCircle(1), "and a circle outline");
-		check(box.setLine(new Vec3(0, 0, 0), new Vec3(1, 1, 1)), "and a line");
-		box.color = Color.SKYBLUE;
-		box.setTransform(new Vec3(1, 2, 3), new Vec3(0, Math.PI, 0), new Vec3(2, 2, 2));
-		check(box.visible, "a shape3d starts visible");
-		box.visible = false;
-		check(!box.visible, "shape3d.visible round-trips");
-		box.visible = true;
-		check(box.pickable, "a shape3d starts pickable");
-		box.pickable = false;
-		check(!box.pickable, "shape3d.pickable round-trips");
-		box.pickable = true;
-		check(box.enabled, "a shape3d starts enabled");
-		box.enabled = false;
-		check(!box.enabled, "shape3d.enabled round-trips");
-		box.enabled = true;
+		final box = Shape3D.create();
+		check(!Shape3D.isNone(box), "shape3d created");
+		check(Shape3D.setCube(box, new Vec3(1, 2, 3)), "a shape3d takes a cube");
+		check(Shape3D.setSphere(box, 1), "and a sphere — the last form set wins");
+		check(Shape3D.setRectangle(box, 2, 1), "and a filled rectangle");
+		check(Shape3D.setCircle(box, 1), "and a circle outline");
+		check(Shape3D.setLine(box, new Vec3(0, 0, 0), new Vec3(1, 1, 1)), "and a line");
+		Shape3D.setColor(box, Color.SKYBLUE);
+		Shape3D.setTransform(box, new Vec3(1, 2, 3), new Vec3(0, Math.PI, 0), new Vec3(2, 2, 2));
+		check(Shape3D.isVisible(box), "a shape3d starts visible");
+		Shape3D.setVisible(box, false);
+		check(!Shape3D.isVisible(box), "shape3d.visible round-trips");
+		Shape3D.setVisible(box, true);
+		check(Shape3D.isPickable(box), "a shape3d starts pickable");
+		Shape3D.setPickable(box, false);
+		check(!Shape3D.isPickable(box), "shape3d.pickable round-trips");
+		Shape3D.setPickable(box, true);
+		check(Shape3D.isEnabled(box), "a shape3d starts enabled");
+		Shape3D.setEnabled(box, false);
+		check(!Shape3D.isEnabled(box), "shape3d.enabled round-trips");
+		Shape3D.setEnabled(box, true);
 
 		// a strip is built point by point, and reset by starting a new one
-		check(box.setLineStrip(), "a strip can be started");
-		eq(box.pointCount, 0, "a new strip is empty");
-		box.addPoint(new Vec3(0, 0, 0));
-		box.addPoint(new Vec3(1, 0, 0));
-		box.addPoint(new Vec3(1, 1, 0));
-		eq(box.pointCount, 3, "addPoint appends");
-		box.setLineStrip();
-		eq(box.pointCount, 0, "starting again empties it");
+		check(Shape3D.setLineStrip(box), "a strip can be started");
+		eq(Shape3D.getPointCount(box), 0, "a new strip is empty");
+		Shape3D.addPoint(box, new Vec3(0, 0, 0));
+		Shape3D.addPoint(box, new Vec3(1, 0, 0));
+		Shape3D.addPoint(box, new Vec3(1, 1, 0));
+		eq(Shape3D.getPointCount(box), 3, "addPoint appends");
+		Shape3D.setLineStrip(box);
+		eq(Shape3D.getPointCount(box), 0, "starting again empties it");
 
-		final badge = new Shape2D();
-		check(!badge.isNone, "shape2d created");
-		check(badge.setRectangle(20, 10, 3), "a shape2d takes a rounded rectangle");
-		check(badge.setCircle(5), "and a circle");
-		check(badge.setLine(new Vec2(0, 0), new Vec2(10, 0), 2), "and a line with a thickness");
-		badge.color = Color.GOLD;
-		badge.outline = 2;
-		check(badge.setPivot(new Vec2(0.5, 0.5)), "pivot is a fraction of the size, not pixels");
-		badge.setTransform(new Vec2(10, 20), Math.PI / 4, new Vec2(2, 2));
-		check(badge.visible && badge.pickable && badge.enabled, "a shape2d starts visible, pickable and enabled");
-		badge.visible = false;
-		check(!badge.visible, "shape2d.visible round-trips");
-		badge.visible = true;
+		final badge = Shape2D.create();
+		check(!Shape2D.isNone(badge), "shape2d created");
+		check(Shape2D.setRectangle(badge, 20, 10, 3), "a shape2d takes a rounded rectangle");
+		check(Shape2D.setCircle(badge, 5), "and a circle");
+		check(Shape2D.setLine(badge, new Vec2(0, 0), new Vec2(10, 0), 2), "and a line with a thickness");
+		Shape2D.setColor(badge, Color.GOLD);
+		Shape2D.setOutline(badge, 2);
+		check(Shape2D.setPivot(badge, new Vec2(0.5, 0.5)), "pivot is a fraction of the size, not pixels");
+		Shape2D.setTransform(badge, new Vec2(10, 20), Math.PI / 4, new Vec2(2, 2));
+		check(Shape2D.isVisible(badge) && Shape2D.isPickable(badge) && Shape2D.isEnabled(badge), "a shape2d starts visible, pickable and enabled");
+		Shape2D.setVisible(badge, false);
+		check(!Shape2D.isVisible(badge), "shape2d.visible round-trips");
+		Shape2D.setVisible(badge, true);
 
-		check(scene.add(box), "a shape3d is a scene member");
-		check(scene.add(badge, 1), "a shape2d is a scene member, on a layer");
+		check(Scene.add(scene, box), "a shape3d is a scene member");
+		check(Scene.add(scene, badge, 1), "a shape2d is a scene member, on a layer");
 	}
 
 	static function checkScene():Void {
 		final mesh = Mesh.create("no/such.glb");
-		model = new Model(mesh);
-		final sprite = new Sprite3D(Texture.create("no/such.png"));
-		final light = new Light(Directional);
-		light.direction = new Vec3(0, -1, 0);
-		light.intensity = 1;
+		model = Model.create(mesh);
+		final sprite = Sprite3D.create(Texture.create("no/such.png"));
+		final light = Light.create(Directional);
+		Light.setDirection(light, new Vec3(0, -1, 0));
+		Light.setIntensity(light, 1);
 
 		// SceneMember takes each kind; the compiler enforces which
-		check(scene.add(model), "a model is a scene member");
-		check(scene.add(sprite, 1), "a sprite3d is a scene member, on a layer");
-		check(scene.add(light), "a light is a scene member");
-		check(scene.add(label), "a text2d is a scene member");
-		check(scene.setAmbient(Color.WHITE, 0.25), "ambient set");
-		scene.activeCamera = camera;
+		check(Scene.add(scene, model), "a model is a scene member");
+		check(Scene.add(scene, sprite, 1), "a sprite3d is a scene member, on a layer");
+		check(Scene.add(scene, light), "a light is a scene member");
+		check(Scene.add(scene, label), "a text2d is a scene member");
+		check(Scene.setAmbient(scene, Color.WHITE, 0.25), "ambient set");
+		Scene.setActiveCamera(scene, camera);
 
-		model.animation = 0;
-		model.animationSpeed = 1;
-		model.animationLoop = true;
-		model.tint = Color.RAYWHITE;
-		model.setTransform(new Vec3(0, 0, 0), new Vec3(0, 0, 0), new Vec3(1, 1, 1));
-		sprite.facing = Free;
-		sprite.tint = Color.WHITE;
-		sprite.setTransform(new Vec3(0, 1, 0));
+		Model.setAnimation(model, 0);
+		Model.setAnimationSpeed(model, 1);
+		Model.setAnimationLoop(model, true);
+		Model.setTint(model, Color.RAYWHITE);
+		Model.setTransform(model, new Vec3(0, 0, 0), new Vec3(0, 0, 0), new Vec3(1, 1, 1));
+		Sprite3D.setFacing(sprite, Free);
+		Sprite3D.setTint(sprite, Color.WHITE);
+		Sprite3D.setTransform(sprite, new Vec3(0, 1, 0));
 
-		camera.setView(new Vec3(0, 1, 5), new Vec3(0, 0, 0));
+		Camera3D.setView(camera, new Vec3(0, 1, 5), new Vec3(0, 0, 0));
 	}
 
 	// --- camera, meshes, and the properties with real getters ---------------
 
 	static function checkCamera():Void {
-		final c = new Camera3D(Perspective);
-		eq(c.projection, Projection.Perspective, "projection reads back as the enum, not an int");
-		c.projection = Orthographic;
-		eq(c.projection, Projection.Orthographic, "projection round-trips");
+		final c = Camera3D.create(Perspective);
+		eq(Camera3D.getProjection(c), Projection.Perspective, "projection reads back as the enum, not an int");
+		Camera3D.setProjection(c, Orthographic);
+		eq(Camera3D.getProjection(c), Projection.Orthographic, "projection round-trips");
 
-		c.fov = 1.0;
-		near(c.fov, 1.0, "fov round-trips");
-		c.orthoHeight = 4;
-		near(c.orthoHeight, 4, "orthoHeight round-trips");
+		Camera3D.setFov(c, 1.0);
+		near(Camera3D.getFov(c), 1.0, "fov round-trips");
+		Camera3D.setOrthoHeight(c, 4);
+		near(Camera3D.getOrthoHeight(c), 4, "orthoHeight round-trips");
 
-		check(c.setActive(), "setActive succeeded");
-		eq((Camera3D.active : Int), (c : Int), "the active camera is the one just set");
-		check(!Camera3D.defaultCamera.isNone, "there is a default camera");
+		check(Camera3D.setActive(c), "setActive succeeded");
+		eq((Camera3D.getActive() : Int), (c : Int), "the active camera is the one just set");
+		check(!Camera3D.isNone(Camera3D.getDefault()), "there is a default camera");
 
 		// put the scene's camera back: later checks draw through it
-		check(camera.setActive(), "the check camera is active again");
-		c.destroy();
+		check(Camera3D.setActive(camera), "the check camera is active again");
+		Camera3D.destroy(c);
 	}
 
 	static function checkMeshes():Void {
 		// generated geometry: no file, so these work in headless
 		final cube = Mesh.cube(1, 1, 1);
-		check(!cube.isNone, "a generated cube mesh exists");
-		eq(cube.materialCount, 1, "a generated mesh has one material slot");
-		check(!cube.getMaterial(0).isNone, "that slot has a material");
+		check(!Mesh.isNone(cube), "a generated cube mesh exists");
+		eq(Mesh.getMaterialCount(cube), 1, "a generated mesh has one material slot");
+		check(!Material.isNone(Mesh.getMaterial(cube, 0)), "that slot has a material");
 
 		// deduplicated: the same parameters give the same resource
 		final again = Mesh.cube(1, 1, 1);
 		eq((again : Int), (cube : Int), "the same parameters return the same mesh");
-		again.release();
+		Mesh.release(again);
 
-		check(!Mesh.plane(2, 2, 4).isNone, "a generated plane exists");
-		check(!Mesh.sphere(1, 8, 16).isNone, "a generated sphere exists");
-		check(!Mesh.cylinder(1, 2, 12).isNone, "a generated cylinder exists");
-		check(!Mesh.cone(1, 2, 12).isNone, "a generated cone exists");
-		check(!Mesh.capsule(0.5, 2, 4, 12).isNone, "a generated capsule exists");
-		check(!Mesh.torus(1, 0.25, 8, 16).isNone, "a generated torus exists");
-		check(Mesh.cube(0, 1, 1).isNone, "a size of 0 is refused, not silently accepted");
+		check(!Mesh.isNone(Mesh.plane(2, 2, 4)), "a generated plane exists");
+		check(!Mesh.isNone(Mesh.sphere(1, 8, 16)), "a generated sphere exists");
+		check(!Mesh.isNone(Mesh.cylinder(1, 2, 12)), "a generated cylinder exists");
+		check(!Mesh.isNone(Mesh.cone(1, 2, 12)), "a generated cone exists");
+		check(!Mesh.isNone(Mesh.capsule(0.5, 2, 4, 12)), "a generated capsule exists");
+		check(!Mesh.isNone(Mesh.torus(1, 0.25, 8, 16)), "a generated torus exists");
+		check(Mesh.isNone(Mesh.cube(0, 1, 1)), "a size of 0 is refused, not silently accepted");
 
-		final m = new Model(cube);
-		check(m.isReady, "a model on a generated mesh is ready at once");
-		eq(m.animationCount, 0, "a generated mesh brings no animations");
-		near(m.getAnimationDuration(0), 0, "no animation has no duration");
+		final m = Model.create(cube);
+		check(Model.isReady(m), "a model on a generated mesh is ready at once");
+		eq(Model.getAnimationCount(m), 0, "a generated mesh brings no animations");
+		near(Model.getAnimationDuration(m, 0), 0, "no animation has no duration");
 
 		// the boolean properties all default on, and all round-trip
-		check(m.visible && m.pickable && m.enabled && m.castsShadow && m.receivesShadow,
+		check(Model.isVisible(m) && Model.isPickable(m) && Model.isEnabled(m) && Model.castsShadow(m) && Model.receivesShadow(m),
 			"a new model is visible, pickable, enabled and shadowed both ways");
-		m.visible = false;
-		m.pickable = false;
-		m.enabled = false;
-		m.castsShadow = false;
-		m.receivesShadow = false;
-		check(!m.visible && !m.pickable && !m.enabled && !m.castsShadow && !m.receivesShadow,
+		Model.setVisible(m, false);
+		Model.setPickable(m, false);
+		Model.setEnabled(m, false);
+		Model.setCastsShadow(m, false);
+		Model.setReceivesShadow(m, false);
+		check(!Model.isVisible(m) && !Model.isPickable(m) && !Model.isEnabled(m) && !Model.castsShadow(m) && !Model.receivesShadow(m),
 			"every model flag round-trips false");
-		m.visible = true;
+		Model.setVisible(m, true);
 
 		// the header's promise: a time set before the mesh arrives applies once it does,
 		// so it is remembered rather than dropped when there is nothing to pose yet
-		m.animationTime = 0.5;
-		near(m.animationTime, 0.5, "animationTime is kept with no animation to pose yet");
+		Model.setAnimationTime(m, 0.5);
+		near(Model.getAnimationTime(m), 0.5, "animationTime is kept with no animation to pose yet");
 
 		// an override changes what this model draws, not what the mesh holds
-		final mesh0 = cube.getMaterial(0);
-		final custom = new Material(Unlit);
-		check(m.setMaterial(0, custom), "a material override is set");
-		eq((m.getMaterial(0) : Int), (custom : Int), "the model draws the override");
-		eq((cube.getMaterial(0) : Int), (mesh0 : Int), "the mesh's own slot is untouched");
-		custom.release();
-		m.destroy();
-		cube.release();
+		final mesh0 = Mesh.getMaterial(cube, 0);
+		final custom = Material.create(Unlit);
+		check(Model.setMaterial(m, 0, custom), "a material override is set");
+		eq((Model.getMaterial(m, 0) : Int), (custom : Int), "the model draws the override");
+		eq((Mesh.getMaterial(cube, 0) : Int), (mesh0 : Int), "the mesh's own slot is untouched");
+		Material.release(custom);
+		Model.destroy(m);
+		Mesh.release(cube);
 	}
 
 	static function checkSprite3D():Void {
 		final texture = Texture.create("no/such.png");
-		final s = new Sprite3D(texture);
+		final s = Sprite3D.create(texture);
 
-		s.setTransform(new Vec3(1, 2, 3), new Vec3(0, 0.5, 0), new Vec3(2, 2, 2));
-		final p = s.position;
+		Sprite3D.setTransform(s, new Vec3(1, 2, 3), new Vec3(0, 0.5, 0), new Vec3(2, 2, 2));
+		final p = Sprite3D.getPosition(s);
 		near(p.x, 1, "sprite3d position x reads back");
 		near(p.y, 2, "sprite3d position y reads back");
 		near(p.z, 3, "sprite3d position z reads back — the vec3 is not transposed");
-		near(s.rotation.y, 0.5, "sprite3d rotation reads back in radians");
-		near(s.scale.x, 2, "sprite3d scale reads back");
+		near(Sprite3D.getRotation(s).y, 0.5, "sprite3d rotation reads back in radians");
+		near(Sprite3D.getScale(s).x, 2, "sprite3d scale reads back");
 
-		check(s.visible && s.pickable && s.enabled, "a new sprite3d is visible, pickable, enabled");
-		s.visible = false;
-		s.pickable = false;
-		s.enabled = false;
-		check(!s.visible && !s.pickable && !s.enabled, "every sprite3d flag round-trips false");
-		s.visible = true;
+		check(Sprite3D.isVisible(s) && Sprite3D.isPickable(s) && Sprite3D.isEnabled(s), "a new sprite3d is visible, pickable, enabled");
+		Sprite3D.setVisible(s, false);
+		Sprite3D.setPickable(s, false);
+		Sprite3D.setEnabled(s, false);
+		check(!Sprite3D.isVisible(s) && !Sprite3D.isPickable(s) && !Sprite3D.isEnabled(s), "every sprite3d flag round-trips false");
+		Sprite3D.setVisible(s, true);
 
-		eq(s.alphaMode, AlphaMode.Blend, "a sprite3d blends by default");
-		check(s.setAlphaMode(Mask, 0.5), "alpha mode set to masked");
-		eq(s.alphaMode, AlphaMode.Mask, "alpha mode reads back as the enum");
+		eq(Sprite3D.getAlphaMode(s), AlphaMode.Blend, "a sprite3d blends by default");
+		check(Sprite3D.setAlphaMode(s, Mask, 0.5), "alpha mode set to masked");
+		eq(Sprite3D.getAlphaMode(s), AlphaMode.Mask, "alpha mode reads back as the enum");
 
-		s.size = 2;
-		check(s.setExtent(3, 1), "a rectangular extent is accepted");
-		check(!s.setExtent(0, 1), "a zero extent is refused");
-		check(s.setSource(0, 0, 16, 16), "a source region is accepted");
+		Sprite3D.setSize(s, 2);
+		check(Sprite3D.setExtent(s, 3, 1), "a rectangular extent is accepted");
+		check(!Sprite3D.setExtent(s, 0, 1), "a zero extent is refused");
+		check(Sprite3D.setSource(s, 0, 0, 16, 16), "a source region is accepted");
 		// a fraction of the quad, not pixels: (0.5, 1) is the bottom edge
-		check(s.setPivot(0.5, 1), "a pivot is a fraction of the quad");
-		check(s.setPickAlphaTest(true, 0.5), "pick alpha test enabled");
+		check(Sprite3D.setPivot(s, 0.5, 1), "a pivot is a fraction of the quad");
+		check(Sprite3D.setPickAlphaTest(s, true, 0.5), "pick alpha test enabled");
 
-		check(s.getMaterial().isNone, "a new sprite3d is on the built-in shader");
-		final custom = new Material(Unlit);
-		check(s.setMaterial(custom), "a sprite3d takes a material");
-		eq((s.getMaterial() : Int), (custom : Int), "and reads it back");
-		custom.release();
+		check(Material.isNone(Sprite3D.getMaterial(s)), "a new sprite3d is on the built-in shader");
+		final custom = Material.create(Unlit);
+		check(Sprite3D.setMaterial(s, custom), "a sprite3d takes a material");
+		eq((Sprite3D.getMaterial(s) : Int), (custom : Int), "and reads it back");
+		Material.release(custom);
 
-		check(s.setTexture(Texture.defaultTexture), "a sprite3d's texture can be swapped");
-		s.destroy();
-		texture.release();
+		check(Sprite3D.setTexture(s, Texture.getDefault()), "a sprite3d's texture can be swapped");
+		Sprite3D.destroy(s);
+		Texture.release(texture);
 	}
 
 	static function checkSceneState():Void {
-		final s = new Scene();
-		final m = new Model(Mesh.cube(1, 1, 1));
+		final s = Scene.create();
+		final m = Model.create(Mesh.cube(1, 1, 1));
 
-		check(s.culling, "a new scene culls");
-		s.culling = false;
-		check(!s.culling, "culling round-trips");
-		s.culling = true;
+		check(Scene.isCulling(s), "a new scene culls");
+		Scene.setCulling(s, false);
+		check(!Scene.isCulling(s), "culling round-trips");
+		Scene.setCulling(s, true);
 
-		check(!s.interactive, "a new scene is not interactive");
-		s.interactive = true;
-		check(s.interactive, "interactive round-trips");
+		check(!Scene.isInteractive(s), "a new scene is not interactive");
+		Scene.setInteractive(s, true);
+		check(Scene.isInteractive(s), "interactive round-trips");
 
-		check(s.add(m, 2), "a member goes onto a layer");
-		check(s.setLayer(m, 3), "and moves to another");
-		check(s.setClip(3, 0, 0, 100, 100), "a layer clips to a rectangle");
-		check(s.setClip(3, 0, 0, 0, 0), "a zero rectangle removes the clip");
+		check(Scene.add(s, m, 2), "a member goes onto a layer");
+		check(Scene.setLayer(s, m, 3), "and moves to another");
+		check(Scene.setClip(s, 3, 0, 0, 100, 100), "a layer clips to a rectangle");
+		check(Scene.setClip(s, 3, 0, 0, 0, 0), "a zero rectangle removes the clip");
 
 		// nothing is under a pointer that never moved
-		check(s.hovered.isNone, "nothing is hovered in headless");
-		eq(s.getHover(m), ButtonState.Up, "hover is up");
-		eq(s.getPress(m), ButtonState.Up, "press is up");
-		check(!s.isClicked(m), "nothing is clicked");
+		check(SceneMember.isNone(Scene.getHovered(s)), "nothing is hovered in headless");
+		eq(Scene.getHover(s, m), ButtonState.Up, "hover is up");
+		eq(Scene.getPress(s, m), ButtonState.Up, "press is up");
+		check(!Scene.isClicked(s, m), "nothing is clicked");
 
-		check(s.setTonemap(Aces, 1), "a tonemap and exposure are set");
+		check(Scene.setTonemap(s, Aces, 1), "a tonemap and exposure are set");
 		final missing = Environment.create("no/such.hdr");
-		check(missing.isNone, "a missing environment does not load");
-		check(s.setEnvironment(Handle.NONE), "a none environment removes it");
-		check(s.setBackground(Handle.NONE), "a none background removes it");
+		check(Environment.isNone(missing), "a missing environment does not load");
+		check(Scene.setEnvironment(s, Handle.NONE), "a none environment removes it");
+		check(Scene.setBackground(s, Handle.NONE), "a none background removes it");
 
-		check(s.remove(m), "a member comes out");
-		check(!s.remove(m), "and cannot come out twice");
-		s.clear();
-		m.destroy();
-		s.destroy();
+		check(Scene.remove(s, m), "a member comes out");
+		check(!Scene.remove(s, m), "and cannot come out twice");
+		Scene.clear(s);
+		Model.destroy(m);
+		Scene.destroy(s);
 	}
 
 	static function checkTexture():Void {
-		check(!Texture.defaultTexture.isNone, "there is a default texture");
-		check(!Texture.placeholder.isNone, "there is a placeholder texture");
+		check(!Texture.isNone(Texture.getDefault()), "there is a default texture");
+		check(!Texture.isNone(Texture.getPlaceholder()), "there is a placeholder texture");
 
 		final target = Texture.createTarget(64, 32);
-		check(!target.isNone, "a render target is created");
-		final size = target.size;
+		check(!Texture.isNone(target), "a render target is created");
+		final size = Texture.getSize(target);
 		near(size.x, 64, "the target's width reads back");
 		near(size.y, 32, "the target's height reads back — the vec2 is not transposed");
-		target.release();
+		Texture.release(target);
 	}
 
 	// --- values with arithmetic behind them ---------------------------------
 
 	static function checkColor():Void {
 		final c = Color.rgba(10, 20, 30, 40);
-		eq(c.red, 10, "red comes back out");
-		eq(c.green, 20, "green comes back out");
-		eq(c.blue, 30, "blue comes back out — the channels are not rotated");
-		eq(c.alpha, 40, "alpha comes back out");
+		eq(Color.getRed(c), 10, "red comes back out");
+		eq(Color.getGreen(c), 20, "green comes back out");
+		eq(Color.getBlue(c), 30, "blue comes back out — the channels are not rotated");
+		eq(Color.getAlpha(c), 40, "alpha comes back out");
 		eq((c : Int), 0x0A141E28, "and the packing is 0xRRGGBBAA");
 
 		// out of range saturates; it must not wrap into the neighbouring channel
 		final hot = Color.rgba(300, -5, 128, 255);
-		eq(hot.red, 255, "an over-range component saturates");
-		eq(hot.green, 0, "an under-range one saturates the other way");
-		eq(hot.blue, 128, "and the neighbour is untouched");
+		eq(Color.getRed(hot), 255, "an over-range component saturates");
+		eq(Color.getGreen(hot), 0, "an under-range one saturates the other way");
+		eq(Color.getBlue(hot), 128, "and the neighbour is untouched");
 
 		eq((Color.rgbaf(1, 0, 0, 1) : Int), (Color.rgba(255, 0, 0, 255) : Int),
 			"the float constructor agrees with the integer one");
 
-		eq((c.withAlpha(255) : Int), (Color.rgba(10, 20, 30, 255) : Int), "withAlpha changes only alpha");
+		eq((Color.withAlpha(c, 255) : Int), (Color.rgba(10, 20, 30, 255) : Int), "withAlpha changes only alpha");
 
 		final black:Color = Color.rgba(0, 0, 0, 255);
 		final white:Color = Color.rgba(255, 255, 255, 255);
-		eq((black.lerp(white, 0) : Int), (black : Int), "lerp at 0 is the start");
-		eq((white.lerp(black, 0) : Int), (white : Int), "and reads the arguments in that order");
-		eq((black.lerp(white, 1) : Int), (white : Int), "lerp at 1 is the end");
-		eq(black.lerp(white, 0.5).red, 128, "and halfway rounds up, not down");
-		eq((black.lerp(white, 5) : Int), (white : Int), "t is clamped, not extrapolated");
+		eq((Color.lerp(black, white, 0) : Int), (black : Int), "lerp at 0 is the start");
+		eq((Color.lerp(white, black, 0) : Int), (white : Int), "and reads the arguments in that order");
+		eq((Color.lerp(black, white, 1) : Int), (white : Int), "lerp at 1 is the end");
+		eq(Color.getRed(Color.lerp(black, white, 0.5)), 128, "and halfway rounds up, not down");
+		eq((Color.lerp(black, white, 5) : Int), (white : Int), "t is clamped, not extrapolated");
 	}
 
 	static function checkHandleKind():Void {
 		// a handle knows what it is, which is what a pick result needs
-		eq(scene.hovered.isNone, true, "the none handle is none");
-		eq((Handle.NONE : Handle).kind, HandleKind.None, "and its kind is None");
+		eq(SceneMember.isNone(Scene.getHovered(scene)), true, "the none handle is none");
+		eq(Handle.getKind((Handle.NONE : Handle)), HandleKind.None, "and its kind is None");
 
-		final m = new Model(Mesh.cube(1, 1, 1));
-		eq(((m : Handle)).kind, HandleKind.Model, "a model handle knows it is a model");
-		final t = Texture.defaultTexture;
-		eq(((t : Handle)).kind, HandleKind.Texture, "a texture handle knows it is a texture");
-		eq(((camera : Handle)).kind, HandleKind.Camera3D, "a camera handle knows it is a camera");
-		eq(((scene : Handle)).kind, HandleKind.Scene, "a scene handle knows it is a scene");
-		m.destroy();
+		final m = Model.create(Mesh.cube(1, 1, 1));
+		eq(Handle.getKind(((m : Handle))), HandleKind.Model, "a model handle knows it is a model");
+		final t = Texture.getDefault();
+		eq(Handle.getKind(((t : Handle))), HandleKind.Texture, "a texture handle knows it is a texture");
+		eq(Handle.getKind(((camera : Handle))), HandleKind.Camera3D, "a camera handle knows it is a camera");
+		eq(Handle.getKind(((scene : Handle))), HandleKind.Scene, "a scene handle knows it is a scene");
+		Model.destroy(m);
 	}
 
 	static function checkSprite2D():Void {
-		final s = new Sprite2D(Texture.defaultTexture);
-		check(!s.isNone, "a sprite2d is created");
-		eq(((s : Handle)).kind, HandleKind.Sprite2D, "and its handle says so");
+		final s = Sprite2D.create(Texture.getDefault());
+		check(!Sprite2D.isNone(s), "a sprite2d is created");
+		eq(Handle.getKind(((s : Handle))), HandleKind.Sprite2D, "and its handle says so");
 
-		s.position = new Vec2(10, 20);
-		s.rotation = 0.5;
-		s.scale = new Vec2(2, 3);
-		s.tint = Color.GOLD;
+		Sprite2D.setPosition(s, new Vec2(10, 20));
+		Sprite2D.setRotation(s, 0.5);
+		Sprite2D.setScale(s, new Vec2(2, 3));
+		Sprite2D.setTint(s, Color.GOLD);
 
-		check(s.visible && s.pickable && s.enabled, "a new sprite2d is visible, pickable, enabled");
-		s.visible = false;
-		s.pickable = false;
-		s.enabled = false;
-		check(!s.visible && !s.pickable && !s.enabled, "every sprite2d flag round-trips false");
-		s.visible = true;
+		check(Sprite2D.isVisible(s) && Sprite2D.isPickable(s) && Sprite2D.isEnabled(s), "a new sprite2d is visible, pickable, enabled");
+		Sprite2D.setVisible(s, false);
+		Sprite2D.setPickable(s, false);
+		Sprite2D.setEnabled(s, false);
+		check(!Sprite2D.isVisible(s) && !Sprite2D.isPickable(s) && !Sprite2D.isEnabled(s), "every sprite2d flag round-trips false");
+		Sprite2D.setVisible(s, true);
 
-		eq(s.alphaMode, AlphaMode.Blend, "a sprite2d blends by default");
-		check(s.setAlphaMode(Add), "alpha mode set to additive");
-		eq(s.alphaMode, AlphaMode.Add, "and reads back as the enum");
+		eq(Sprite2D.getAlphaMode(s), AlphaMode.Blend, "a sprite2d blends by default");
+		check(Sprite2D.setAlphaMode(s, Add), "alpha mode set to additive");
+		eq(Sprite2D.getAlphaMode(s), AlphaMode.Add, "and reads back as the enum");
 
-		check(s.setSize(64, 32), "an on-screen size is accepted");
-		check(s.setSource(0, 0, 16, 16), "a source region is accepted");
-		check(s.setPivot(0, 0), "a pivot is a fraction of the sprite");
-		check(s.setNineSlice(4, 4, 4, 4), "a nine-slice is accepted");
-		check(s.setNineSlice(0, 0, 0, 0), "and all zero turns it off");
-		check(s.setPickAlphaTest(true, 0.25), "pick alpha test enabled");
+		check(Sprite2D.setSize(s, 64, 32), "an on-screen size is accepted");
+		check(Sprite2D.setSource(s, 0, 0, 16, 16), "a source region is accepted");
+		check(Sprite2D.setPivot(s, 0, 0), "a pivot is a fraction of the sprite");
+		check(Sprite2D.setNineSlice(s, 4, 4, 4, 4), "a nine-slice is accepted");
+		check(Sprite2D.setNineSlice(s, 0, 0, 0, 0), "and all zero turns it off");
+		check(Sprite2D.setPickAlphaTest(s, true, 0.25), "pick alpha test enabled");
 
-		check(s.getMaterial().isNone, "a new sprite2d is on the built-in shader");
-		check(scene.add(s, 5), "a sprite2d is a scene member");
-		check(scene.remove(s), "and comes back out");
-		s.destroy();
+		check(Material.isNone(Sprite2D.getMaterial(s)), "a new sprite2d is on the built-in shader");
+		check(Scene.add(scene, s, 5), "a sprite2d is a scene member");
+		check(Scene.remove(scene, s), "and comes back out");
+		Sprite2D.destroy(s);
 	}
 
 	static function checkInput():Void {
 		// headless reports no devices, so these assert shape rather than values
-		final p = Input.mousePosition;
+		final p = Input.getMousePosition();
 		check(p.x == p.x && p.y == p.y, "a mouse position is two real numbers");
-		final d = Input.mouseDelta;
+		final d = Input.getMouseDelta();
 		near(d.x, 0, "nothing moved the mouse");
 		near(d.y, 0, "on either axis");
-		near(Input.mouseWheel, 0, "nor the wheel");
-		near(Input.mouseWheelX, 0, "nor sideways");
+		near(Input.getMouseWheel(), 0, "nor the wheel");
+		near(Input.getMouseWheelX(), 0, "nor sideways");
 
 		eq(Input.getMouseButton(Left), ButtonState.Up, "no mouse button is down");
 		check(!Input.isMouseButtonPressed(Left), "none was pressed");
 		check(!Input.isMouseButtonDown(Right), "none is held");
 		check(!Input.isMouseButtonReleased(Middle), "none was released");
 
-		eq(Input.touchCount, 0, "nothing is touching the screen");
+		eq(Input.getTouchCount(), 0, "nothing is touching the screen");
 
 		check(!Input.isGamepadConnected(0), "no gamepad in headless");
 		eq(Input.getGamepadName(0), "", "so slot 0 has no name");
@@ -624,30 +624,30 @@ class CheckBindings {
 		near(Input.getGamepadAxis(0, LeftX), 0, "and no axis is off centre");
 		check(Input.setGamepadDeadzone(0.2), "a deadzone in range is accepted");
 
-		check(!Input.pointerCaptured, "nothing has captured the pointer");
-		Input.pointerCaptured = true;
-		check(Input.pointerCaptured, "a UI can claim it");
-		Input.pointerCaptured = false;
-		check(!Input.keyboardCaptured, "nothing has captured the keyboard");
-		Input.keyboardCaptured = true;
-		check(Input.keyboardCaptured, "a UI can claim that too");
-		Input.keyboardCaptured = false;
+		check(!Input.isPointerCaptured(), "nothing has captured the pointer");
+		Input.setPointerCaptured(true);
+		check(Input.isPointerCaptured(), "a UI can claim it");
+		Input.setPointerCaptured(false);
+		check(!Input.isKeyboardCaptured(), "nothing has captured the keyboard");
+		Input.setKeyboardCaptured(true);
+		check(Input.isKeyboardCaptured(), "a UI can claim that too");
+		Input.setKeyboardCaptured(false);
 	}
 
 	static function checkWindowAndRuntime():Void {
-		check(Wgr.isInitialized, "the runtime says it is initialised");
-		eq(Wgr.renderer, "headless", "and names the backend it chose");
+		check(Wgr.isInitialized(), "the runtime says it is initialised");
+		eq(Wgr.getRenderer(), "headless", "and names the backend it chose");
 		// has_threads is a fact about the build, not something to assert a value for
-		check(Wgr.hasThreads || !Wgr.hasThreads, "hasThreads answers without throwing");
+		check(Wgr.hasThreads() || !Wgr.hasThreads(), "hasThreads answers without throwing");
 
 		final size = Window.getScreenSize();
 		check(size.x > 0 && size.y > 0, "the window has a size");
-		near(Window.screenSize.x, size.x, "the property and the function agree");
-		check(!Window.closeRequested, "nobody has asked to close it");
-		check(Window.monitorCount >= 0, "monitors can be counted");
+		near(Window.getScreenSize().x, size.x, "the property and the function agree");
+		check(!Window.closeRequested(), "nobody has asked to close it");
+		check(Window.getMonitorCount() >= 0, "monitors can be counted");
 
-		Window.title = "check";
-		Window.visible = Window.visible; // whatever it is, setting it back is legal
+		Window.setTitle("check");
+		Window.setVisible(Window.isVisible()); // whatever it is, setting it back is legal
 
 		eq(Version.label(), "dev", "this build is labelled dev");
 		check(Version.number() > 0, "and packs a version number");
@@ -655,36 +655,36 @@ class CheckBindings {
 
 	static function checkSoundAndAsset():Void {
 		final audio = Audio.create("no/such.wav");
-		final sound = new Sound(audio);
-		check(!sound.isPlaying, "a new sound is not playing");
-		sound.volume = 0.5;
-		sound.pitch = 1.5;
-		sound.pan = -1;
-		sound.loop = true;
-		check(!sound.isPlaying, "setting properties does not start it");
-		sound.stop();
-		sound.pause();
-		sound.resume();
-		sound.destroy();
-		audio.release();
+		final sound = Sound.create(audio);
+		check(!Sound.isPlaying(sound), "a new sound is not playing");
+		Sound.setVolume(sound, 0.5);
+		Sound.setPitch(sound, 1.5);
+		Sound.setPan(sound, -1);
+		Sound.setLoop(sound, true);
+		check(!Sound.isPlaying(sound), "setting properties does not start it");
+		Sound.stop(sound);
+		Sound.pause(sound);
+		Sound.resume(sound);
+		Sound.destroy(sound);
+		Audio.release(audio);
 
 		// the host round-trips, and putting it back leaves the later checks alone
-		final was = Asset.host;
-		Asset.host = "examples/assets";
-		eq(Asset.host, "examples/assets", "the asset host round-trips");
-		Asset.host = was;
+		final was = Asset.getHost();
+		Asset.setHost("examples/assets");
+		eq(Asset.getHost(), "examples/assets", "the asset host round-trips");
+		Asset.setHost(was);
 
 		check(Asset.addRedirect("textures/", "mods/hd/textures/"), "a path redirect is added");
 		Asset.clearRedirects();
 		check(!Asset.addRedirect("", "somewhere/"), "an empty prefix is refused");
 		Asset.clearRedirects();
 
-		Asset.uploadBudget = 8;
+		Asset.setUploadBudget(8);
 		check(Asset.setCacheDir(".wgr-cache"), "a cache directory is accepted");
 
 		final group = Asset.createGroup();
-		check(!group.isNone, "an asset group is created");
-		eq(((group : Handle)).kind, HandleKind.AssetTask, "and it is a task handle");
+		check(!AssetTask.isNone(group), "an asset group is created");
+		eq(Handle.getKind(((group : Handle))), HandleKind.AssetTask, "and it is a task handle");
 		check(!Asset.groupAdd(group, group), "a group cannot contain itself");
 		near(Asset.getProgress(group), 0, "an empty group has made no progress");
 	}
@@ -695,95 +695,95 @@ class CheckBindings {
 		"accepted" without saying what it accepted.
 	**/
 	static function checkLightGetters():Void {
-		final l = new Light(Spot);
-		eq(l.kind, LightKind.Spot, "a light knows what kind it was made as");
+		final l = Light.create(Spot);
+		eq(Light.getType(l), LightKind.Spot, "a light knows what kind it was made as");
 
 		// what is held, not what was passed: a direction comes back normalized
-		l.direction = new Vec3(0, -4, 0);
-		near(l.direction.y, -1, "direction is held normalized");
-		near(l.direction.x, 0, "on the other axes too");
+		Light.setDirection(l, new Vec3(0, -4, 0));
+		near(Light.getDirection(l).y, -1, "direction is held normalized");
+		near(Light.getDirection(l).x, 0, "on the other axes too");
 
-		l.position = new Vec3(1, 2, 3);
-		near(l.position.x, 1, "position x reads back");
-		near(l.position.y, 2, "position y reads back");
-		near(l.position.z, 3, "position z reads back — the vec3 is not transposed");
+		Light.setPosition(l, new Vec3(1, 2, 3));
+		near(Light.getPosition(l).x, 1, "position x reads back");
+		near(Light.getPosition(l).y, 2, "position y reads back");
+		near(Light.getPosition(l).z, 3, "position z reads back — the vec3 is not transposed");
 
-		l.color = Color.GOLD;
-		eq((l.color : Int), (Color.GOLD : Int), "color reads back");
-		l.intensity = 2.5;
-		near(l.intensity, 2.5, "intensity reads back");
-		l.intensity = -5;
-		near(l.intensity, 0, "a negative intensity is held as 0");
-		l.range = -5;
-		near(l.range, 0, "and so is a negative range");
-		l.range = 10;
-		near(l.range, 10, "a real range reads back");
+		Light.setColor(l, Color.GOLD);
+		eq((Light.getColor(l) : Int), (Color.GOLD : Int), "color reads back");
+		Light.setIntensity(l, 2.5);
+		near(Light.getIntensity(l), 2.5, "intensity reads back");
+		Light.setIntensity(l, -5);
+		near(Light.getIntensity(l), 0, "a negative intensity is held as 0");
+		Light.setRange(l, -5);
+		near(Light.getRange(l), 0, "and so is a negative range");
+		Light.setRange(l, 10);
+		near(Light.getRange(l), 10, "a real range reads back");
 
 		// the cone clamps to 0..pi/2
-		check(l.setSpotCone(0.1, 3), "a cone past pi/2 is accepted");
-		near(l.spotOuterAngle, Math.PI / 2, "and clamped to pi/2");
-		near(l.spotInnerAngle, 0.1, "the inner angle is left alone");
+		check(Light.setSpotCone(l, 0.1, 3), "a cone past pi/2 is accepted");
+		near(Light.getSpotOuterAngle(l), Math.PI / 2, "and clamped to pi/2");
+		near(Light.getSpotInnerAngle(l), 0.1, "the inner angle is left alone");
 
 		// the shadow map: clamped to 256..4096 and floored to a power of two
-		check(l.shadowMapSize == 2048, "the default map size is 2048");
-		l.shadowMapSize = 64;
-		eq(l.shadowMapSize, 256, "64 clamps up to 256");
-		l.shadowMapSize = 9000;
-		eq(l.shadowMapSize, 4096, "9000 clamps down to 4096");
-		l.shadowMapSize = 1500;
-		eq(l.shadowMapSize, 1024, "1500 floors to 1024, not 2048");
-		l.shadowMapSize = 0;
-		eq(l.shadowMapSize, 1024, "0 is refused, so it keeps what it had");
+		check(Light.getShadowMapSize(l) == 2048, "the default map size is 2048");
+		Light.setShadowMapSize(l, 64);
+		eq(Light.getShadowMapSize(l), 256, "64 clamps up to 256");
+		Light.setShadowMapSize(l, 9000);
+		eq(Light.getShadowMapSize(l), 4096, "9000 clamps down to 4096");
+		Light.setShadowMapSize(l, 1500);
+		eq(Light.getShadowMapSize(l), 1024, "1500 floors to 1024, not 2048");
+		Light.setShadowMapSize(l, 0);
+		eq(Light.getShadowMapSize(l), 1024, "0 is refused, so it keeps what it had");
 
 		// strength clamps now, where it used to refuse
-		l.shadowStrength = 1.5;
-		near(l.shadowStrength, 1, "a strength past 1 clamps");
-		l.shadowStrength = -1;
-		near(l.shadowStrength, 0, "and below 0 clamps the other way");
-		l.shadowStrength = 0.25;
-		near(l.shadowStrength, 0.25, "one in range is kept");
+		Light.setShadowStrength(l, 1.5);
+		near(Light.getShadowStrength(l), 1, "a strength past 1 clamps");
+		Light.setShadowStrength(l, -1);
+		near(Light.getShadowStrength(l), 0, "and below 0 clamps the other way");
+		Light.setShadowStrength(l, 0.25);
+		near(Light.getShadowStrength(l), 0.25, "one in range is kept");
 
-		l.shadowDistance = 20;
-		near(l.shadowDistance, 20, "shadow distance reads back");
-		l.shadowDistance = -1;
-		near(l.shadowDistance, 20, "and a negative one is refused, keeping the last");
+		Light.setShadowDistance(l, 20);
+		near(Light.getShadowDistance(l), 20, "shadow distance reads back");
+		Light.setShadowDistance(l, -1);
+		near(Light.getShadowDistance(l), 20, "and a negative one is refused, keeping the last");
 
-		l.shadowColor = Color.SKYBLUE;
-		eq((l.shadowColor : Int), (Color.SKYBLUE : Int), "shadow color reads back");
+		Light.setShadowColor(l, Color.SKYBLUE);
+		eq((Light.getShadowColor(l) : Int), (Color.SKYBLUE : Int), "shadow color reads back");
 
-		check(l.setShadowBias(2, 6), "a bias is set");
-		near(l.shadowBiasConstant, 2, "the constant part reads back");
-		near(l.shadowBiasSlope, 6, "and the slope part — the pair is not swapped");
+		check(Light.setShadowBias(l, 2, 6), "a bias is set");
+		near(Light.getShadowBiasConstant(l), 2, "the constant part reads back");
+		near(Light.getShadowBiasSlope(l), 6, "and the slope part — the pair is not swapped");
 
 		// a dead handle reads 0 rather than the last value
-		l.destroy();
-		near(l.intensity, 0, "a destroyed light reads 0, not stale state");
+		Light.destroy(l);
+		near(Light.getIntensity(l), 0, "a destroyed light reads 0, not stale state");
 
 		final none:Light = Handle.NONE;
-		near(none.range, 0, "and so does a none handle");
+		near(Light.getRange(none), 0, "and so does a none handle");
 	}
 
 	/** What the header sweep of 2026-09-21 says wgrender promises. **/
 	static function checkSweptBehaviour():Void {
 		// emitters: max is 1..65536 and a value outside is refused, not clamped
-		final e = new Emitter3D(Texture.defaultTexture);
-		check(e.setMax(65536), "the largest allowed max is accepted");
-		check(!e.setMax(65537), "one past it is refused, not clamped");
-		check(!e.setMax(0), "and so is zero");
-		e.destroy();
+		final e = Emitter3D.create(Texture.getDefault());
+		check(Emitter3D.setMax(e, 65536), "the largest allowed max is accepted");
+		check(!Emitter3D.setMax(e, 65537), "one past it is refused, not clamped");
+		check(!Emitter3D.setMax(e, 0), "and so is zero");
+		Emitter3D.destroy(e);
 
-		final e2 = new Emitter2D(Texture.defaultTexture);
-		check(e2.setMax(65536), "2D shares the same ceiling");
-		check(!e2.setMax(65537), "and the same refusal");
-		e2.destroy();
+		final e2 = Emitter2D.create(Texture.getDefault());
+		check(Emitter2D.setMax(e2, 65536), "2D shares the same ceiling");
+		check(!Emitter2D.setMax(e2, 65537), "and the same refusal");
+		Emitter2D.destroy(e2);
 
 		// a null fetch_url is not an empty one: null keeps redirects and variants,
 		// a URL tells wgrender the caller chose that exact file. The js binding sends
 		// null as a null pointer for this reason; hxcpp always did.
 		final plain = Asset.ensureAsync("no/such.png");
-		check(!plain.isNone, "ensureAsync with no fetch url makes a task");
+		check(!AssetTask.isNone(plain), "ensureAsync with no fetch url makes a task");
 		final sourced = Asset.ensureAsync("no/such2.png", "https://example.invalid/no/such2.png");
-		check(!sourced.isNone, "and so does one with a source of its own");
+		check(!AssetTask.isNone(sourced), "and so does one with a source of its own");
 
 		// redirects: a URL target is legal on desktop now, not just on the web
 		check(Asset.addRedirect("models/", "https://cdn.example.invalid/models/"),
@@ -800,7 +800,7 @@ class CheckBindings {
 
 		var heard = 0;
 		final token = Event.on("check/ping", () -> heard++);
-		check(!token.isNone, "on returns a token");
+		check(!EventListener.isNone(token), "on returns a token");
 		eq(Event.listenerCount("check/ping"), 1, "and the listener is registered");
 		eq(Event.emit("check/ping"), 1, "emitting reaches it");
 		eq(heard, 1, "and the Haxe closure ran");
@@ -831,19 +831,19 @@ class CheckBindings {
 		eq(before.narrowphaseHits, 0, "on both phases");
 
 		// nothing is on screen in headless, so this misses rather than hits
-		final m = new Model(Mesh.cube(1, 1, 1));
+		final m = Model.create(Mesh.cube(1, 1, 1));
 		final r = Pick.object(m, 10, 10);
 		check(!r.hit || r.hit, "picking one object answers without throwing");
-		m.destroy();
+		Model.destroy(m);
 	}
 
 	// --- lifecycle ----------------------------------------------------------
 
 	static function onInit():Void {
 		Log.setLevel(Fatal); // the missing-asset checks below log errors on purpose
-		camera = new Camera3D(Perspective);
-		scene = new Scene();
-		scene.activeCamera = camera;
+		camera = Camera3D.create(Perspective);
+		scene = Scene.create();
+		Scene.setActiveCamera(scene, camera);
 
 		checkValues();
 		checkStructs();
@@ -901,7 +901,7 @@ class CheckBindings {
 		Shape3D.drawRectangle(new Vec3(0, 0, 0), 1, 1, Color.RED);
 		Shape3D.drawCircle(new Vec3(0, 0, 0), 1, Color.VIOLET);
 		Render.endMode3D();
-		scene.draw();
+		Scene.draw(scene);
 		Shape2D.drawRectangle(0, 0, 10, 10, Color.SKYBLUE);
 		Shape2D.drawRectangleLines(0, 0, 10, 10, Color.LIME);
 		Shape2D.drawLine(new Vec2(0, 0), new Vec2(10, 10), Color.WHITE);
@@ -912,7 +912,7 @@ class CheckBindings {
 		Shape2D.drawRoundedRectangleCorners(0, 0, 20, 10, 1, 2, 3, 4, Color.GOLD);
 		Shape2D.drawBorder(0, 0, 20, 10, 1, 1, 1, 1, 2, 2, 2, 2, Color.LIGHTGRAY);
 		Text.draw("built-in", 10, 10, 16, Color.BLACK);
-		label.draw();
+		Text2D.draw(label);
 		Render.end();
 	}
 

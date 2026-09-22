@@ -102,14 +102,16 @@ class Wgr {
 	#end
 
 	/** True once `initValues` has succeeded. **/
-	public static var isInitialized(get, never):Bool;
+	public static inline function isInitialized():Bool
+		return Raw.wgr_is_initialized();
 
 	/**
 		Which renderer is running: "GL core", "GLES3/WebGL2", "WebGPU", "D3D11",
 		"Metal (macOS)" or "headless", and "none" before `run` starts. Display text —
 		it names the backend wgrender chose, which the API otherwise hides.
 	**/
-	public static var renderer(get, never):String;
+	public static inline function getRenderer():String
+		return Raw.wgr_get_renderer();
 
 	/**
 		Whether assets decode and upload off the main thread, so a program can say why
@@ -118,15 +120,7 @@ class Wgr {
 		which needs COOP/COEP headers from the host; a static host that can't send them
 		serves the single-threaded build, where loading blocks the frame it happens on.
 	**/
-	public static var hasThreads(get, never):Bool;
-
-	static inline function get_isInitialized():Bool
-		return Raw.wgr_is_initialized();
-
-	static inline function get_renderer():String
-		return Raw.wgr_get_renderer();
-
-	static inline function get_hasThreads():Bool
+	public static inline function hasThreads():Bool
 		return Raw.wgr_has_threads();
 
 	/** Close the window / end the loop. **/

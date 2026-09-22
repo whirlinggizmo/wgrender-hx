@@ -26,7 +26,7 @@ concurrency:
 
 jobs:
   audit:
-    name: audit (refusals, setters, generated sources)
+    name: audit (refusals, generated sources)
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
@@ -57,7 +57,7 @@ jobs:
         run: python3 tools/refusals.py --require-clang
 
       - name: A documented refusal is repeated in the binding's docs
-        run: python3 tools/setters.py --check
+        run: python3 tools/refusals.py --check
 
       - name: Raw.cpp.hx and Raw.js.hx are current
         run: python3 tools/gen_raw.py --check

@@ -88,40 +88,40 @@ class Loading {
 		for (_ in 0...GRAPH)
 			frameMs.push(0.0);
 
-		camera = new Camera3D(Perspective);
-		camera.setView(new Vec3(0, 1.0, 5.5), new Vec3(0, 0.6, 0));
-		scene = new Scene();
-		scene.activeCamera = camera;
+		camera = Camera3D.create(Perspective);
+		Camera3D.setView(camera, new Vec3(0, 1.0, 5.5), new Vec3(0, 0.6, 0));
+		scene = Scene.create();
+		Scene.setActiveCamera(scene, camera);
 
-		gumshoe = new Model(Handle.NONE);
-		gumshoe.setTransform(new Vec3(-1.2, 0, 0), new Vec3(0, 0.4, 0), new Vec3(0.5, 0.5, 0.5));
-		gumshoe.animation = 3;
-		scene.add(gumshoe);
+		gumshoe = Model.create(Handle.NONE);
+		Model.setTransform(gumshoe, new Vec3(-1.2, 0, 0), new Vec3(0, 0.4, 0), new Vec3(0.5, 0.5, 0.5));
+		Model.setAnimation(gumshoe, 3);
+		Scene.add(scene, gumshoe);
 
-		sphere = new Model(Handle.NONE);
-		sphere.setTransform(new Vec3(1.2, 0.8, 0), null, new Vec3(0.8, 0.8, 0.8));
-		material = new Material(Pbr);
-		material.setBaseColor(0.9, 0.9, 0.9, 1.0);
-		material.roughness = 0.25;
-		sphere.setMaterial(0, material);
-		scene.add(sphere);
+		sphere = Model.create(Handle.NONE);
+		Model.setTransform(sphere, new Vec3(1.2, 0.8, 0), null, new Vec3(0.8, 0.8, 0.8));
+		material = Material.create(Pbr);
+		Material.setBaseColor(material, 0.9, 0.9, 0.9, 1.0);
+		Material.setRoughness(material, 0.25);
+		Model.setMaterial(sphere, 0, material);
+		Scene.add(scene, sphere);
 
 		lastTime = Wgr.getTime();
 		startLoad(false);
 	}
 
 	static function releaseAll():Void {
-		scene.setEnvironment(Handle.NONE, 1.0, 0.0);
-		scene.setBackground(Handle.NONE, 0.0);
-		gumshoe.setMesh(Handle.NONE);
-		sphere.setMesh(Handle.NONE);
-		material.normalTexture = Handle.NONE;
+		Scene.setEnvironment(scene, Handle.NONE, 1.0, 0.0);
+		Scene.setBackground(scene, Handle.NONE, 0.0);
+		Model.setMesh(gumshoe, Handle.NONE);
+		Model.setMesh(sphere, Handle.NONE);
+		Material.setNormalTexture(material, Handle.NONE);
 		for (e in environments)
-			e.release();
+			Environment.release(e);
 		for (m in meshes)
-			m.release();
+			Mesh.release(m);
 		for (t in textures)
-			t.release();
+			Texture.release(t);
 		environments = [];
 		meshes = [];
 		textures = [];
@@ -145,11 +145,11 @@ class Loading {
 			textures.push(Texture.create(paths[i]));
 		createMs = (Wgr.getTime() - start) * 1000.0;
 
-		scene.setEnvironment(environments[0], 1.0, 0.0);
-		scene.setBackground(environments[0], 0.3);
-		gumshoe.setMesh(meshes[0]);
-		sphere.setMesh(meshes[1]);
-		material.normalTexture = textures[0];
+		Scene.setEnvironment(scene, environments[0], 1.0, 0.0);
+		Scene.setBackground(scene, environments[0], 0.3);
+		Model.setMesh(gumshoe, meshes[0]);
+		Model.setMesh(sphere, meshes[1]);
+		Material.setNormalTexture(material, textures[0]);
 		loaded = true;
 	}
 
@@ -208,7 +208,7 @@ class Loading {
 
 	static function onFrame(dt:Float):Void {
 		final keys = Input.getKeyboardState();
-		final screen = Window.screenSize;
+		final screen = Window.getScreenSize();
 		final now = Wgr.getTime();
 
 		frameMs[frameNext] = (now - lastTime) * 1000.0; // real time, uncapped
@@ -225,11 +225,11 @@ class Loading {
 			releaseAll();
 
 		elapsed += dt;
-		gumshoe.animate(dt);
+		Model.animate(gumshoe, dt);
 
 		Render.begin();
 		Render.clearBackground(background);
-		scene.draw();
+		Scene.draw(scene);
 		Render.beginMode3D();
 		Shape3D.drawCubeWires(new Vec3(0, 1.9 + 0.1 * Math.sin(elapsed * 3.0), 0), new Vec3(0.5, 0.5, 0.5),
 			cubeColor);
@@ -241,20 +241,20 @@ class Loading {
 		// "In the background" means worker threads, and a web build only has them on a
 		// cross-origin isolated page. Without them the decode lands on this thread and
 		// the graph below says so, so the example had better not claim otherwise.
-		Text.draw('${Wgr.renderer}  ·  decoding on '
-			+ (Wgr.hasThreads ? "worker threads" : "the main thread (no threads in this build/host)"), 12, 26, 12,
-			Wgr.hasThreads ? Color.LIGHTGRAY : Color.GOLD);
+		Text.draw('${Wgr.getRenderer()}  ·  decoding on '
+			+ (Wgr.hasThreads() ? "worker threads" : "the main thread (no threads in this build/host)"), 12, 26, 12,
+			Wgr.hasThreads() ? Color.LIGHTGRAY : Color.GOLD);
 
 		if (loading) {
 			final progress = arrived / PATHS.length;
 			Shape2D.drawRectangle(12, 54, 240 * progress, 12, graphOk);
 			Shape2D.drawRectangleLines(12, 54, 240, 12, line);
-			Text.draw('loading (${sync ? "synchronously" : (Wgr.hasThreads ? "in the background"
+			Text.draw('loading (${sync ? "synchronously" : (Wgr.hasThreads() ? "in the background"
 				: "in the background, but on this thread")})... ${Math.round(progress * 100)}%', 264, 54, 12,
 				Color.LIGHTGRAY);
 		} else if (loaded) {
 			Text.draw('loaded ${PATHS.length} files '
-				+ '${sync ? "synchronously" : (Wgr.hasThreads ? "in the background" : "without threads")} '
+				+ '${sync ? "synchronously" : (Wgr.hasThreads() ? "in the background" : "without threads")} '
 				+ 'in ${fixed(loadSeconds, 2)} s; creating them took ${Math.round(createMs)} ms', 12, 54, 12,
 				Color.LIGHTGRAY);
 		}

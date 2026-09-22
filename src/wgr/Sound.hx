@@ -4,74 +4,56 @@ package wgr;
 
 /** A playing (or playable) instance of an `Audio`, with its own state. **/
 abstract Sound(Handle) from Handle to Handle {
-	public var isNone(get, never):Bool;
-	public var loop(never, set):Bool;
-
-	/** 0 silent, 1 as recorded. **/
-	public var volume(never, set):Float;
-
-	/** Playback rate: 1 as recorded, 2 an octave up. Changes the speed too. **/
-	public var pitch(never, set):Float;
-
-	/** -1 hard left, 0 centered, 1 hard right. **/
-	public var pan(never, set):Float;
-
-	/** Whether it is sounding right now. **/
-	public var isPlaying(get, never):Bool;
-
 	@:to inline function toRaw():WgrHandle
 		return (this : Int);
 
-	inline function get_isNone():Bool
-		return (this : Handle).isNone;
+	/** Whether this refers to nothing; tolerates a field never assigned, on js. **/
+	public static inline function isNone(sound:Sound):Bool
+		return (sound : Handle).isNone;
 
 	/** The sound takes its own reference to `audio`. **/
-	public inline function new(audio:Audio)
-		this = (Raw.wgr_sound_create(audio) : Handle);
+	public static inline function create(audio:Audio):Sound
+		return (Raw.wgr_sound_create(audio) : Handle);
 
-	inline function set_volume(v:Float):Float {
-		Raw.wgr_sound_set_volume(this, v);
-		return v;
-	}
+	/** 0 silent, 1 as recorded. **/
+	public static inline function setVolume(sound:Sound, value:Float):Bool
+		return Raw.wgr_sound_set_volume(sound, value);
 
-	inline function set_pitch(v:Float):Float {
-		Raw.wgr_sound_set_pitch(this, v);
-		return v;
-	}
+	/** Playback rate: 1 as recorded, 2 an octave up. Changes the speed too. **/
+	public static inline function setPitch(sound:Sound, value:Float):Bool
+		return Raw.wgr_sound_set_pitch(sound, value);
 
-	inline function set_pan(v:Float):Float {
-		Raw.wgr_sound_set_pan(this, v);
-		return v;
-	}
+	/** -1 hard left, 0 centered, 1 hard right. **/
+	public static inline function setPan(sound:Sound, value:Float):Bool
+		return Raw.wgr_sound_set_pan(sound, value);
 
-	inline function get_isPlaying():Bool
-		return Raw.wgr_sound_is_playing(this);
+	/** Whether it is sounding right now. **/
+	public static inline function isPlaying(sound:Sound):Bool
+		return Raw.wgr_sound_is_playing(sound);
 
-	inline function set_loop(v:Bool):Bool {
-		Raw.wgr_sound_set_loop(this, v);
-		return v;
-	}
+	public static inline function setLoop(sound:Sound, value:Bool):Bool
+		return Raw.wgr_sound_set_loop(sound, value);
 
-	public inline function play():Bool
-		return Raw.wgr_sound_play(this);
+	public static inline function play(sound:Sound):Bool
+		return Raw.wgr_sound_play(sound);
 
 	/** Stop, keeping the position, so `resume` picks up where it left off. **/
-	public inline function pause():Bool
-		return Raw.wgr_sound_pause(this);
+	public static inline function pause(sound:Sound):Bool
+		return Raw.wgr_sound_pause(sound);
 
 	/** Play on from the current position. **/
-	public inline function resume():Bool
-		return Raw.wgr_sound_resume(this);
+	public static inline function resume(sound:Sound):Bool
+		return Raw.wgr_sound_resume(sound);
 
 	/** Stop and rewind. **/
-	public inline function stop():Bool
-		return Raw.wgr_sound_stop(this);
+	public static inline function stop(sound:Sound):Bool
+		return Raw.wgr_sound_stop(sound);
 
 	/** The sound takes its own reference; a none handle leaves it nothing to play. **/
-	public inline function setAudio(audio:Audio):Bool
-		return Raw.wgr_sound_set_audio(this, audio);
+	public static inline function setAudio(sound:Sound, audio:Audio):Bool
+		return Raw.wgr_sound_set_audio(sound, audio);
 
 	/** Objects are private, so they're destroyed; resources are shared and released. **/
-	public inline function destroy():Void
-		Raw.wgr_sound_destroy(this);
+	public static inline function destroy(sound:Sound):Void
+		Raw.wgr_sound_destroy(sound);
 }

@@ -20,7 +20,7 @@
 //
 // `wgr.Window` is where this reads differently from the C. wgrender has getter and
 // setter functions throughout; the binding turns the plain reads into properties, so
-// `Window.screenSize` and `Window.focused` are fields. Every setter that can be
+// `Window.getScreenSize()` and `Window.isFocused()` are fields. Every setter that can be
 // refused also has a method form returning whether it worked, because an assignment
 // has nowhere to put that -- and this example is entirely about the answer, so it
 // uses the methods throughout.
@@ -71,8 +71,8 @@ class WindowDemo {
 
 	static function handleKeys(dt:Float):Void {
 		final keys = Input.getKeyboardState();
-		final size = Window.screenSize;
-		final position = Window.position;
+		final size = Window.getScreenSize();
+		final position = Window.getPosition();
 
 		if (keys.isPressed(Escape))
 			Wgr.requestQuit();
@@ -91,49 +91,49 @@ class WindowDemo {
 		if (keys.isPressed(F)) {
 			// "requested", not "done": the bool says there was something to request, and
 			// the state itself arrives a frame or more later.
-			status = Window.requestFullscreen(!Window.fullscreen) ? "fullscreen: requested"
+			status = Window.requestFullscreen(!Window.isFullscreen()) ? "fullscreen: requested"
 				: "fullscreen: not supported here";
 		}
 		if (keys.isPressed(H)) {
-			Window.visible = false;
+			Window.setVisible(false);
 			hiddenFor = HIDE_FOR;
 			report("hide for 2 s", true);
 		}
 		if (hiddenFor > 0.0) {
 			hiddenFor -= dt; // it keeps running while hidden
 			if (hiddenFor <= 0.0) {
-				Window.visible = true;
+				Window.setVisible(true);
 				report("show", true);
 			}
 		}
 		if (keys.isPressed(M))
-			report("monitor", Window.setMonitor((Window.monitor + 1) % Window.monitorCount));
+			report("monitor", Window.setMonitor((Window.getMonitor() + 1) % Window.getMonitorCount()));
 	}
 
 	static function onFrame(dt:Float):Void {
 		handleKeys(dt);
 
-		final size = Window.screenSize;
-		final position = Window.position;
+		final size = Window.getScreenSize();
+		final position = Window.getPosition();
 		var y = 12;
 
 		Render.begin();
 		Render.clearBackground(background);
-		Text.draw(Window.hasFullscreen // ask before offering the key
+		Text.draw(Window.hasFullscreen() // ask before offering the key
 			? "wgrender window   arrows: move   =/-: size   F: fullscreen   M: next monitor   H: hide"
 			: "wgrender window   arrows: move   =/-: size   (no fullscreen here)   M: next monitor   H: hide", 12, y, 16,
 			Color.RAYWHITE);
 		y += 32;
 		Text.draw('window: ${Std.int(size.x)} x ${Std.int(size.y)} at (${Std.int(position.x)}, ${Std.int(position.y)})'
-			+ '   fullscreen: ${Window.fullscreen ? "yes" : "no"}   focused: ${Window.focused ? "yes" : "no"}', 12, y,
+			+ '   fullscreen: ${Window.isFullscreen() ? "yes" : "no"}   focused: ${Window.isFocused() ? "yes" : "no"}', 12, y,
 			16, Color.LIGHTGRAY);
 		y += 24;
 		Text.draw(status, 12, y, 16, Color.GOLD);
 		y += 32;
-		for (m in 0...Window.monitorCount) {
+		for (m in 0...Window.getMonitorCount()) {
 			final monitorSize = Window.getMonitorSize(m);
 			final monitorPosition = Window.getMonitorPosition(m);
-			Text.draw('${m == Window.monitor ? ">" : " "} monitor $m "${Window.getMonitorName(m)}": '
+			Text.draw('${m == Window.getMonitor() ? ">" : " "} monitor $m "${Window.getMonitorName(m)}": '
 				+ '${Std.int(monitorSize.x)} x ${Std.int(monitorSize.y)} '
 				+ 'at (${Std.int(monitorPosition.x)}, ${Std.int(monitorPosition.y)})', 12, y, 16, Color.LIGHTGRAY);
 			y += 22;

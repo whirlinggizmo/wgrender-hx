@@ -4,12 +4,16 @@ package wgr;
 
 /** What `Event.on` hands back, for `Event.off` to take. A zero token never listened. **/
 abstract EventListener(Int) from Int to Int {
-	public var isNone(get, never):Bool;
+	/**
+		Whether this token never listened.
 
-	inline function get_isNone():Bool
+		`token == 0` is wrong on js for a field that was never assigned — `undefined`
+		is not `0` — so the comparison lives here rather than at each call site.
+	**/
+	public static inline function isNone(listener:EventListener):Bool
 		#if js
-		return this == null || this == 0;
+		return (listener : Int) == null || (listener : Int) == 0;
 		#else
-		return this == 0;
+		return (listener : Int) == 0;
 		#end
 }

@@ -41,7 +41,9 @@ Run.hx                `haxelib run wgrender-hx setup`
 tools/gen_raw.py      writes BOTH impl/Raw.*.hx whole, from wgrender's include/*.h
 tools/gen_keys.py     regenerates wgr.Key from wgrender's wgr_keys.h
 tools/coverage.py     what the binding reaches, and what wrapping next buys
-tools/setters.py      whether a refusal wgrender documents is repeated in these docs
+tools/refusals.py     every way a wgrender call can return false, read from the C
+                      with clang; --check fails if a documented refusal is not
+                      repeated in these docs
 tools/guestbuild.py   the host/guest build, shared by every example
 tools/compare.py      each example's size against wgrender's own C build of it
 tools/bench.mjs       frame cost, in a headless browser
@@ -238,7 +240,7 @@ wrapped after all, so a decision and a to-do stay distinguishable. It holds the 
 omissions the same way: six calls that take a C function pointer, which the guest ABI
 replaces there.
 
-`tools/setters.py` guards the other direction. wgrender's headers name every value a
+`tools/refusals.py --check` guards the other direction. wgrender's headers name every value a
 setter refuses, and this fails the build when one of those sentences is not repeated
 in the binding's docs — the link that broke once already, when a header's "capped at
 65536" was copied into a doc comment and the API shape followed the doc rather than

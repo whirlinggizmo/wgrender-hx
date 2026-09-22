@@ -178,7 +178,7 @@ class Project:
         self.check_library()
         self.run([LIB / 'tools/gen_raw.py', '--check', self.wgrender])
         self.run([LIB / 'tools/coverage.py', '--check', self.wgrender])
-        self.run([LIB / 'tools/setters.py', '--check', self.wgrender])
+        self.run([LIB / 'tools/refusals.py', '--check', self.wgrender])
 
     # ---------------------------------------------------------------- build ---
 

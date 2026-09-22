@@ -11,20 +11,20 @@ package wgr;
 	watch `Asset.getProgress` instead.
 **/
 abstract AssetTask(Handle) from Handle to Handle {
-	public var isNone(get, never):Bool;
-
 	@:to inline function toRaw():WgrHandle
 		return (this : Int);
 
-	inline function get_isNone():Bool
-		return (this : Handle).isNone;
+	/** Whether this refers to nothing; tolerates a field never assigned, on js. **/
+	public static inline function isNone(task:AssetTask):Bool
+		return (task : Handle).isNone;
 
 	/**
 		Attach callbacks. False, and no callback, if the task is invalid or the queue is
 		full. hxcpp only: it needs a C function pointer, which the guest ABI replaces.
 	**/
 	#if cpp
-	public inline function then(onSuccess:(path:String) -> Void, ?onFailure:(path:String) -> Void):Bool
-		return Asset.addTask(cast this, onSuccess, onFailure);
+	public static inline function then(task:AssetTask, onSuccess:(path:String) -> Void,
+			?onFailure:(path:String) -> Void):Bool
+		return Asset.addTask(cast task, onSuccess, onFailure);
 	#end
 }

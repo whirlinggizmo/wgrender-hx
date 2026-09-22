@@ -1,24 +1,29 @@
-// wgrender's materials example, as a Haxe guest: glTF metallic-roughness, in code.
+// examples/materials, rewritten against `wgr.flat` — the same scene, the flat way.
 //
-// A port of examples/materials.c.
+// Nothing about the scene changed. Every difference below is API shape, so the two
+// files can be diffed and the trial judged on readability, size and frame cost:
 //
-//   top row      dielectric spheres (metallic 0), roughness 0 to 1 left to right
-//   middle row   metal spheres (metallic 1), the same roughness steps
-//   bottom row   unlit, emissive, normal mapped, alpha blended, and the gumshoe with
-//                his body material replaced by gold -- on this model only
+//   m.roughness = 0.35            ->  Material.setRoughness(m, 0.35)
+//   sun.enabled = !sun.enabled    ->  Light.setEnabled(sun, !Light.isEnabled(sun))
+//   scene.activeCamera = camera   ->  Scene.setActiveCamera(scene, camera)
 //
-// Two things in here are the actual subject. One sphere mesh backs every sphere and
-// each model overrides the mesh's material, so the material belongs to the instance
-// rather than the geometry. And every material is assigned before the mesh has
-// finished loading, which works because a model holds the assignment and applies it
-// when the mesh arrives.
+// This example is deliberately NOT in examples/build.py's GUESTS, so a trial that goes
+// wrong cannot break the 32 that work. Build and drive it directly:
 //
-//   1 2  toggle the sun and the lamp
-//   ESC  quit
+//   cd examples/flat && ./build.py all && node ../../tools/drive.mjs --site=out/web
+//
+// `import wgr.flat.*` comes second so its nine names win over `wgr`'s for Material,
+// Model, Scene, Light, Shape3D, Camera3D, Mesh, Texture and SceneMember. Everything
+// else — Render, Text, Input, Color, Vec3, Handle, GuestAbi — is `wgr`'s and unchanged,
+// because those are already statics. That is worth noticing: most of wgrender-hx is
+// flat already, and this shape only ever touches the handle-bearing types.
+//
+// See src/wgr/flat/README.md for the rules being tested.
 import wgr.*;
+import wgr.flat.*;
 
 @:expose("WgrGuest")
-class MaterialsDemo {
+class FlatDemo {
 	static inline final SCREEN_WIDTH = 1000;
 	static inline final SCREEN_HEIGHT = 700;
 	static inline final SPHERE_PATH = "models/sphere/sphere.glb";
@@ -46,6 +51,9 @@ class MaterialsDemo {
 	static var lampMarker:Shape3D;
 	static var elapsed = 0.0;
 
+	/** Every refusal the flat API reports, so the return values are not decoration. **/
+	static var refusals = 0;
+
 	static function main():Void {
 		GuestAbi.autostart(start);
 	}
@@ -53,8 +61,22 @@ class MaterialsDemo {
 	public static function start(host:Dynamic):Bool {
 		GuestAbi.attach(host);
 		GuestAbi.register(onInit, (dt, _) -> onFrame(dt), onAsset);
-		return GuestAbi.start(SCREEN_WIDTH, SCREEN_HEIGHT, "materials (wgrender host, Haxe guest)",
-			Msaa4x | Resizable);
+		return GuestAbi.start(SCREEN_WIDTH, SCREEN_HEIGHT, "flat (wgrender host, Haxe guest)", Msaa4x | Resizable);
+	}
+
+	/**
+		The point of returning `Bool`: a refused call can be seen at the call site.
+
+		`wgr.Material`'s property setters cannot do this — Haxe makes `set_roughness`
+		return `Float`, so the `Bool` from `wgr_material_set_float` is dropped. Four
+		float properties and five texture properties drop it today.
+	**/
+	static inline function ok(result:Bool, what:String):Bool {
+		if (!result) {
+			refusals++;
+			Log.error('refused: $what'); // the C has already logged why
+		}
+		return result;
 	}
 
 	static function onInit():Void {
@@ -62,10 +84,10 @@ class MaterialsDemo {
 		background = Color.rgba(20, 22, 28, 255);
 
 		camera = Camera3D.create(Perspective);
-		Camera3D.setView(camera, new Vec3(0, 1.6, 7.5), new Vec3(0, 1.2, 0));
+		ok(Camera3D.setView(camera, new Vec3(0, 1.6, 7.5), new Vec3(0, 1.2, 0)), "camera view");
 		scene = Scene.create();
-		Scene.setActiveCamera(scene, camera);
-		Scene.setAmbient(scene, Color.WHITE, 0.12);
+		Scene.setActiveCamera(scene, camera); // one of the seven void setters
+		ok(Scene.setAmbient(scene, Color.WHITE, 0.12), "ambient");
 
 		addLights();
 		addRoughnessRows();
@@ -84,40 +106,40 @@ class MaterialsDemo {
 
 	static function addLights():Void {
 		sun = Light.create(Directional);
-		Light.setDirection(sun, new Vec3(-0.4, -0.7, -0.6));
-		Light.setColor(sun, Color.rgba(255, 244, 228, 255));
-		Light.setIntensity(sun, 3.0);
-		Scene.add(scene, sun);
+		ok(Light.setDirection(sun, new Vec3(-0.4, -0.7, -0.6)), "sun direction");
+		ok(Light.setColor(sun, Color.rgba(255, 244, 228, 255)), "sun colour");
+		ok(Light.setIntensity(sun, 3.0), "sun intensity");
+		ok(Scene.add(scene, sun), "add sun");
 
 		lamp = Light.create(Point);
-		Light.setColor(lamp, Color.rgba(120, 190, 255, 255));
-		Light.setIntensity(lamp, 8.0);
-		Light.setRange(lamp, 10.0);
-		Scene.add(scene, lamp);
+		ok(Light.setColor(lamp, Color.rgba(120, 190, 255, 255)), "lamp colour");
+		ok(Light.setIntensity(lamp, 8.0), "lamp intensity");
+		ok(Light.setRange(lamp, 10.0), "lamp range");
+		ok(Scene.add(scene, lamp), "add lamp");
 
 		// Shapes are unlit, so this shows the light's own colour.
 		lampMarker = Shape3D.create();
-		Shape3D.setSphere(lampMarker, 0.06);
-		Shape3D.setColor(lampMarker, Color.SKYBLUE);
-		Scene.add(scene, lampMarker);
+		ok(Shape3D.setSphere(lampMarker, 0.06), "lamp marker");
+		ok(Shape3D.setColor(lampMarker, Color.SKYBLUE), "lamp marker colour");
+		ok(Scene.add(scene, lampMarker), "add lamp marker");
 	}
 
 	/** Linear rgb, glTF's factor -- not an sRGB `Color`. **/
 	static function pbr(r:Float, g:Float, b:Float, metallic:Float, roughness:Float):Material {
 		final material = Material.create(Pbr);
-		Material.setBaseColor(material, r, g, b, 1.0);
-		Material.setMetallic(material, metallic);
-		Material.setRoughness(material, roughness);
+		ok(Material.setBaseColor(material, r, g, b, 1.0), "base colour");
+		ok(Material.setMetallic(material, metallic), "metallic");
+		ok(Material.setRoughness(material, roughness), "roughness");
 		return material;
 	}
 
 	/** Place a sphere and give it `material`; the model keeps its own reference. **/
 	static function sphere(x:Float, y:Float, material:Material):Model {
 		final model = Model.create(Handle.NONE); // the mesh is attached when it loads
-		Model.setTransform(model, new Vec3(x, y, 0));
-		Model.setMaterial(model, 0, material);
+		ok(Model.setTransform(model, new Vec3(x, y, 0)), "sphere transform");
+		ok(Model.setMaterial(model, 0, material), "sphere material");
 		Material.release(material);
-		Scene.add(scene, model);
+		ok(Scene.add(scene, model), "add sphere");
 		spheres.push(model);
 		return model;
 	}
@@ -134,38 +156,39 @@ class MaterialsDemo {
 	static function addBottomRow():Void {
 		// unlit: ignores the lights entirely
 		final unlit = Material.create(Unlit);
-		Material.setColor(unlit, "base_color", Color.SKYBLUE);
+		ok(Material.setColor(unlit, "base_color", Color.SKYBLUE), "unlit colour");
 		bottomRow.push(sphere(-2 * SPACING, 0.0, unlit));
 
 		// emissive: glows whatever the lighting does
 		final emissive = pbr(0.05, 0.05, 0.05, 0.0, 0.6);
-		Material.setEmissive(emissive, 1.0, 0.35, 0.05);
+		ok(Material.setEmissive(emissive, 1.0, 0.35, 0.05), "emissive");
 		bottomRow.push(sphere(-SPACING, 0.0, emissive));
 
 		// normal mapped: bevelled tiles, tangents generated at load
 		tiles = pbr(0.6, 0.6, 0.62, 0.0, 0.45);
-		Material.setNormalScale(tiles, 1.0);
+		ok(Material.setNormalScale(tiles, 1.0), "normal scale");
 		bottomRow.push(sphere(0.0, 0.0, tiles)); // releases our reference; the model keeps one
 
 		// alpha blended glass
 		final glass = pbr(0.3, 0.9, 0.5, 0.0, 0.1);
-		Material.setBaseColor(glass, 0.3, 0.9, 0.5, 0.35);
-		Material.setAlphaMode(glass, Blend, 0.5);
+		ok(Material.setBaseColor(glass, 0.3, 0.9, 0.5, 0.35), "glass colour");
+		ok(Material.setAlphaMode(glass, Blend, 0.5), "glass alpha mode");
 		bottomRow.push(sphere(SPACING, 0.0, glass));
 	}
 
 	static function addGumshoe():Void {
 		gumshoe = Model.create(Handle.NONE);
-		Model.setTransform(gumshoe, new Vec3(2 * SPACING, -0.55, 0), new Vec3(0, -0.6, 0), new Vec3(0.3, 0.3, 0.3));
-		Model.setAnimation(gumshoe, 3);
+		ok(Model.setTransform(gumshoe, new Vec3(2 * SPACING, -0.55, 0), new Vec3(0, -0.6, 0),
+			new Vec3(0.3, 0.3, 0.3)), "gumshoe transform");
+		ok(Model.setAnimation(gumshoe, 3), "gumshoe animation");
 		final gold = pbr(1.0, 0.77, 0.34, 1.0, 0.3);
-		Model.setMaterial(gumshoe, GUMSHOE_BODY_SLOT, gold);
+		ok(Model.setMaterial(gumshoe, GUMSHOE_BODY_SLOT, gold), "gumshoe body material");
 		Material.release(gold);
-		Scene.add(scene, gumshoe);
+		ok(Scene.add(scene, gumshoe), "add gumshoe");
 	}
 
-	static function onAsset(id:Int, path:String, ok:Bool):Void {
-		if (!ok) {
+	static function onAsset(id:Int, path:String, isOk:Bool):Void {
+		if (!isOk) {
 			Log.error('load failed: $path');
 			return;
 		}
@@ -173,17 +196,19 @@ class MaterialsDemo {
 			case ASSET_SPHERE:
 				final mesh = Mesh.create(path);
 				for (model in spheres)
-					Model.setMesh(model, mesh);
+					ok(Model.setMesh(model, mesh), "sphere mesh");
 				Mesh.release(mesh); // the models hold their own references
 
 			case ASSET_GUMSHOE:
 				final mesh = Mesh.create(path);
-				Model.setMesh(gumshoe, mesh);
+				ok(Model.setMesh(gumshoe, mesh), "gumshoe mesh");
 				Mesh.release(mesh);
 
 			case ASSET_NORMAL_MAP:
 				final texture = Texture.create(path);
-				Material.setNormalTexture(tiles, texture);
+				// The sharp API drops this Bool. This is the one line the trial exists
+				// to make visible.
+				ok(Material.setNormalTexture(tiles, texture), "normal texture");
 				Texture.release(texture); // the material holds its own reference
 		}
 	}
@@ -193,9 +218,9 @@ class MaterialsDemo {
 		if (keys.isPressed(Escape))
 			Wgr.requestQuit();
 		if (keys.isPressed(Digit1))
-			Light.setEnabled(sun, !Light.isEnabled(sun));
+			ok(Light.setEnabled(sun, !Light.isEnabled(sun)), "sun toggle");
 		if (keys.isPressed(Digit2))
-			Light.setEnabled(lamp, !Light.isEnabled(lamp));
+			ok(Light.setEnabled(lamp, !Light.isEnabled(lamp)), "lamp toggle");
 
 		elapsed += dt;
 		final lx = Math.cos(elapsed * 0.7) * 4.0;
@@ -213,11 +238,12 @@ class MaterialsDemo {
 		Render.begin();
 		Render.clearBackground(background);
 		Scene.draw(scene);
-		Text.draw("wgrender materials: metallic-roughness, unlit, emissive, normal map, blend", 12, 12, 16,
-			Color.RAYWHITE);
+		Text.draw("wgr.flat: the materials scene, written as statics taking the handle", 12, 12, 16, Color.RAYWHITE);
 		Text.draw('roughness 0 -> 1 (left to right)   rows: plastic, gold   '
-			+ '[1] sun ${Light.isEnabled(sun) ? "on" : "off"}  [2] lamp ${Light.isEnabled(lamp) ? "on" : "off"}', 12, 36, 16,
-			Color.LIGHTGRAY);
+			+ '[1] sun ${Light.isEnabled(sun) ? "on" : "off"}  [2] lamp ${Light.isEnabled(lamp) ? "on" : "off"}', 12,
+			36, 16, Color.LIGHTGRAY);
+		Text.draw('refused calls: $refusals   (the sharp API cannot report these)', 12, 60, 14,
+			refusals > 0 ? Color.GOLD : Color.LIGHTGRAY);
 		Render.end();
 	}
 }

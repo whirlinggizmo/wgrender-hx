@@ -4,34 +4,31 @@ package wgr;
 
 /** Loaded model geometry: reference counted, shared. **/
 abstract Mesh(Handle) from Handle to Handle {
-	public var isNone(get, never):Bool;
-
 	@:to inline function toRaw():WgrHandle
 		return (this : Int);
 
-	inline function get_isNone():Bool
-		return (this : Handle).isNone;
-
-	/** One slot per glTF material. **/
-	public var materialCount(get, never):Int;
+	/** Whether this refers to nothing; tolerates a field never assigned, on js. **/
+	public static inline function isNone(mesh:Mesh):Bool
+		return (mesh : Handle).isNone;
 
 	public static inline function create(path:String):Mesh
 		return (Raw.wgr_mesh_create(path) : Handle);
 
-	inline function get_materialCount():Int
-		return Raw.wgr_mesh_get_material_count(this);
+	/** One slot per glTF material. **/
+	public static inline function getMaterialCount(mesh:Mesh):Int
+		return Raw.wgr_mesh_get_material_count(mesh);
 
 	/**
 		The material in `slot`, borrowed: it stays valid while the mesh lives, and
 		changing it changes every model using the mesh. To change one model, give that
 		model an override with `Model.setMaterial`.
 	**/
-	public inline function getMaterial(slot:Int):Material
-		return (Raw.wgr_mesh_get_material(this, slot) : Handle);
+	public static inline function getMaterial(mesh:Mesh, slot:Int):Material
+		return (Raw.wgr_mesh_get_material(mesh, slot) : Handle);
 
 	/** Drop this reference; the data goes when the last one does. **/
-	public inline function release():Void
-		Raw.wgr_mesh_release(this);
+	public static inline function release(mesh:Mesh):Void
+		Raw.wgr_mesh_release(mesh);
 
 	// --- generated meshes ---------------------------------------------------
 	//

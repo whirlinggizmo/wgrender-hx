@@ -45,17 +45,17 @@ class Instancing {
 	static function onInit():Void {
 		Asset.setHost(Assets.defaultBase());
 		target = new Vec3(0, 1.0, 0);
-		camera = new Camera3D(Perspective);
-		scene = new Scene();
-		scene.activeCamera = camera;
+		camera = Camera3D.create(Perspective);
+		scene = Scene.create();
+		Scene.setActiveCamera(scene, camera);
 
-		final sun = new Light(Directional);
-		sun.direction = new Vec3(-0.5, -1.0, -0.4);
-		sun.intensity = 3.0;
-		sun.shadowDistance = 60.0;
-		sun.castsShadows = true; // the depth pass batches the same way
-		scene.add(sun);
-		scene.setAmbient(Color.rgba(160, 180, 220, 255), 0.35);
+		final sun = Light.create(Directional);
+		Light.setDirection(sun, new Vec3(-0.5, -1.0, -0.4));
+		Light.setIntensity(sun, 3.0);
+		Light.setShadowDistance(sun, 60.0);
+		Light.setCastsShadows(sun, true); // the depth pass batches the same way
+		Scene.add(scene, sun);
+		Scene.setAmbient(scene, Color.rgba(160, 180, 220, 255), 0.35);
 		Debug.enableFps(12, 10, 16);
 
 		addFloor();
@@ -66,15 +66,15 @@ class Instancing {
 	/** Something for the shadows to land on. **/
 	static function addFloor():Void {
 		final mesh = Mesh.plane(60.0, 60.0, 0);
-		final material = new Material(Pbr);
-		material.setBaseColor(0.45, 0.47, 0.5, 1.0);
-		material.roughness = 0.9;
-		final floor = new Model(mesh);
-		floor.setMaterial(-1, material);
-		floor.setTransform(new Vec3(0, -0.6, 0));
-		scene.add(floor);
-		mesh.release();
-		material.release();
+		final material = Material.create(Pbr);
+		Material.setBaseColor(material, 0.45, 0.47, 0.5, 1.0);
+		Material.setRoughness(material, 0.9);
+		final floor = Model.create(mesh);
+		Model.setMaterial(floor, -1, material);
+		Model.setTransform(floor, new Vec3(0, -0.6, 0));
+		Scene.add(scene, floor);
+		Mesh.release(mesh);
+		Material.release(material);
 	}
 
 	static function fieldTint(i:Int, alpha:Int):Color {
@@ -86,12 +86,12 @@ class Instancing {
 	static function addField():Void {
 		// One mesh and one material for the lot; only the transform and tint differ.
 		final cube = Mesh.cube(0.6, 0.6, 0.6);
-		sharedMaterial = new Material(Pbr);
-		sharedMaterial.roughness = 0.5;
+		sharedMaterial = Material.create(Pbr);
+		Material.setRoughness(sharedMaterial, 0.5);
 		for (i in 0...FIELD_COUNT) {
-			final model = new Model(cube);
-			model.tint = fieldTint(i, 255);
-			scene.add(model);
+			final model = Model.create(cube);
+			Model.setTint(model, fieldTint(i, 255));
+			Scene.add(scene, model);
 			cubes.push(model);
 		}
 		setMaterials(false);
@@ -99,23 +99,23 @@ class Instancing {
 		// See-through copies of the same cube: same mesh, same material, alpha in the
 		// tint, and they keep their back-to-front order rather than joining the batch.
 		for (i in 0...GLASS) {
-			final glass = new Model(cube);
-			glass.setMaterial(-1, sharedMaterial);
-			glass.tint = Color.rgba(255, 255, 255, 110);
-			glass.setTransform(new Vec3(i * 2.0 - 4.0, 5.2, 5.0), null, new Vec3(2, 2, 2));
-			scene.add(glass);
+			final glass = Model.create(cube);
+			Model.setMaterial(glass, -1, sharedMaterial);
+			Model.setTint(glass, Color.rgba(255, 255, 255, 110));
+			Model.setTransform(glass, new Vec3(i * 2.0 - 4.0, 5.2, 5.0), null, new Vec3(2, 2, 2));
+			Scene.add(scene, glass);
 		}
-		cube.release();
+		Mesh.release(cube);
 	}
 
 	/** Six walkers sharing one skinned mesh, each at its own point in the walk. **/
 	static function addWalkers():Void {
 		for (i in 0...WALKERS) {
-			final walker = new Model(Handle.NONE);
-			walker.setTransform(new Vec3(i * 2.4 - 6.0, 0.0, -2.0), new Vec3(0, Math.PI, 0));
-			walker.animation = 3;
-			walker.animationLoop = true;
-			scene.add(walker);
+			final walker = Model.create(Handle.NONE);
+			Model.setTransform(walker, new Vec3(i * 2.4 - 6.0, 0.0, -2.0), new Vec3(0, Math.PI, 0));
+			Model.setAnimation(walker, 3);
+			Model.setAnimationLoop(walker, true);
+			Scene.add(scene, walker);
 			walkers.push(walker);
 			// One load per walker, as the C does: the id is the index, where the C
 			// passes the handle through the callback's void *.
@@ -134,20 +134,20 @@ class Instancing {
 			return;
 		final walker = walkers[id - 1];
 		final mesh = Mesh.create(path); // the same resource for every walker
-		walker.setMesh(mesh);
-		mesh.release();
+		Model.setMesh(walker, mesh);
+		Mesh.release(mesh);
 	}
 
 	/** One material for every cube, or one each: the same picture, batched or not. **/
 	static function setMaterials(own:Bool):Void {
 		for (cube in cubes) {
 			if (own) {
-				final material = new Material(Pbr);
-				material.roughness = 0.5;
-				cube.setMaterial(-1, material);
-				material.release(); // the model keeps its reference
+				final material = Material.create(Pbr);
+				Material.setRoughness(material, 0.5);
+				Model.setMaterial(cube, -1, material);
+				Material.release(material); // the model keeps its reference
 			} else {
-				cube.setMaterial(-1, sharedMaterial);
+				Model.setMaterial(cube, -1, sharedMaterial);
 			}
 		}
 		ownMaterials = own;
@@ -155,22 +155,22 @@ class Instancing {
 
 	static function onFrame(dt:Float):Void {
 		final t = Wgr.getTime();
-		camera.setView(new Vec3(Math.sin(t * 0.15) * 22.0, 12.0, Math.cos(t * 0.15) * 22.0), target);
+		Camera3D.setView(camera, new Vec3(Math.sin(t * 0.15) * 22.0, 12.0, Math.cos(t * 0.15) * 22.0), target);
 
 		for (i in 0...FIELD_COUNT) {
 			final x = ((i % FIELD_SIDE) - FIELD_SIDE * 0.5 + 0.5) * 1.5;
 			final z = (Std.int(i / FIELD_SIDE) - FIELD_SIDE * 0.5 + 0.5) * 1.5;
 			final wave = Math.sin(t * 1.5 + x * 0.6 + z * 0.4);
 			// Well clear of the floor, so every cube throws its own shadow onto it.
-			cubes[i].setTransform(new Vec3(x, 2.4 + wave * 0.5, z), new Vec3(0, t * 0.3 + i, 0));
+			Model.setTransform(cubes[i], new Vec3(x, 2.4 + wave * 0.5, z), new Vec3(0, t * 0.3 + i, 0));
 		}
 		// The same walk, out of step: a shared mesh, but each its own pose.
 		for (i in 0...WALKERS)
-			walkers[i].animationTime = t + i * 0.35;
+			Model.setAnimationTime(walkers[i], t + i * 0.35);
 
 		Render.begin();
 		Render.clearBackground(Color.rgba(28, 30, 38, 255));
-		scene.draw();
+		Scene.draw(scene);
 		Text.draw("wgrender instancing: models that share a mesh and a material go up as one draw", 12, 36, 20,
 			Color.RAYWHITE);
 		Text.draw('$FIELD_COUNT cubes, ${ownMaterials ? "a material each (one draw each)" : "one material (one draw)"}'

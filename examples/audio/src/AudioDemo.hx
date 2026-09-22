@@ -64,36 +64,36 @@ class AudioDemo {
 			return;
 		}
 		final audio = Audio.create(path);
-		final sound = new Sound(audio);
-		audio.release(); // the sound holds its own reference
+		final sound = Sound.create(audio);
+		Audio.release(audio); // the sound holds its own reference
 		switch id {
 			case ASSET_MUSIC:
 				music = sound;
-				music.volume = 0.5;
-				music.loop = true; // "music" is just a looping sound
-				music.play();
+				Sound.setVolume(music, 0.5);
+				Sound.setLoop(music, true); // "music" is just a looping sound
+				Sound.play(music);
 				musicOn = true;
 
 			case ASSET_CLICK:
 				click = sound;
-				click.volume = 1.0;
+				Sound.setVolume(click, 1.0);
 		}
 	}
 
 	static function handleKeys():Void {
 		final keys = Input.getKeyboardState();
 
-		if (keys.isPressed(Space) && !click.isNone)
-			click.play();
+		if (keys.isPressed(Space) && !Sound.isNone(click))
+			Sound.play(click);
 		if (keys.isPressed(S)) {
 			final until = Wgr.getTime() + STALL; // a deliberately slow frame
 			while (Wgr.getTime() < until) {}
 		}
-		if (keys.isPressed(M) && !music.isNone) {
+		if (keys.isPressed(M) && !Sound.isNone(music)) {
 			if (musicOn)
-				music.pause();
+				Sound.pause(music);
 			else
-				music.resume();
+				Sound.resume(music);
 			musicOn = !musicOn;
 		}
 		if (keys.isPressed(Escape))
@@ -106,9 +106,9 @@ class AudioDemo {
 		Render.begin();
 		Render.clearBackground(background);
 		Text.draw("wgrender + sokol_audio (Haxe guest)", 24, 30, 28, Color.RAYWHITE);
-		Text.draw(music.isNone ? "music: loading..."
+		Text.draw(Sound.isNone(music) ? "music: loading..."
 			: (musicOn ? "music: playing (mp3, streamed, looping)" : "music: paused"), 24, 80, 18, Color.SKYBLUE);
-		Text.draw(click.isNone ? "click: loading..." : "click: ready (ogg)", 24, 110, 18, Color.LIME);
+		Text.draw(Sound.isNone(click) ? "click: loading..." : "click: ready (ogg)", 24, 110, 18, Color.LIME);
 		Text.draw("[SPACE] play click   [M] toggle music   [S] stall 300 ms   [ESC] quit", 24, 150, 16,
 			Color.LIGHTGRAY);
 		Text.drawFps(24, 12);

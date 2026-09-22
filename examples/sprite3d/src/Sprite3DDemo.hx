@@ -2,7 +2,7 @@
 //
 // A port of examples/sprite3d.c, and the shortest statement of wgrender's resource
 // rule: the asset op hands back a local path, `Texture.create` makes the resource,
-// `new Sprite3D(texture)` makes the object, and the texture is released because the
+// `Sprite3D.create(texture)` makes the object, and the texture is released because the
 // object now holds its own reference. Nothing here is a Haxe idiom -- it is the C flow
 // with the casts gone.
 //
@@ -49,17 +49,17 @@ class Sprite3DDemo {
 		target = new Vec3(0, 2.5, 0);
 		up = new Vec3(0, 1, 0);
 
-		camera = new Camera3D(Perspective);
-		camera.setView(new Vec3(12, 7, 12), target, up);
-		scene = new Scene();
-		scene.activeCamera = camera;
+		camera = Camera3D.create(Perspective);
+		Camera3D.setView(camera, new Vec3(12, 7, 12), target, up);
+		scene = Scene.create();
+		Scene.setActiveCamera(scene, camera);
 
 		// a pedestal, for somewhere to sit above and something to judge depth by
-		final pedestal = new Shape3D();
-		pedestal.setCube(new Vec3(3.0, 0.5, 3.0));
-		pedestal.setTransform(new Vec3(0, 0.25, 0));
-		pedestal.color = Color.DARKGRAY;
-		scene.add(pedestal);
+		final pedestal = Shape3D.create();
+		Shape3D.setCube(pedestal, new Vec3(3.0, 0.5, 3.0));
+		Shape3D.setTransform(pedestal, new Vec3(0, 0.25, 0));
+		Shape3D.setColor(pedestal, Color.DARKGRAY);
+		Scene.add(scene, pedestal);
 
 		if (!GuestAbi.loadAsset(LOGO_PATH, ASSET_LOGO))
 			Log.error('failed to queue asset: $LOGO_PATH');
@@ -74,24 +74,24 @@ class Sprite3DDemo {
 		if (id != ASSET_LOGO)
 			return;
 		final texture = Texture.create(path);
-		sprite = new Sprite3D(texture);
-		texture.release(); // the sprite holds its own reference
-		if (sprite.isNone)
+		sprite = Sprite3D.create(texture);
+		Texture.release(texture); // the sprite holds its own reference
+		if (Sprite3D.isNone(sprite))
 			return;
-		sprite.size = 6.0;
-		sprite.facing = Camera;
-		sprite.tint = Color.WHITE;
-		scene.add(sprite);
+		Sprite3D.setSize(sprite, 6.0);
+		Sprite3D.setFacing(sprite, Camera);
+		Sprite3D.setTint(sprite, Color.WHITE);
+		Scene.add(scene, sprite);
 	}
 
 	static function onFrame(dt:Float):Void {
 		final t = Wgr.getTime();
 
-		camera.setView(new Vec3(Math.cos(t * ORBIT_SPEED) * ORBIT_RADIUS, 7.0,
+		Camera3D.setView(camera, new Vec3(Math.cos(t * ORBIT_SPEED) * ORBIT_RADIUS, 7.0,
 			Math.sin(t * ORBIT_SPEED) * ORBIT_RADIUS), target, up);
 
-		if (!sprite.isNone)
-			sprite.setTransform(new Vec3(0, BOB_CENTRE + Math.sin(t * BOB_SPEED) * BOB_HEIGHT, 0));
+		if (!Sprite3D.isNone(sprite))
+			Sprite3D.setTransform(sprite, new Vec3(0, BOB_CENTRE + Math.sin(t * BOB_SPEED) * BOB_HEIGHT, 0));
 
 		Render.begin();
 		Render.clearBackground(background);
@@ -100,10 +100,10 @@ class Sprite3DDemo {
 		Shape3D.drawGrid(20, 1.0, Color.DARKGRAY);
 		Render.endMode3D();
 
-		scene.draw();
+		Scene.draw(scene);
 
 		Text.draw("wgrender + sokol — sprite3d (Haxe guest)", 12, 36, 24, Color.RAYWHITE);
-		Text.draw(sprite.isNone ? "loading logo..." : "logo: load -> Texture.create -> new Sprite3D", 12, 70, 16,
+		Text.draw(Sprite3D.isNone(sprite) ? "loading logo..." : "logo: load -> Texture.create -> new Sprite3D", 12, 70, 16,
 			Color.LIGHTGRAY);
 
 		Render.end();

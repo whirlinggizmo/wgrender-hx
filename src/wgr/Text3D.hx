@@ -9,110 +9,78 @@ package wgr;
 	scale.
 **/
 abstract Text3D(Handle) from Handle to Handle {
-	public var isNone(get, never):Bool;
-	public var font(never, set):Font;
-	public var text(never, set):String;
-
-	/** Line height in world units (default 1), descender to ascender. **/
-	public var size(never, set):Float;
-
-	public var color(never, set):Color;
-
-	/** Wrap to this many world units, between words; 0 is off (the default). **/
-	public var maxWidth(never, set):Float;
-
-	public var facing(never, set):SpriteFacing;
-	public var visible(get, set):Bool;
-
-	/** Whether a pick can hit it. Default: pickable. **/
-	public var pickable(get, set):Bool;
-
-	/** Disabled: still drawn, picked and blocking the pointer, but it doesn't react. **/
-	public var enabled(get, set):Bool;
-
 	@:to inline function toRaw():WgrHandle
 		return (this : Int);
 
-	inline function get_isNone():Bool
-		return (this : Handle).isNone;
+	/** Whether this refers to nothing; tolerates a field never assigned, on js. **/
+	public static inline function isNone(text3D:Text3D):Bool
+		return (text3D : Handle).isNone;
 
 	/** `Handle.NONE` for the default font; attach a real one later with `font`. **/
-	public inline function new(font:Font)
-		this = (Raw.wgr_text3d_create(font) : Handle);
+	public static inline function create(font:Font):Text3D
+		return (Raw.wgr_text3d_create(font) : Handle);
 
-	inline function set_font(v:Font):Font {
-		Raw.wgr_text3d_set_font(this, v);
-		return v;
-	}
+	public static inline function setFont(text3D:Text3D, value:Font):Bool
+		return Raw.wgr_text3d_set_font(text3D, value);
 
-	inline function set_text(v:String):String {
-		Raw.wgr_text3d_set_text(this, v); // wgrender copies it
-		return v;
-	}
+	public static inline function setText(text3D:Text3D, value:String):Bool
+		return Raw.wgr_text3d_set_text(text3D, value); // wgrender copies it;
 
-	inline function set_size(v:Float):Float {
-		Raw.wgr_text3d_set_size(this, v);
-		return v;
-	}
+	/** Line height in world units (default 1), descender to ascender. **/
+	public static inline function setSize(text3D:Text3D, value:Float):Bool
+		return Raw.wgr_text3d_set_size(text3D, value);
 
-	inline function set_color(v:Color):Color {
-		Raw.wgr_text3d_set_color(this, v);
-		return v;
-	}
+	public static inline function setColor(text3D:Text3D, value:Color):Bool
+		return Raw.wgr_text3d_set_color(text3D, value);
 
-	inline function set_maxWidth(v:Float):Float {
-		Raw.wgr_text3d_set_max_width(this, v);
-		return v;
-	}
+	/** Wrap to this many world units, between words; 0 is off (the default). **/
+	public static inline function setMaxWidth(text3D:Text3D, value:Float):Bool
+		return Raw.wgr_text3d_set_max_width(text3D, value);
 
-	inline function set_facing(v:SpriteFacing):SpriteFacing {
-		Raw.wgr_text3d_set_facing(this, v);
-		return v;
-	}
+	public static inline function setFacing(text3D:Text3D, value:SpriteFacing):Bool
+		return Raw.wgr_text3d_set_facing(text3D, value);
 
-	inline function get_visible():Bool
-		return Raw.wgr_text3d_is_visible(this);
+	public static inline function isVisible(text3D:Text3D):Bool
+		return Raw.wgr_text3d_is_visible(text3D);
 
-	inline function set_visible(v:Bool):Bool {
-		Raw.wgr_text3d_set_visible(this, v);
-		return v;
-	}
+	public static inline function setVisible(text3D:Text3D, value:Bool):Bool
+		return Raw.wgr_text3d_set_visible(text3D, value);
 
-	inline function get_pickable():Bool
-		return Raw.wgr_text3d_is_pickable(this);
+	/** Whether a pick can hit it. Default: pickable. **/
+	public static inline function isPickable(text3D:Text3D):Bool
+		return Raw.wgr_text3d_is_pickable(text3D);
 
-	inline function set_pickable(v:Bool):Bool {
-		Raw.wgr_text3d_set_pickable(this, v);
-		return v;
-	}
+	/** Whether a pick can hit it. Default: pickable. **/
+	public static inline function setPickable(text3D:Text3D, value:Bool):Bool
+		return Raw.wgr_text3d_set_pickable(text3D, value);
 
-	inline function get_enabled():Bool
-		return Raw.wgr_text3d_is_enabled(this);
+	/** Disabled: still drawn, picked and blocking the pointer, but it doesn't react. **/
+	public static inline function isEnabled(text3D:Text3D):Bool
+		return Raw.wgr_text3d_is_enabled(text3D);
 
-	inline function set_enabled(v:Bool):Bool {
-		Raw.wgr_text3d_set_enabled(this, v);
-		return v;
-	}
+	/** Disabled: still drawn, picked and blocking the pointer, but it doesn't react. **/
+	public static inline function setEnabled(text3D:Text3D, value:Bool):Bool
+		return Raw.wgr_text3d_set_enabled(text3D, value);
 
 	/** Default: centred both ways, so the position is the middle of the block. **/
-	public inline function setAlign(horizontal:AlignX, vertical:AlignY):Bool
-		return Raw.wgr_text3d_set_align(this, horizontal, vertical);
+	public static inline function setAlign(text3D:Text3D, horizontal:AlignX, vertical:AlignY):Bool
+		return Raw.wgr_text3d_set_align(text3D, horizontal, vertical);
 
 	/** `rotation` in radians. No scale: `size` is the scale. **/
-	public inline function setTransform(position:Vec3, ?rotation:Vec3):Bool {
+	public static inline function setTransform(text3D:Text3D, position:Vec3, ?rotation:Vec3):Bool {
 		final r = rotation != null ? rotation : Transform.NO_ROTATION;
-		return Raw.wgr_text3d_set_transform(this, position.x, position.y, position.z, r.x, r.y, r.z);
+		return Raw.wgr_text3d_set_transform(text3D, position.x, position.y, position.z, r.x, r.y, r.z);
 	}
 
 	/** World-space width and height of the current text; (0, 0) until the font loads. **/
-	public inline function measure():Vec2
-		return Vec2.of(Raw.wgr_text3d_get_size(this));
+	public static inline function measure(text3D:Text3D):Vec2
+		return Vec2.of(Raw.wgr_text3d_get_size(text3D));
 
 	/** Draw it now, inside 3D mode; a scene draws its members itself. **/
-	public inline function draw():Void
-		Raw.wgr_text3d_draw(this);
+	public static inline function draw(text3D:Text3D):Void
+		Raw.wgr_text3d_draw(text3D);
 
 	/** Also takes it out of every scene it's in. **/
-	public inline function destroy():Void
-		Raw.wgr_text3d_destroy(this);
+	public static inline function destroy(text3D:Text3D):Void
+		Raw.wgr_text3d_destroy(text3D);
 }

@@ -3,8 +3,22 @@ package wgr;
 // wgr_scene.h — what is drawn, and picking against it
 
 abstract Scene(Handle) from Handle to Handle {
-	public var isNone(get, never):Bool;
-	public var activeCamera(never, set):Camera3D;
+	@:to inline function toRaw():WgrHandle
+		return (this : Int);
+
+	/** Whether this refers to nothing; tolerates a field never assigned, on js. **/
+	public static inline function isNone(scene:Scene):Bool
+		return (scene : Handle).isNone;
+
+	public static inline function create():Scene
+		return (Raw.wgr_scene_create() : Handle);
+
+	/**
+		One of the seven wgrender setters that return nothing, so this returns nothing
+		either rather than inventing a `true`.
+	**/
+	public static inline function setActiveCamera(scene:Scene, camera:Camera3D):Void
+		Raw.wgr_scene_set_active_camera(scene, camera);
 
 	/**
 		Whether the scene tracks the pointer. An interactive scene picks under the
@@ -12,7 +26,17 @@ abstract Scene(Handle) from Handle to Handle {
 		last drawn, and keeps hover and press per member: 2D members first (topmost),
 		then the nearest 3D one. Changing this resets that state. Default: off.
 	**/
-	public var interactive(get, set):Bool;
+	public static inline function isInteractive(scene:Scene):Bool
+		return Raw.wgr_scene_is_interactive(scene);
+
+	/**
+		Whether the scene tracks the pointer. An interactive scene picks under the
+		pointer once per frame, before the frame's ticks, against where its members were
+		last drawn, and keeps hover and press per member: 2D members first (topmost),
+		then the nearest 3D one. Changing this resets that state. Default: off.
+	**/
+	public static inline function setInteractive(scene:Scene, value:Bool):Bool
+		return Raw.wgr_scene_set_interactive(scene, value);
 
 	/**
 		Skip members the camera can't see, on by default. Each member's bounds are
@@ -20,58 +44,36 @@ abstract Scene(Handle) from Handle to Handle {
 		drawing it. Turn it off to see everything submitted — when checking whether a
 		drawable's bounds are right. Members without bounds (2D ones) are never culled.
 	**/
-	public var culling(get, set):Bool;
+	public static inline function isCulling(scene:Scene):Bool
+		return Raw.wgr_scene_is_culling(scene);
+
+	/**
+		Skip members the camera can't see, on by default. Each member's bounds are
+		tested against the view before it is submitted, which is far cheaper than
+		drawing it. Turn it off to see everything submitted — when checking whether a
+		drawable's bounds are right. Members without bounds (2D ones) are never culled.
+	**/
+	public static inline function setCulling(scene:Scene, value:Bool):Bool
+		return Raw.wgr_scene_set_culling(scene, value);
 
 	/** The topmost member under the pointer, enabled or not; none if there isn't one. **/
-	public var hovered(get, never):SceneMember;
+	public static inline function getHovered(scene:Scene):SceneMember
+		return SceneMember.of(Raw.wgr_scene_get_hovered(scene));
 
-	@:to inline function toRaw():WgrHandle
-		return (this : Int);
-
-	inline function get_isNone():Bool
-		return (this : Handle).isNone;
-
-	public inline function new()
-		this = (Raw.wgr_scene_create() : Handle);
-
-	inline function set_activeCamera(v:Camera3D):Camera3D {
-		Raw.wgr_scene_set_active_camera(this, v);
-		return v;
-	}
-
-	inline function get_interactive():Bool
-		return Raw.wgr_scene_is_interactive(this);
-
-	inline function set_interactive(v:Bool):Bool {
-		Raw.wgr_scene_set_interactive(this, v);
-		return v;
-	}
-
-	inline function get_culling():Bool
-		return Raw.wgr_scene_is_culling(this);
-
-	inline function set_culling(v:Bool):Bool {
-		Raw.wgr_scene_set_culling(this, v);
-		return v;
-	}
-
-	inline function get_hovered():SceneMember
-		return SceneMember.of(Raw.wgr_scene_get_hovered(this));
-
-	public inline function add(member:SceneMember, layer:Int = 0):Bool
-		return Raw.wgr_scene_add(this, member, layer);
+	public static inline function add(scene:Scene, member:SceneMember, layer:Int = 0):Bool
+		return Raw.wgr_scene_add(scene, member, layer);
 
 	/** Move a member to another layer. **/
-	public inline function setLayer(member:SceneMember, layer:Int):Bool
-		return Raw.wgr_scene_set_layer(this, member, layer);
+	public static inline function setLayer(scene:Scene, member:SceneMember, layer:Int):Bool
+		return Raw.wgr_scene_set_layer(scene, member, layer);
 
 	/** Take it out; it keeps existing, and so does anything else holding it. **/
-	public inline function remove(member:SceneMember):Bool
-		return Raw.wgr_scene_remove(this, member);
+	public static inline function remove(scene:Scene, member:SceneMember):Bool
+		return Raw.wgr_scene_remove(scene, member);
 
 	/** Take every member out. The members themselves are untouched. **/
-	public inline function clear():Void
-		Raw.wgr_scene_clear(this);
+	public static inline function clear(scene:Scene):Void
+		Raw.wgr_scene_clear(scene);
 
 	/**
 		Clip one layer's 2D members to a screen rectangle: what falls outside isn't
@@ -80,11 +82,11 @@ abstract Scene(Handle) from Handle to Handle {
 		never clipped. The rectangles belong to the scene, so they outlive `clear`; at
 		most 8 layers per scene.
 	**/
-	public inline function setClip(layer:Int, x:Float, y:Float, width:Float, height:Float):Bool
-		return Raw.wgr_scene_set_clip(this, layer, x, y, width, height);
+	public static inline function setClip(scene:Scene, layer:Int, x:Float, y:Float, width:Float, height:Float):Bool
+		return Raw.wgr_scene_set_clip(scene, layer, x, y, width, height);
 
-	public inline function setAmbient(color:Color, intensity:Float):Bool
-		return Raw.wgr_scene_set_ambient(this, color, intensity);
+	public static inline function setAmbient(scene:Scene, color:Color, intensity:Float):Bool
+		return Raw.wgr_scene_set_ambient(scene, color, intensity);
 
 	/**
 		Image-based lighting: reflections and diffuse light from `environment`, on top
@@ -92,53 +94,53 @@ abstract Scene(Handle) from Handle to Handle {
 		as authored) and `rotation` (radians) turns it around the world up axis. A none
 		handle removes it. The scene holds its own reference.
 	**/
-	public inline function setEnvironment(environment:Environment, intensity:Float = 1, rotation:Float = 0):Bool
-		return Raw.wgr_scene_set_environment(this, environment, intensity, rotation);
+	public static inline function setEnvironment(scene:Scene, environment:Environment, intensity:Float = 1, rotation:Float = 0):Bool
+		return Raw.wgr_scene_set_environment(scene, environment, intensity, rotation);
 
 	/**
 		Draw `environment` behind everything (a skybox), with the scene's environment
 		intensity and rotation when it is the same environment, else plain. `blur` runs
 		0 (sharp) to 1 (fully blurred). A none handle removes it.
 	**/
-	public inline function setBackground(environment:Environment, blur:Float = 0):Bool
-		return Raw.wgr_scene_set_background(this, environment, blur);
+	public static inline function setBackground(scene:Scene, environment:Environment, blur:Float = 0):Bool
+		return Raw.wgr_scene_set_background(scene, environment, blur);
 
 	/** `exposure` is in stops: +1 doubles the brightness. Default: `Neutral`, 0. **/
-	public inline function setTonemap(tonemap:Tonemap, exposure:Float = 0):Bool
-		return Raw.wgr_scene_set_tonemap(this, tonemap, exposure);
+	public static inline function setTonemap(scene:Scene, tonemap:Tonemap, exposure:Float = 0):Bool
+		return Raw.wgr_scene_set_tonemap(scene, tonemap, exposure);
 
-	public inline function draw():Void
-		Raw.wgr_scene_draw(this);
+	public static inline function draw(scene:Scene):Void
+		Raw.wgr_scene_draw(scene);
 
 	/**
 		Whether the pointer is over `member`: `Pressed` when it came over it, `Down`
 		while it is, `Released` when it left. Needs `interactive`.
 	**/
-	public inline function getHover(member:SceneMember):ButtonState
-		return Raw.wgr_scene_get_hover(this, member);
+	public static inline function getHover(scene:Scene, member:SceneMember):ButtonState
+		return Raw.wgr_scene_get_hover(scene, member);
 
 	/**
 		The primary button, for a press that started on `member`: `Pressed` when it went
 		down, `Down` while held — including after the pointer moved off — and `Released`
 		when let go. Needs `interactive`.
 	**/
-	public inline function getPress(member:SceneMember):ButtonState
-		return Raw.wgr_scene_get_press(this, member);
+	public static inline function getPress(scene:Scene, member:SceneMember):ButtonState
+		return Raw.wgr_scene_get_press(scene, member);
 
 	/** Released while still over the member it was pressed on. Needs `interactive`. **/
-	public inline function isClicked(member:SceneMember):Bool
-		return Raw.wgr_scene_is_clicked(this, member);
+	public static inline function isClicked(scene:Scene, member:SceneMember):Bool
+		return Raw.wgr_scene_is_clicked(scene, member);
 
 	/**
 		What is under (`x`, `y`) in screen space. A none `camera` uses the scene's
 		active one. Compare the result with typed handles: `pick.handle == model`.
 	**/
-	public inline function pick(x:Float, y:Float, ?camera:Camera3D):PickResult
-		return Scene.toPickResult(Raw.wgr_scene_pick(this, camera == null ? 0 : (camera : Handle), x, y));
+	public static inline function pick(scene:Scene, x:Float, y:Float, ?camera:Camera3D):PickResult
+		return Scene.toPickResult(Raw.wgr_scene_pick(scene, camera == null ? 0 : (camera : Handle), x, y));
 
 	/** A scene doesn't own its members; destroying it leaves them alone. **/
-	public inline function destroy():Void
-		Raw.wgr_scene_destroy(this);
+	public static inline function destroy(scene:Scene):Void
+		Raw.wgr_scene_destroy(scene);
 
 	@:allow(wgr)
 	static function toPickResult(r:#if cpp CPickResult #else PickResult #end):PickResult {

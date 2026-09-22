@@ -15,104 +15,72 @@ package wgr;
 	to the font.
 **/
 abstract Text2D(Handle) from Handle to Handle {
-	public var isNone(get, never):Bool;
-	public var font(never, set):Font;
-	public var text(never, set):String;
-	public var position(never, set):Vec2;
-
-	/** Pixel height of one line. **/
-	public var size(never, set):Float;
-
-	public var color(never, set):Color;
-
-	/** Wrap to this many logical pixels, between words; 0 is off (the default). **/
-	public var maxWidth(never, set):Float;
-
-	public var visible(get, set):Bool;
-
-	/** Whether a pick can hit it. Default: pickable. **/
-	public var pickable(get, set):Bool;
-
-	/** Disabled: still drawn, picked and blocking the pointer, but it doesn't react. **/
-	public var enabled(get, set):Bool;
-
 	@:to inline function toRaw():WgrHandle
 		return (this : Int);
 
-	inline function get_isNone():Bool
-		return (this : Handle).isNone;
+	/** Whether this refers to nothing; tolerates a field never assigned, on js. **/
+	public static inline function isNone(text2D:Text2D):Bool
+		return (text2D : Handle).isNone;
 
 	/** `Handle.NONE` for the default font; attach a real one later with `font`. **/
-	public inline function new(font:Font)
-		this = (Raw.wgr_text2d_create(font) : Handle);
+	public static inline function create(font:Font):Text2D
+		return (Raw.wgr_text2d_create(font) : Handle);
 
-	inline function set_font(v:Font):Font {
-		Raw.wgr_text2d_set_font(this, v);
-		return v;
-	}
+	public static inline function setFont(text2D:Text2D, value:Font):Bool
+		return Raw.wgr_text2d_set_font(text2D, value);
 
-	inline function set_text(v:String):String {
-		Raw.wgr_text2d_set_text(this, v); // wgrender copies it
-		return v;
-	}
+	public static inline function setText(text2D:Text2D, value:String):Bool
+		return Raw.wgr_text2d_set_text(text2D, value); // wgrender copies it;
 
-	inline function set_position(v:Vec2):Vec2 {
-		Raw.wgr_text2d_set_position(this, v.x, v.y);
-		return v;
-	}
+	public static inline function setPosition(text2D:Text2D, value:Vec2):Bool
+		return Raw.wgr_text2d_set_position(text2D, value.x, value.y);
 
-	inline function set_size(v:Float):Float {
-		Raw.wgr_text2d_set_size(this, v);
-		return v;
-	}
+	/** Pixel height of one line. **/
+	public static inline function setSize(text2D:Text2D, value:Float):Bool
+		return Raw.wgr_text2d_set_size(text2D, value);
 
-	inline function set_color(v:Color):Color {
-		Raw.wgr_text2d_set_color(this, v);
-		return v;
-	}
+	public static inline function setColor(text2D:Text2D, value:Color):Bool
+		return Raw.wgr_text2d_set_color(text2D, value);
 
-	inline function set_maxWidth(v:Float):Float {
-		Raw.wgr_text2d_set_max_width(this, v);
-		return v;
-	}
+	/** Wrap to this many logical pixels, between words; 0 is off (the default). **/
+	public static inline function setMaxWidth(text2D:Text2D, value:Float):Bool
+		return Raw.wgr_text2d_set_max_width(text2D, value);
 
-	inline function get_visible():Bool
-		return Raw.wgr_text2d_is_visible(this);
+	public static inline function isVisible(text2D:Text2D):Bool
+		return Raw.wgr_text2d_is_visible(text2D);
 
-	inline function set_visible(v:Bool):Bool {
-		Raw.wgr_text2d_set_visible(this, v);
-		return v;
-	}
+	public static inline function setVisible(text2D:Text2D, value:Bool):Bool
+		return Raw.wgr_text2d_set_visible(text2D, value);
 
-	inline function get_pickable():Bool
-		return Raw.wgr_text2d_is_pickable(this);
+	/** Whether a pick can hit it. Default: pickable. **/
+	public static inline function isPickable(text2D:Text2D):Bool
+		return Raw.wgr_text2d_is_pickable(text2D);
 
-	inline function set_pickable(v:Bool):Bool {
-		Raw.wgr_text2d_set_pickable(this, v);
-		return v;
-	}
+	/** Whether a pick can hit it. Default: pickable. **/
+	public static inline function setPickable(text2D:Text2D, value:Bool):Bool
+		return Raw.wgr_text2d_set_pickable(text2D, value);
 
-	inline function get_enabled():Bool
-		return Raw.wgr_text2d_is_enabled(this);
+	/** Disabled: still drawn, picked and blocking the pointer, but it doesn't react. **/
+	public static inline function isEnabled(text2D:Text2D):Bool
+		return Raw.wgr_text2d_is_enabled(text2D);
 
-	inline function set_enabled(v:Bool):Bool {
-		Raw.wgr_text2d_set_enabled(this, v);
-		return v;
-	}
+	/** Disabled: still drawn, picked and blocking the pointer, but it doesn't react. **/
+	public static inline function setEnabled(text2D:Text2D, value:Bool):Bool
+		return Raw.wgr_text2d_set_enabled(text2D, value);
 
 	/** Default: the position is the block's top-left corner. **/
-	public inline function setAlign(horizontal:AlignX, vertical:AlignY):Bool
-		return Raw.wgr_text2d_set_align(this, horizontal, vertical);
+	public static inline function setAlign(text2D:Text2D, horizontal:AlignX, vertical:AlignY):Bool
+		return Raw.wgr_text2d_set_align(text2D, horizontal, vertical);
 
 	/** The laid-out text at its current size: widest line, and the lines' total height. **/
-	public inline function measure():Vec2
-		return new Vec2(Raw.wgr_text2d_measure_width(this), Raw.wgr_text2d_measure_height(this));
+	public static inline function measure(text2D:Text2D):Vec2
+		return new Vec2(Raw.wgr_text2d_measure_width(text2D), Raw.wgr_text2d_measure_height(text2D));
 
 	/** Draw it now; a scene draws its members itself. **/
-	public inline function draw():Void
-		Raw.wgr_text2d_draw(this);
+	public static inline function draw(text2D:Text2D):Void
+		Raw.wgr_text2d_draw(text2D);
 
 	/** Also takes it out of every scene it's in. **/
-	public inline function destroy():Void
-		Raw.wgr_text2d_destroy(this);
+	public static inline function destroy(text2D:Text2D):Void
+		Raw.wgr_text2d_destroy(text2D);
 }

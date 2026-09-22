@@ -10,7 +10,7 @@
 // `Text` and `Font` split wgrender's two families of text calls: the `wgr_text_draw`
 // group, which uses whatever the default font is, and the `wgr_text_draw_ex` group,
 // which takes a handle. So `Text.draw` is the first and `font.draw` is the second,
-// and `Text.defaultFont` is the setting that connects them. `Font.isNone` is the
+// and `Text.getDefaultFont()` is the setting that connects them. `Font.isNone` is the
 // check for "not loaded yet", because a handle is 0 rather than null.
 //
 // The class is `FontDemo` rather than `Font` because a module named `Font` would
@@ -68,33 +68,33 @@ class FontDemo {
 	}
 
 	static function drawTitle():Void {
-		if (komika.isNone)
+		if (Font.isNone(komika))
 			return;
-		final screen = Window.screenSize;
-		final size = komika.measure(TITLE, TITLE_SIZE);
-		komika.draw(TITLE, (screen.x - size.x) * 0.5, 90.0, TITLE_SIZE, Color.DARKBLUE);
+		final screen = Window.getScreenSize();
+		final size = Font.measure(komika, TITLE, TITLE_SIZE);
+		Font.draw(komika, TITLE, (screen.x - size.x) * 0.5, 90.0, TITLE_SIZE, Color.DARKBLUE);
 	}
 
 	static function drawSamples():Void {
-		if (mono.isNone) {
+		if (Font.isNone(mono)) {
 			Text.draw("loading fonts...", 40, 200, 20, Color.GRAY);
 			return;
 		}
-		mono.draw("The quick brown fox jumps over the lazy dog.", 40, 200, 28, Color.BLACK);
-		mono.draw("scalable, anti-aliased TrueType glyphs", 40, 250, 20, Color.DARKGRAY);
-		mono.draw("0123456789  !@#$%^&*()  +-*/=", 40, 290, 24, Color.MAROON);
+		Font.draw(mono, "The quick brown fox jumps over the lazy dog.", 40, 200, 28, Color.BLACK);
+		Font.draw(mono, "scalable, anti-aliased TrueType glyphs", 40, 250, 20, Color.DARKGRAY);
+		Font.draw(mono, "0123456789  !@#$%^&*()  +-*/=", 40, 290, 24, Color.MAROON);
 	}
 
 	static function onFrame(dt:Float):Void {
 		final keys = Input.getKeyboardState();
-		if (keys.isPressed(D) && !komika.isNone)
-			Text.defaultFont = Text.defaultFont.isNone ? komika : Handle.NONE;
+		if (keys.isPressed(D) && !Font.isNone(komika))
+			Text.setDefaultFont(Font.isNone(Text.getDefaultFont()) ? komika : Handle.NONE);
 
 		Render.begin();
 		Render.clearBackground(background);
 		drawTitle();
 		drawSamples();
-		Text.draw(Text.defaultFont.isNone ? "[D] default font: built in   {a|b} ~ \\ ^_`"
+		Text.draw(Font.isNone(Text.getDefaultFont()) ? "[D] default font: built in   {a|b} ~ \\ ^_`"
 			: "[D] default font: Komika   {a|b} ~ \\ ^_`", 40, 360, 16, Color.DARKGREEN);
 		Text.drawFps(12, 12);
 		Render.end();

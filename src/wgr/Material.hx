@@ -26,170 +26,133 @@ package wgr;
 	`set*` methods by name.
 **/
 abstract Material(Handle) from Handle to Handle {
-	public var isNone(get, never):Bool;
-
-	/** Built-in shading mode; `Custom` only ever comes from `Material.custom`. **/
-	public var shading(get, set):MaterialShading;
-
-	/** Drawn from both sides. Default: single sided. **/
-	public var doubleSided(get, set):Bool;
-
 	// --- the built-in glTF parameters, by name in the header's table ---
-
-	/** 0..1. **/
-	public var metallic(never, set):Float;
-
-	/** 0..1. **/
-	public var roughness(never, set):Float;
-
-	public var normalScale(never, set):Float;
-
-	/** 0..1. **/
-	public var occlusionStrength(never, set):Float;
-
-	/** sRGB rgba. **/
-	public var baseColorTexture(never, set):Texture;
-
-	/** Green is roughness, blue is metallic. **/
-	public var metallicRoughnessTexture(never, set):Texture;
-
-	/** Tangent-space normal map. **/
-	public var normalTexture(never, set):Texture;
-
-	/** Red is ambient occlusion. **/
-	public var occlusionTexture(never, set):Texture;
-
-	/** sRGB rgb. **/
-	public var emissiveTexture(never, set):Texture;
 
 	@:to inline function toRaw():WgrHandle
 		return (this : Int);
 
-	inline function get_isNone():Bool
-		return (this : Handle).isNone;
+	/** Whether this refers to nothing; tolerates a field never assigned, on js. **/
+	public static inline function isNone(material:Material):Bool
+		return (material : Handle).isNone;
 
-	public inline function new(shading:MaterialShading = Pbr)
-		this = (Raw.wgr_material_create(shading) : Handle);
+	public static inline function create(shading:MaterialShading = Pbr):Material
+		return (Raw.wgr_material_create(shading) : Handle);
 
 	/** A material drawn by a custom shader; it holds its own reference to the shader. **/
 	public static inline function custom(shader:Handle):Material
 		return (Raw.wgr_material_create_custom(shader) : Handle);
 
 	/** Its custom shader, or none for built-in shading. **/
-	public inline function getShader():Handle
-		return Raw.wgr_material_get_shader(this);
+	public static inline function getShader(material:Material):Handle
+		return Raw.wgr_material_get_shader(material);
 
 	/** Drop this reference; the material goes when the last one does. **/
-	public inline function release():Void
-		Raw.wgr_material_release(this);
+	public static inline function release(material:Material):Void
+		Raw.wgr_material_release(material);
 
-	inline function get_shading():MaterialShading
-		return Raw.wgr_material_get_shading(this);
+	/** Built-in shading mode; `Custom` only ever comes from `Material.custom`. **/
+	public static inline function getShading(material:Material):MaterialShading
+		return Raw.wgr_material_get_shading(material);
 
-	inline function set_shading(v:MaterialShading):MaterialShading {
-		Raw.wgr_material_set_shading(this, v);
-		return v;
-	}
+	/** Built-in shading mode; `Custom` only ever comes from `Material.custom`. **/
+	public static inline function setShading(material:Material, value:MaterialShading):Bool
+		return Raw.wgr_material_set_shading(material, value);
 
-	inline function get_doubleSided():Bool
-		return Raw.wgr_material_is_double_sided(this);
+	/** Drawn from both sides. Default: single sided. **/
+	public static inline function isDoubleSided(material:Material):Bool
+		return Raw.wgr_material_is_double_sided(material);
 
-	inline function set_doubleSided(v:Bool):Bool {
-		Raw.wgr_material_set_double_sided(this, v);
-		return v;
-	}
+	/** Drawn from both sides. Default: single sided. **/
+	public static inline function setDoubleSided(material:Material, value:Bool):Bool
+		return Raw.wgr_material_set_double_sided(material, value);
 
 	/** How it uses alpha. Set it with `setAlphaMode`. **/
-	public var alphaMode(get, never):AlphaMode;
-
-	inline function get_alphaMode():AlphaMode
-		return AlphaMode.of(Raw.wgr_material_get_alpha_mode(this));
+	public static inline function getAlphaMode(material:Material):AlphaMode
+		return AlphaMode.of(Raw.wgr_material_get_alpha_mode(material));
 
 	/**
 		How it uses alpha; `cutoff` applies to `Mask`. `Add` is not supported for
 		materials yet and is refused — additive belongs to sprites and particles.
 	**/
-	public inline function setAlphaMode(mode:AlphaMode, cutoff:Float = 0.5):Bool
-		return Raw.wgr_material_set_alpha_mode(this, mode, cutoff);
+	public static inline function setAlphaMode(material:Material, mode:AlphaMode, cutoff:Float = 0.5):Bool
+		return Raw.wgr_material_set_alpha_mode(material, mode, cutoff);
 
-	inline function set_metallic(v:Float):Float {
-		setFloat("metallic", v);
-		return v;
-	}
+	/** 0..1. **/
+	/** 0..1. **/
+	public static inline function setMetallic(material:Material, value:Float):Bool
+		return setFloat(material, "metallic", value);
 
-	inline function set_roughness(v:Float):Float {
-		setFloat("roughness", v);
-		return v;
-	}
+	/** 0..1. **/
+	/** 0..1. **/
+	public static inline function setRoughness(material:Material, value:Float):Bool
+		return setFloat(material, "roughness", value);
 
-	inline function set_normalScale(v:Float):Float {
-		setFloat("normal_scale", v);
-		return v;
-	}
+	public static inline function setNormalScale(material:Material, value:Float):Bool
+		return setFloat(material, "normal_scale", value);
 
-	inline function set_occlusionStrength(v:Float):Float {
-		setFloat("occlusion_strength", v);
-		return v;
-	}
+	/** 0..1. **/
+	/** 0..1. **/
+	public static inline function setOcclusionStrength(material:Material, value:Float):Bool
+		return setFloat(material, "occlusion_strength", value);
 
-	inline function set_baseColorTexture(v:Texture):Texture {
-		setTexture("base_color_texture", v);
-		return v;
-	}
+	/** sRGB rgba. **/
+	/** sRGB rgba. **/
+	public static inline function setBaseColorTexture(material:Material, value:Texture):Bool
+		return setTexture(material, "base_color_texture", value);
 
-	inline function set_metallicRoughnessTexture(v:Texture):Texture {
-		setTexture("metallic_roughness_texture", v);
-		return v;
-	}
+	/** Green is roughness, blue is metallic. **/
+	/** Green is roughness, blue is metallic. **/
+	public static inline function setMetallicRoughnessTexture(material:Material, value:Texture):Bool
+		return setTexture(material, "metallic_roughness_texture", value);
 
-	inline function set_normalTexture(v:Texture):Texture {
-		setTexture("normal_texture", v);
-		return v;
-	}
+	/** Tangent-space normal map. **/
+	/** Tangent-space normal map. **/
+	public static inline function setNormalTexture(material:Material, value:Texture):Bool
+		return setTexture(material, "normal_texture", value);
 
-	inline function set_occlusionTexture(v:Texture):Texture {
-		setTexture("occlusion_texture", v);
-		return v;
-	}
+	/** Red is ambient occlusion. **/
+	/** Red is ambient occlusion. **/
+	public static inline function setOcclusionTexture(material:Material, value:Texture):Bool
+		return setTexture(material, "occlusion_texture", value);
 
-	inline function set_emissiveTexture(v:Texture):Texture {
-		setTexture("emissive_texture", v);
-		return v;
-	}
+	/** sRGB rgb. **/
+	/** sRGB rgb. **/
+	public static inline function setEmissiveTexture(material:Material, value:Texture):Bool
+		return setTexture(material, "emissive_texture", value);
 
 	/** Linear rgba, glTF's factor — not an sRGB `Color`. Alpha drives Mask and Blend. **/
-	public inline function setBaseColor(r:Float, g:Float, b:Float, a:Float = 1):Bool
-		return setVec4("base_color", r, g, b, a);
+	public static inline function setBaseColor(material:Material, r:Float, g:Float, b:Float, a:Float = 1):Bool
+		return setVec4(material, "base_color", r, g, b, a);
 
 	/** Linear rgb, and may exceed 1. **/
-	public inline function setEmissive(r:Float, g:Float, b:Float):Bool
-		return setVec3("emissive", r, g, b);
+	public static inline function setEmissive(material:Material, r:Float, g:Float, b:Float):Bool
+		return setVec3(material, "emissive", r, g, b);
 
 	// --- by name, for a custom shader's own parameters ---
 
-	public inline function setInt(name:String, value:Int):Bool
-		return Raw.wgr_material_set_int(this, name, value);
+	public static inline function setInt(material:Material, name:String, value:Int):Bool
+		return Raw.wgr_material_set_int(material, name, value);
 
-	public inline function setFloat(name:String, value:Float):Bool
-		return Raw.wgr_material_set_float(this, name, value);
+	public static inline function setFloat(material:Material, name:String, value:Float):Bool
+		return Raw.wgr_material_set_float(material, name, value);
 
-	public inline function setVec2(name:String, x:Float, y:Float):Bool
-		return Raw.wgr_material_set_vec2(this, name, x, y);
+	public static inline function setVec2(material:Material, name:String, x:Float, y:Float):Bool
+		return Raw.wgr_material_set_vec2(material, name, x, y);
 
-	public inline function setVec3(name:String, x:Float, y:Float, z:Float):Bool
-		return Raw.wgr_material_set_vec3(this, name, x, y, z);
+	public static inline function setVec3(material:Material, name:String, x:Float, y:Float, z:Float):Bool
+		return Raw.wgr_material_set_vec3(material, name, x, y, z);
 
-	public inline function setVec4(name:String, x:Float, y:Float, z:Float, w:Float):Bool
-		return Raw.wgr_material_set_vec4(this, name, x, y, z, w);
+	public static inline function setVec4(material:Material, name:String, x:Float, y:Float, z:Float, w:Float):Bool
+		return Raw.wgr_material_set_vec4(material, name, x, y, z, w);
 
 	/** An sRGB colour handle, converted to linear. **/
-	public inline function setColor(name:String, color:Color):Bool
-		return Raw.wgr_material_set_color(this, name, color);
+	public static inline function setColor(material:Material, name:String, color:Color):Bool
+		return Raw.wgr_material_set_color(material, name, color);
 
-	public inline function setTexture(name:String, texture:Texture):Bool
-		return Raw.wgr_material_set_texture(this, name, texture);
+	public static inline function setTexture(material:Material, name:String, texture:Texture):Bool
+		return Raw.wgr_material_set_texture(material, name, texture);
 
-	public inline function setTextureSampling(name:String, wrapU:TextureWrap, wrapV:TextureWrap,
+	public static inline function setTextureSampling(material:Material, name:String, wrapU:TextureWrap, wrapV:TextureWrap,
 			filter:TextureFilter):Bool
-		return Raw.wgr_material_set_texture_sampling(this, name, wrapU, wrapV, filter);
+		return Raw.wgr_material_set_texture_sampling(material, name, wrapU, wrapV, filter);
 }

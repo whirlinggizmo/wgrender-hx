@@ -17,7 +17,7 @@ the binding can be wrong without failing to compile:
   gen_raw    the C surface is generated from wgrender's headers; a stale one declares
              an API that no longer exists
   coverage   a stale omissions list hides a decision as a to-do
-  setters    wgrender's headers name every value a setter refuses, and this fails if
+  refusals   wgrender's headers name every value a call refuses, and this fails if
              one of those sentences is not repeated in the binding's own docs
   keys       src/wgr/Key.hx is generated from wgr_keys.h, and this fails when a key
              moves; its static_asserts then fail the C++ build too
@@ -48,7 +48,7 @@ def run(cmd, **kw):
 
 
 def main():
-    for tool in ('gen_raw.py', 'gen_keys.py', 'coverage.py', 'setters.py', 'gen_sources.py'):
+    for tool in ('gen_raw.py', 'gen_keys.py', 'coverage.py', 'refusals.py', 'gen_sources.py'):
         run([ROOT / 'tools' / tool, '--check', WGRENDER])
 
     print('wgrender (headless)')

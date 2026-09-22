@@ -131,40 +131,54 @@ the `0`-is-deliberate convention. The thing that actually broke cross-binding pa
 *names*, and typed handles change no name. Flattening the API buys the parity; dropping
 the types buys nothing.
 
-## What flattening does to tools/setters.py
+## What the conversion cost, measured
 
-Most of it stops having a subject. `binding()` says why in its own docstring:
+`examples/materials`, the same scene, before and after the whole API flattened:
 
-> Mapped by the Raw call each member makes, not by its name, so an idiomatic binding
-> is auditable at all -- `wgr_model_set_tint` -> `Model.tint` cannot be inferred from
-> spelling.
+| | raw | gzipped | script ms/frame |
+| --- | --- | --- | --- |
+| properties and methods | 20,788 | 4,660 | 0.348 |
+| flat statics | 20,846 | 4,665 | 0.339 |
 
-Flattening removes that premise: `Model.setTint` -> `wgr_model_set_tint` *is* the
-spelling. Splitting the 388 lines by what survives:
+A wash on size (+58 bytes raw, +5 gzipped) and inside the noise on frame cost, which
+is the result `inline` predicts: the members compile away either way, so the generated
+code is the same calls in the same order.
 
-**Dies, roughly 300 lines.** `binding()` and its tempered regex; the `DELEGATED`
-table, all four entries of which exist only because a property's body could not be
-read; `refusals()`, `bodies()`, `macro_bodies()`, `UNREACHABLE`, `ACCEPTED` -- the C
-control-flow reader whose whole purpose is deciding property-or-method. When every
-setter returns `Bool` that question has no subjects.
+This corrects the trial, which measured flat as *smaller* (19,975 raw). That number
+came from a hand-written slice covering only what one example needed, against the full
+sharp API; it was not a like-for-like comparison and the whole conversion does not
+reproduce it. Flattening is worth doing for the mapping, the returned `Bool`s and
+cross-binding parity — not for bytes.
 
-**Survives, roughly 80 lines.** `documented_refusals()` + `doc_comments()` + the join
-+ the gate: when a wgrender header says `false for ...`, check the binding's doc
-comment repeats it. That is the half this file calls "prose against prose -- so it is
-safe to fail a build on", as against the C-reading half that only warns and has
-already produced one false clean and two false positives. It is about documentation
-fidelity and does not care what shape the API is.
+## What flattening did to the tooling
+
+`tools/setters.py` is gone. It asked "should this member be a property or a method?",
+which only has subjects while there are properties; the flat API has one, and it has
+no C call behind it. Most of its 388 lines existed to infer *which* C call a member
+wrapped, because `wgr_model_set_tint -> Model.tint` cannot be read off a name. Making
+the name the mapping deleted the inference, and with it the `DELEGATED` table of
+hand-written verdicts and the regex reader of C control flow that needed it.
+
+What survived moved into `tools/refusals.py --check`: a refusal a header names must be
+repeated in the binding's doc comment. That half was always the trustworthy one -- prose
+against prose, safe to fail a build on, as against the C reading that only warned and had
+produced one false clean and two false positives. The member index it needs is now one
+regex over the flat sources, because every member is a static whose body is its `Raw`
+call; the tool it replaced needed 37 lines and an exception table for the same job, and
+still lost members silently when one grew a second line.
+
+One exception list remains, `UNREACHABLE`: refusals the binding's types rule out, where
+an `enum abstract` with two values cannot produce the third that wgrender would reject.
+Documenting those would be noise rather than accuracy.
 
 **What does not become derivable.** `Material.setRoughness` calls
-`setFloat(m, "roughness", v)` -> `wgr_material_set_float`. The parameter-by-name
-setters are many-to-one on `wgr_material_set_float` *in the C*, so no naming scheme
-fixes that. It becomes a fixed list of nine built-in parameters -- a table written
-once -- rather than something parsed out of source text.
+`setFloat(material, "roughness", value)` -> `wgr_material_set_float`. The nine built-in
+parameters are many-to-one on `wgr_material_set_float`/`_texture` *in the C*, so no
+naming scheme fixes it -- a fixed list written once, not something parsed out of source.
 
-**What belongs in wgrender-c either way.** The two things setters.py says it cannot
-answer: eight refusals that log nothing anywhere, and `wgr_light_set_shadow_map_size`
-clamping to 256..4096 with no getter to observe the result. Those are findings about
-the C library and survive as a report whatever the binding looks like.
+**What belongs in wgrender-c either way.** Eight refusals that log nothing anywhere, and
+`wgr_light_set_shadow_map_size` clamping to 256..4096 with no getter to observe the
+result. Those are findings about the C library, whatever shape the binding is.
 
 ## If wgrender ever gets a Nim binding
 

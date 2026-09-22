@@ -24,16 +24,7 @@ class Asset {
 		by the browser on the web and by your fetcher on desktop. Anything else is a
 		local directory. Pass the same logical paths everywhere; only the base differs.
 	**/
-	public static var host(get, set):String;
-
-	/**
-		Milliseconds per frame spent finishing loads on the main thread — GPU uploads.
-		4 by default. At least one step runs each frame, so one large texture can
-		overrun it: a 4096x4096 texture is a single upload of about 45 ms.
-	**/
-	public static var uploadBudget(never, set):Float;
-
-	static inline function get_host():String
+	public static inline function getHost():String
 		return Raw.wgr_asset_get_host();
 
 	static inline function set_host(v:String):String {
@@ -44,10 +35,13 @@ class Asset {
 		return v;
 	}
 
-	static inline function set_uploadBudget(v:Float):Float {
-		Raw.wgr_asset_set_upload_budget(v);
-		return v;
-	}
+	/**
+		Milliseconds per frame spent finishing loads on the main thread — GPU uploads.
+		4 by default. At least one step runs each frame, so one large texture can
+		overrun it: a 4096x4096 texture is a single upload of about 45 ms.
+	**/
+	public static inline function setUploadBudget(value:Float):Void
+		Raw.wgr_asset_set_upload_budget(value);
 
 	/** Where relative asset paths resolve from: a directory or a URL base. **/
 	public static function setHost(host:String):Void {

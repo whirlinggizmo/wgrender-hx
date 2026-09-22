@@ -8,46 +8,33 @@ package wgr;
 	object with its own transform, pivot and outline.
 **/
 abstract Shape2D(Handle) from Handle to Handle {
-	public var isNone(get, never):Bool;
-	public var color(never, set):Color;
-
-	/** Outline thickness; 0 fills, which is the default. Rectangles and circles. **/
-	public var outline(never, set):Float;
-
-	public var visible(get, set):Bool;
-
-	/** Whether a pick can hit it. **/
-	public var pickable(get, set):Bool;
-
-	/** Disabled: still drawn, picked and blocking the pointer, but it doesn't react. **/
-	public var enabled(get, set):Bool;
-
 	@:to inline function toRaw():WgrHandle
 		return (this : Int);
 
-	inline function get_isNone():Bool
-		return (this : Handle).isNone;
+	/** Whether this refers to nothing; tolerates a field never assigned, on js. **/
+	public static inline function isNone(shape2D:Shape2D):Bool
+		return (shape2D : Handle).isNone;
 
-	public inline function new()
-		this = (Raw.wgr_shape2d_create() : Handle);
+	public static inline function create():Shape2D
+		return (Raw.wgr_shape2d_create() : Handle);
 
 	// --- the form it takes; the last one set wins ---
 
-	public inline function setRectangle(width:Float, height:Float, cornerRadius:Float = 0):Bool
-		return Raw.wgr_shape2d_set_rectangle(this, width, height, cornerRadius);
+	public static inline function setRectangle(shape2D:Shape2D, width:Float, height:Float, cornerRadius:Float = 0):Bool
+		return Raw.wgr_shape2d_set_rectangle(shape2D, width, height, cornerRadius);
 
-	public inline function setCircle(radius:Float):Bool
-		return Raw.wgr_shape2d_set_circle(this, radius);
+	public static inline function setCircle(shape2D:Shape2D, radius:Float):Bool
+		return Raw.wgr_shape2d_set_circle(shape2D, radius);
 
-	public inline function setLine(from:Vec2, to:Vec2, thickness:Float = 1):Bool
-		return Raw.wgr_shape2d_set_line(this, from.x, from.y, to.x, to.y, thickness);
+	public static inline function setLine(shape2D:Shape2D, from:Vec2, to:Vec2, thickness:Float = 1):Bool
+		return Raw.wgr_shape2d_set_line(shape2D, from.x, from.y, to.x, to.y, thickness);
 
 	// --- where it is, and how it looks ---
 
 	/** `rotation` in radians. **/
-	public inline function setTransform(position:Vec2, rotation:Float = 0, ?scale:Vec2):Bool {
+	public static inline function setTransform(shape2D:Shape2D, position:Vec2, rotation:Float = 0, ?scale:Vec2):Bool {
 		final s = scale != null ? scale : Shape2D.UNIT_SCALE;
-		return Raw.wgr_shape2d_set_transform(this, position.x, position.y, rotation, s.x, s.y);
+		return Raw.wgr_shape2d_set_transform(shape2D, position.x, position.y, rotation, s.x, s.y);
 	}
 
 	/**
@@ -59,50 +46,45 @@ abstract Shape2D(Handle) from Handle to Handle {
 		centre — so nothing moves until one is set. Lines have explicit endpoints and
 		ignore it.
 	**/
-	public inline function setPivot(pivot:Vec2):Bool
-		return Raw.wgr_shape2d_set_pivot(this, pivot.x, pivot.y);
+	public static inline function setPivot(shape2D:Shape2D, pivot:Vec2):Bool
+		return Raw.wgr_shape2d_set_pivot(shape2D, pivot.x, pivot.y);
 
-	inline function set_color(v:Color):Color {
-		Raw.wgr_shape2d_set_color(this, v);
-		return v;
-	}
+	public static inline function setColor(shape2D:Shape2D, value:Color):Bool
+		return Raw.wgr_shape2d_set_color(shape2D, value);
 
-	inline function set_outline(v:Float):Float {
-		Raw.wgr_shape2d_set_outline(this, v);
-		return v;
-	}
+	/** Outline thickness; 0 fills, which is the default. Rectangles and circles. **/
+	public static inline function setOutline(shape2D:Shape2D, value:Float):Bool
+		return Raw.wgr_shape2d_set_outline(shape2D, value);
 
-	inline function get_visible():Bool
-		return Raw.wgr_shape2d_is_visible(this);
+	public static inline function isVisible(shape2D:Shape2D):Bool
+		return Raw.wgr_shape2d_is_visible(shape2D);
 
-	inline function set_visible(v:Bool):Bool {
-		Raw.wgr_shape2d_set_visible(this, v);
-		return v;
-	}
+	public static inline function setVisible(shape2D:Shape2D, value:Bool):Bool
+		return Raw.wgr_shape2d_set_visible(shape2D, value);
 
-	inline function get_pickable():Bool
-		return Raw.wgr_shape2d_is_pickable(this);
+	/** Whether a pick can hit it. **/
+	public static inline function isPickable(shape2D:Shape2D):Bool
+		return Raw.wgr_shape2d_is_pickable(shape2D);
 
-	inline function set_pickable(v:Bool):Bool {
-		Raw.wgr_shape2d_set_pickable(this, v);
-		return v;
-	}
+	/** Whether a pick can hit it. **/
+	public static inline function setPickable(shape2D:Shape2D, value:Bool):Bool
+		return Raw.wgr_shape2d_set_pickable(shape2D, value);
 
-	inline function get_enabled():Bool
-		return Raw.wgr_shape2d_is_enabled(this);
+	/** Disabled: still drawn, picked and blocking the pointer, but it doesn't react. **/
+	public static inline function isEnabled(shape2D:Shape2D):Bool
+		return Raw.wgr_shape2d_is_enabled(shape2D);
 
-	inline function set_enabled(v:Bool):Bool {
-		Raw.wgr_shape2d_set_enabled(this, v);
-		return v;
-	}
+	/** Disabled: still drawn, picked and blocking the pointer, but it doesn't react. **/
+	public static inline function setEnabled(shape2D:Shape2D, value:Bool):Bool
+		return Raw.wgr_shape2d_set_enabled(shape2D, value);
 
 	/** Draw it now; a scene draws its members itself. **/
-	public inline function draw():Void
-		Raw.wgr_shape2d_draw(this);
+	public static inline function draw(shape2D:Shape2D):Void
+		Raw.wgr_shape2d_draw(shape2D);
 
 	/** Also takes it out of every scene it's in. **/
-	public inline function destroy():Void
-		Raw.wgr_shape2d_destroy(this);
+	public static inline function destroy(shape2D:Shape2D):Void
+		Raw.wgr_shape2d_destroy(shape2D);
 
 	// --- immediate: no handle, drawn where they are called ---
 
