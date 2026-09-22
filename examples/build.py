@@ -62,7 +62,7 @@ GUESTS = ['hello', 'hello3d', 'particles', 'simple', 'tick',
           'fetch', 'sprite2d', 'sprite3d', 'text3d', '2d',
           'model', 'meshes', 'textures', 'materials', 'lights',
           'instancing', 'shadows', 'render_target', 'postprocess', 'environment',
-          'shaders', 'gamepad', 'scene3d', 'pick']
+          'shaders', 'gamepad', 'scene3d', 'pick', 'loading']
 OTHERS = ['simple-hxcpp']
 
 WHAT = {
@@ -110,6 +110,8 @@ WHAT = {
     'scene3d': 'retained shapes drawn by the scene, and clicking one to select it',
     'pick': 'ray-picking all three drawable kinds, with the alpha test letting a '
             'click through a sprite',
+    'loading': 'six files loading while a cube spins, with a frame-time graph that '
+               'shows what a background load costs against a synchronous one',
     'simple-hxcpp': 'the same scene the other way: Haxe through hxcpp into one wasm, '
                     'for the size comparison',
 }
