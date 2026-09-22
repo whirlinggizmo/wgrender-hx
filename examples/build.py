@@ -62,7 +62,7 @@ GUESTS = ['hello', 'hello3d', 'particles', 'simple', 'tick',
           'fetch', 'sprite2d', 'sprite3d', 'text3d', '2d',
           'model', 'meshes', 'textures', 'materials', 'lights',
           'instancing', 'shadows', 'render_target', 'postprocess', 'environment',
-          'shaders']
+          'shaders', 'gamepad', 'scene3d', 'pick']
 OTHERS = ['simple-hxcpp']
 
 WHAT = {
@@ -106,6 +106,10 @@ WHAT = {
                    'tone mapping',
     'shaders': 'four custom shaders: toon on a skinned model, dissolve, water that '
                'moves its own vertices, and sprite effects',
+    'gamepad': 'every connected pad, live: sticks, triggers and buttons',
+    'scene3d': 'retained shapes drawn by the scene, and clicking one to select it',
+    'pick': 'ray-picking all three drawable kinds, with the alpha test letting a '
+            'click through a sprite',
     'simple-hxcpp': 'the same scene the other way: Haxe through hxcpp into one wasm, '
                     'for the size comparison',
 }
