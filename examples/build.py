@@ -59,7 +59,8 @@ C_BUILD = WGRENDER / 'examples/build/webgl2-nothreads'
 # or benched with the guests.
 GUESTS = ['hello', 'hello3d', 'particles', 'simple', 'tick',
           'quit', 'window', 'font', 'audio', 'force_fetch',
-          'fetch', 'sprite2d', 'sprite3d', 'text3d', '2d']
+          'fetch', 'sprite2d', 'sprite3d', 'text3d', '2d',
+          'model', 'meshes', 'textures', 'materials', 'lights']
 OTHERS = ['simple-hxcpp']
 
 WHAT = {
@@ -83,6 +84,15 @@ WHAT = {
     'text3d': 'text in the world, 3D shapes, and what a pick query costs',
     '2d': 'a 2D world with no Camera2D: sprite3d in the XY plane under an '
           'orthographic camera',
+    'model': 'a glTF model created empty and filled in when its mesh arrives',
+    'meshes': 'the seven generated shapes, sharing one normal-mapped material so '
+              'their UVs and tangents have to agree',
+    'textures': 'the same image as PNG and as .ktx, with what each costs in GPU '
+                'memory and time',
+    'materials': 'metallic-roughness rows, plus unlit, emissive, normal-mapped and '
+                 'blended, all assigned before the mesh loads',
+    'lights': 'directional, point and spot, each switchable, on a scene that starts '
+              'with none',
     'simple-hxcpp': 'the same scene the other way: Haxe through hxcpp into one wasm, '
                     'for the size comparison',
 }
