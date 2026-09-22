@@ -39,10 +39,24 @@ class Window {
 		event, so reading this on the frame it was set still gives the old value. Read
 		it on a later frame, or not at all; nothing needs polling.
 
-		`requestFullscreen` is the same thing with wgrender's return value, which says
-		only whether this platform has fullscreen -- not whether you got it.
+		Read-only, and deliberately: asking goes through `requestFullscreen`, which
+		hands back what wgrender said. A setter here would have to swallow that -- Haxe
+		makes `set_fullscreen` return `Bool` meaning the assigned value, not the
+		outcome -- and the outcome is the whole question. `hasFullscreen` says whether
+		there is anything to ask for.
 	**/
-	public static var fullscreen(get, set):Bool;
+	public static var fullscreen(get, never):Bool;
+
+	/**
+		Whether this platform has fullscreen at all: true on the desktop, false
+		headless, and on the web the browser's own answer -- false in an iframe without
+		`allowfullscreen`, or under a permissions policy that forbids it.
+
+		Ask this to decide whether to offer the button, rather than learning it from a
+		refused `requestFullscreen`. It does not cover the web's other condition, a user
+		gesture, which only the request itself can meet.
+	**/
+	public static var hasFullscreen(get, never):Bool;
 
 	/**
 		Hiding it doesn't stop the loop — the program keeps running either way.
@@ -78,20 +92,18 @@ class Window {
 	static inline function get_fullscreen():Bool
 		return Raw.wgr_window_is_fullscreen();
 
-	static inline function set_fullscreen(v:Bool):Bool {
-		Raw.wgr_window_request_fullscreen(v);
-		return v;
-	}
-
 	/**
-		Ask to enter or leave fullscreen. `false` means this platform has none at all,
-		and wgrender has already logged that; `true` means the request was made, which
-		is not the same as being fullscreen -- read `fullscreen` on a later frame for
-		that. Named for what it does, because a `setX` returning `Bool` everywhere else
-		here means the thing happened.
+		Ask to enter or leave fullscreen. `false` is exactly what `hasFullscreen`
+		reports -- there was nothing to request; `true` means the request was made,
+		which is not the same as being fullscreen: read `fullscreen` on a later frame
+		for that. Named for what it does, because a `setX` returning `Bool` everywhere
+		else here means the thing happened.
 	**/
 	public static inline function requestFullscreen(fullscreen:Bool):Bool
 		return Raw.wgr_window_request_fullscreen(fullscreen);
+
+	static inline function get_hasFullscreen():Bool
+		return Raw.wgr_window_has_fullscreen();
 
 	static inline function get_visible():Bool
 		return Raw.wgr_window_is_visible();

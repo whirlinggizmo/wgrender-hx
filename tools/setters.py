@@ -119,8 +119,6 @@ DELEGATED = {
                                 'bad name warns, a dead handle says "pool full" and nothing else.',
     'wgr_window_set_visible': 'never refuses -- wgri_platform_set_window_visible '
                               'returns true on every branch (sokol, headless, web)',
-    'wgr_window_request_fullscreen': 'refuses only where the platform has none, and '
-                                     'wgr_window.c\'s unsupported() log_warns it once',
     'wgr_window_set_monitor': 'refuses a bad index (log_warn here and again in '
                               'wgr_platform.c) and a Wayland desktop (can_move() '
                               'log_infos it once) -- every path logs',

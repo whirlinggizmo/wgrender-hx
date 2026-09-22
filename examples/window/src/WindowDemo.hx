@@ -29,7 +29,8 @@
 // acting on a refusal rather than reading about it.
 //
 // Fullscreen is the one that does not fit that shape, and it is named for it:
-// `requestFullscreen` returns whether the platform has fullscreen at all, not whether
+// `hasFullscreen` says whether the platform has it at all; `requestFullscreen` returns
+// whether there was something to request, not whether
 // you got it. The state arrives as an event a frame or more later, so the status line
 // says "requested" and the line above it, which reads the property, is what eventually
 // says "yes".
@@ -88,7 +89,7 @@ class WindowDemo {
 		if (keys.isPressed(Minus))
 			report("shrink", Window.setSize(Std.int(size.x / 1.1), Std.int(size.y / 1.1)));
 		if (keys.isPressed(F)) {
-			// "requested", not "done": the bool says this platform has fullscreen, and
+			// "requested", not "done": the bool says there was something to request, and
 			// the state itself arrives a frame or more later.
 			status = Window.requestFullscreen(!Window.fullscreen) ? "fullscreen: requested"
 				: "fullscreen: not supported here";
@@ -118,7 +119,9 @@ class WindowDemo {
 
 		Render.begin();
 		Render.clearBackground(background);
-		Text.draw("wgrender window   arrows: move   =/-: size   F: fullscreen   M: next monitor   H: hide", 12, y, 16,
+		Text.draw(Window.hasFullscreen // ask before offering the key
+			? "wgrender window   arrows: move   =/-: size   F: fullscreen   M: next monitor   H: hide"
+			: "wgrender window   arrows: move   =/-: size   (no fullscreen here)   M: next monitor   H: hide", 12, y, 16,
 			Color.RAYWHITE);
 		y += 32;
 		Text.draw('window: ${Std.int(size.x)} x ${Std.int(size.y)} at (${Std.int(position.x)}, ${Std.int(position.y)})'
