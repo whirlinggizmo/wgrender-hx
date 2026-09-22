@@ -164,6 +164,25 @@ def source_text(cache, wgrender, node):
                     .decode('utf8', 'replace').split())
 
 
+def logs(node):
+    """Whether this branch says anything before refusing.
+
+    The rule a binding cares about is not "can this fail" but "can it fail in
+    silence": a guard that log_warns is one the program finds out about whether or
+    not the binding hands the bool back. The regex this replaces inferred that from
+    the text between the condition and the return, which is why it needed the guard
+    written in exactly one shape.
+    """
+    for call in (n for n in walk(node) if n.get('kind') == 'CallExpr'):
+        for ref in (n for n in walk(call) if n.get('kind') == 'DeclRefExpr'):
+            name = (ref.get('referencedDecl') or {}).get('name') or ''
+            # log_warn and friends are macros over wgr_logger_*, so the AST -- which
+            # sees the expansion, not the spelling -- never contains a "log_warn".
+            if name.startswith('wgr_logger_') or name.startswith('wgri_log'):
+                return True
+    return False
+
+
 def returns_false(node):
     """Whether this statement can return false without returning anything else."""
     for ret in (n for n in walk(node) if n.get('kind') == 'ReturnStmt'):
@@ -186,6 +205,7 @@ def refusals_in(cache, wgrender, fn):
         if not returns_false(then):
             continue
         text = source_text(cache, wgrender, cond)
+        silent = not logs(then)
         if text is None:
             # Dropping this quietly is the false clean this tool exists to end: it
             # already happened once, when a condition ending on NULL had no flat
@@ -193,7 +213,7 @@ def refusals_in(cache, wgrender, fn):
             sys.exit(f'refusals: {fn.get("name")} has a branch returning false whose '
                      'condition could not be read from the source. Refusing to report '
                      'a partial answer.')
-        out.append(text)
+        out.append({'cond': text, 'logged': not silent})
     return out
 
 
@@ -283,8 +303,9 @@ def main():
     print(f'  {len(api) - len(refusing)} return true on every path\n')
     for name, entry in sorted(refusing.items()):
         print(f'{name}  ({entry["file"]})')
-        for cond in entry['refuses']:
-            print(f'    false when   {cond}')
+        for item in entry['refuses']:
+            mark = '' if item['logged'] else '   (silent)'
+            print(f'    false when   {item["cond"]}{mark}')
         for expr in entry['returns_expr']:
             print(f'    answer from  {expr}')
     never = sorted(n for n, e in api.items() if not e['refuses'] and not e['returns_expr'])
