@@ -30,9 +30,9 @@ src/wgr/impl/         the C surface and the guest ABI, chosen by target
   Raw.cpp.hx            hxcpp externs against wgr.h
   Raw.js.hx             calls the host module's exports, and marshals
   GuestAbi.{cpp,js}.hx  installing the guest's ops, per target
-host/wgr_guest.{c,h}  the guest ABI: wgrender as a host, four ops
+host/wgr_guest.{c,h}  the guest ABI: wgrender as a host, five ops
 test/                 the binding's own suite: 317 assertions against headless wgrender
-examples/             hello3d, particles, simple (guest) and simple-hxcpp (all-in-one)
+examples/             nine guests, and simple-hxcpp built the other way (all-in-one)
 project/              how an installed copy links wgrender, and the submodule it uses
 Run.hx                `haxelib run wgrender-hx setup`
 
@@ -72,7 +72,8 @@ is `false`).
 
 An **all-in-one** app calls `Wgr.initValues` / `setInit` / `setFrame` / `run` and is
 compiled into the binary (or the wasm) with wgrender. A **guest** app implements
-`host/wgr_guest.h`'s four ops — `init`, `frame`, `asset`, `shutdown` — and the host
+`host/wgr_guest.h`'s ops — `init`, `frame`, `asset`, `shutdown`, and an optional
+fixed-rate `tick` — and the host
 calls them; on js the host is a wasm module the page loads, on hxcpp it is linked in
 and the Haxe program's `main` is the entry point.
 
@@ -155,10 +156,14 @@ examples/build.py compare  sizes against wgrender's own C build of each
 test/check.py              the binding's 317 assertions
 ```
 
-[`hello3d`](examples/hello3d) is the smallest and loads nothing;
-[`particles`](examples/particles) and [`simple`](examples/simple) are the fuller ones;
-[`simple-hxcpp`](examples/simple-hxcpp) is the same scene built the other way, for the
-size comparison against the C, Nim and Beef ports.
+Nine of wgrender's 33 C examples are ported, each one a port of the C file it is named
+after: [`hello`](examples/hello) and [`hello3d`](examples/hello3d) are the smallest and
+load nothing, [`particles`](examples/particles) and [`simple`](examples/simple) are the
+fuller ones, [`tick`](examples/tick) is fixed-rate simulation against the render rate,
+and [`quit`](examples/quit), [`window`](examples/window), [`font`](examples/font) and
+[`audio`](examples/audio) each exercise one corner of the API.
+[`simple-hxcpp`](examples/simple-hxcpp) is `simple` built the other way, for the size
+comparison against the C, Nim and Beef ports.
 
 ## Status
 
