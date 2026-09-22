@@ -126,7 +126,13 @@ hxcpp compiles wgrender with the same toolchain it compiles your program with.
 
 `haxelib run wgrender-hx setup` exists for when that is not true — a submodule that
 did not come down, or an archive install once this is published, since a haxelib zip
-is flat and carries no submodule. It fetches what is missing and reports; for a
+is flat and carries no submodule.
+
+**Run it after every `haxelib update wgrender-hx`.** That updates this library and
+leaves the submodule where it was, so wgrender stays at whatever commit it was first
+cloned at; the binding is generated from wgrender's headers, so it then reports itself
+STALE against the older ones and refuses to build. `setup` moves the submodule to the
+commit this library pins. It fetches what is missing and reports; for a
 native target it has nothing to build. `setup web` additionally builds wgrender's
 Emscripten library, which the examples' own build does for you.
 

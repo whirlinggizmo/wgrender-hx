@@ -12,7 +12,7 @@
 	the game is a JS guest on top of it, so the host is an emcc link that wgrender's
 	own Makefile does.
 
-	    haxelib run wgrender-hx setup          fetch the submodule if it is missing
+	    haxelib run wgrender-hx setup          fetch or update the wgrender submodule
 	    haxelib run wgrender-hx setup web      also build the Emscripten host library
 	    haxelib run wgrender-hx where          print what is present
 
@@ -58,8 +58,14 @@ class Run {
 
 	static function setup(web:Bool):Void {
 		final dir = wgrender();
-		if (!sys.FileSystem.exists(haxe.io.Path.join([dir, "Makefile"]))) {
-			Sys.println("fetching the wgrender submodule");
+		// Unconditionally, not only when it is missing. `haxelib git ... --update`
+		// pulls the superproject and leaves submodules where they were, so an
+		// installed copy can have this library's latest sources beside a wgrender from
+		// whenever it was first cloned -- and the binding then reports itself STALE on
+		// the first build, correctly and confusingly. Running this every time costs a
+		// no-op when nothing moved.
+		if (sys.FileSystem.exists(haxe.io.Path.join([root, ".gitmodules"]))) {
+			Sys.println("updating the wgrender submodule");
 			shell("git", ["submodule", "update", "--init", "--recursive"], root);
 		}
 		if (!sys.FileSystem.exists(haxe.io.Path.join([dir, "include/wgr.h"]))) {
