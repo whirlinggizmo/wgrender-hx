@@ -245,8 +245,8 @@ header's numbers ever move — the same guard the Nim port uses.
 
 `test/CheckBindings.hx` (`./build.py check`) **runs** against headless wgrender — no
 window, GPU or audio, with `WGR_HEADLESS_FRAMES` driving a few frames — and asserts
-what it gets back. 79 checks: struct field order, colour packing, enum values against
-the headers, property round-trips, and behaviours the headers state exactly (a missing
+what it gets back. 317 checks: struct field order, colour packing, enum values against
+the headers, accessor round-trips, and behaviours the headers state exactly (a missing
 asset yields a none handle; an unknown material parameter is refused; a point light
 refuses shadows where a directional one takes them; an emitter with the default rate
 of 0 makes nothing until it bursts).
@@ -262,15 +262,19 @@ the retained text objects, which the other two skip. Beef is short because it st
 the raw C surface; Nim and this one both wrap it, and Nim does the same job in far
 fewer lines. Most of the gap is per-handle boilerplate: Nim gets a typed handle from
 one `distinct Handle` line and shares `isNone` and `==` across all of them with a
-typeclass, where each Haxe `abstract` has to restate `isNone`, its conversion to the
-raw C type, and one named function per property accessor.
+typeclass, where each Haxe `abstract` has to restate `isNone` and its conversion to the
+raw C type, and name every accessor separately.
 
 ### Compared with the older librl Haxe binding
 
-`librl/bindings/haxe` is a flat façade — `Model.setTransform(handle, 9 floats)` with a
-single untyped `RLHandle` for everything. This one follows the Nim binding instead: a
-distinct type per handle kind, methods and properties on it, and vectors grouped into
-values. Nothing here depends on that choice; it's the part worth comparing.
+`librl/bindings/haxe` is a flat façade — `Model.setTransform(handle, 9 floats)` — with
+a single untyped `RLHandle` for everything. This binding is now flat the same way, and
+for librl's reason: four bindings only stay in step if all four mirror the C names
+mechanically. Where it differs is the handle. librl passes one untyped `RLHandle`
+everywhere, and this keeps a distinct type per kind, which costs nothing at runtime and
+rejects both a `Mesh` where a `Texture` belongs and a bare literal `0` where
+`Handle.NONE` is meant. So: librl's shape, Nim's types. `docs/handles.md` has the
+measurements behind both halves.
 
 ## Exceptions have to be caught at the callback edge
 
@@ -325,7 +329,7 @@ check_web.mjs                      headless-browser smoke test of out/web
 src/Simple.hx                      the example
 src/Defines.hx                     reads a -D name=value define's value (needs a macro)
 src/wgr/Wgr.hx                     the binding
-src/wgr/Raw.hx                     the C API as is
+src/wgr/impl/Raw.hx                the C API as is
 test/CheckBindings.hx              compile-check of the whole binding surface
 tools/gen_keys.py                  regenerates the Key table from wgrender's wgr_keys.h
 ```
