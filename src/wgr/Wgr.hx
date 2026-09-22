@@ -76,7 +76,7 @@ class Wgr {
 	/**
 		Open the window and set up the loop. Call before anything else.
 
-		Refuses on a version mismatch, as `wgr.impl.GuestAbi.start` does for a guest —
+		Refuses on a version mismatch, as `wgr.GuestAbi.start` does for a guest —
 		this is the other entry point, so it needs the same guard. wgrender's own codes
 		are 0 and -1..-5, so this returns a value that cannot collide with them.
 	**/

@@ -12,7 +12,6 @@
 // 0 for it, because nothing had needed wgrender's `wgr_set_cleanup` yet.
 //
 //   Q, ESC  quit now
-import wgr.impl.GuestAbi;
 import wgr.*;
 
 @:expose("WgrGuest")

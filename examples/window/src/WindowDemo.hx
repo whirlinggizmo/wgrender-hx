@@ -25,7 +25,6 @@
 // The class is `WindowDemo` rather than `Window` for the dull reason that a module
 // named `Window` would shadow `wgr.Window` inside itself, and this example says
 // `Window` on nearly every line.
-import wgr.impl.GuestAbi;
 import wgr.*;
 
 @:expose("WgrGuest")

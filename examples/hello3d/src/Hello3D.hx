@@ -4,7 +4,6 @@
 //
 // It loads nothing, so it is the size floor for this architecture: whatever a Haxe
 // game costs over the wgrender host when the game itself is a few dozen lines.
-import wgr.impl.GuestAbi;
 import wgr.*;
 
 @:expose("WgrGuest")

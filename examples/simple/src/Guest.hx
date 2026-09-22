@@ -5,8 +5,6 @@
 // entered (the guest ABI, not wgr_set_init/wgr_set_frame), and how assets are
 // requested (an id the host hands back, not a closure). The scene code between those
 // edges is the same, against the same wgr.Wgr layer.
-import wgr.impl.GuestAbi;
-import wgr.impl.Raw;
 import wgr.*;
 
 @:expose("WgrGuest")

@@ -15,7 +15,6 @@
 //
 // The class is `FontDemo` rather than `Font` because a module named `Font` would
 // shadow `wgr.Font` inside itself.
-import wgr.impl.GuestAbi;
 import wgr.*;
 
 @:expose("WgrGuest")

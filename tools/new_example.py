@@ -57,7 +57,6 @@ await import(pathToFileURL(join(lib, "tools/drive.mjs")).href);
 '''
 
 STUB = '''// wgrender's {name} example, as a Haxe guest.
-import wgr.impl.GuestAbi;
 import wgr.*;
 
 @:expose("WgrGuest")

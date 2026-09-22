@@ -9,7 +9,6 @@
 // The second example on the wgrender-hx binding, and the reason for most of what it
 // knows about emitters.
 import wgr.*;
-import wgr.impl.GuestAbi;
 
 @:expose("WgrGuest")
 class Particles {

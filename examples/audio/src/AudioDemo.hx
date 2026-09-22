@@ -17,7 +17,6 @@
 //
 // The class is `AudioDemo` rather than `Audio` because a module named `Audio` would
 // shadow `wgr.Audio` inside itself.
-import wgr.impl.GuestAbi;
 import wgr.*;
 
 @:expose("WgrGuest")

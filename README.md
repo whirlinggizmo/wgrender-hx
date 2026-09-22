@@ -24,12 +24,14 @@ if (pick.handle == model) ... // the untyped pick handle still compares to typed
 
 ```
 src/wgr/*.hx          the API — one module per wgrender public header
+src/wgr/GuestAbi.hx   installing the guest's ops; .{cpp,js}.hx per target
 src/wgr/import.hx     gives those modules the C surface
-src/wgr/impl/         the C surface and the guest ABI, chosen by target
+src/wgr/impl/         the generated C surface, chosen by target. Nothing outside the
+                      binding imports from here; an app needs `import wgr.*` and no more
   Raw.hx                #error for a target with no implementation
   Raw.cpp.hx            hxcpp externs against wgr.h
   Raw.js.hx             calls the host module's exports, and marshals
-  GuestAbi.{cpp,js}.hx  installing the guest's ops, per target
+  GuestRaw.cpp.hx       externs for host/wgr_guest.h, which is this binding's own C
 host/wgr_guest.{c,h}  the guest ABI: wgrender as a host, five ops
 test/                 the binding's own suite: 317 assertions against headless wgrender
 examples/             nine guests, and simple-hxcpp built the other way (all-in-one)

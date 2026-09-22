@@ -9,7 +9,6 @@
 // A port of examples/tick.c. It is the example that made the guest ABI grow a fifth
 // op: the ABI mirrored wg-vf's table, where `tick` is the render-rate callback that a
 // renderer calls `frame`, so wgrender's fixed-rate tick had no counterpart.
-import wgr.impl.GuestAbi;
 import wgr.*;
 
 @:expose("WgrGuest")

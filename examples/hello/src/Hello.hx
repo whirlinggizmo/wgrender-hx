@@ -1,6 +1,5 @@
 // wgrender's hello, as a Haxe guest: a window, 2D shapes, text and the mouse.
 // A port of examples/hello.c.
-import wgr.impl.GuestAbi;
 import wgr.*;
 
 @:expose("WgrGuest")
