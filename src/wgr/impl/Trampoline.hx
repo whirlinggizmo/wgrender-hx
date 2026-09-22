@@ -15,6 +15,16 @@ package wgr.impl;
 	  what the key is for: a thousand listeners cost one table slot. The slot is never
 	  returned, because the dispatcher outlives everything that uses it; `Raw` exports
 	  `removeFunction` for callers who allocate their own.
+
+	Both are `extern inline`, which is load-bearing rather than tidy.
+	`cpp.Callable.fromStaticFunction` needs a static it can name at compile time. That
+	holds wherever these are inlined, because the argument is a literal static there --
+	but Haxe also emits the ordinary method, and inside *that* copy `dispatch` is a
+	parameter, so hxcpp rejects it. `-dce full` deleted the unused copy before anything
+	looked at it, which is why every build here passed and a debug build (`-dce no`, or
+	plain `--debug`) failed with "fromStaticFunction must be called on static function".
+	`extern inline` says inline it and never emit the method, so there is no second copy
+	to be wrong.
 **/
 @:noCompletion
 class Trampoline {
@@ -24,7 +34,7 @@ class Trampoline {
 	#end
 
 	/** `wgr_event_listener_fn`: `(void *payload, void *user)`, which is `vii` on wasm. **/
-	public static inline function event(dispatch:(payload:VoidStar, user:VoidStar) -> Void):EventListenerFn {
+	public static extern inline function event(dispatch:(payload:VoidStar, user:VoidStar) -> Void):EventListenerFn {
 		#if cpp
 		return cpp.Callable.fromStaticFunction(dispatch);
 		#else
@@ -35,7 +45,7 @@ class Trampoline {
 	}
 
 	/** `wgr_asset_ping_fn`: `(const char *host, float ms, void *user)`, `vifi` on wasm. **/
-	public static inline function ping(dispatch:(host:CStr, milliseconds:F32, user:VoidStar) -> Void):AssetPingFn {
+	public static extern inline function ping(dispatch:(host:CStr, milliseconds:F32, user:VoidStar) -> Void):AssetPingFn {
 		#if cpp
 		return cpp.Callable.fromStaticFunction(dispatch);
 		#else

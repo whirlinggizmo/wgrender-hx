@@ -100,6 +100,16 @@ def main():
     link.symlink_to(WGRENDER / 'examples/assets')
     run([binary], env={**os.environ, 'WGR_HEADLESS_FRAMES': FRAMES})
 
+    # Everything above builds with -dce full, which is what hid a real bug: a
+    # `static inline` that is only valid *because* it is inlined still gets an ordinary
+    # method generated, and full DCE deleted that copy before anything checked it. A
+    # debug build keeps it. Codegen only (-D no-compilation), so this costs seconds.
+    print('code generation without DCE (what a debug build does)')
+    run([HAXE, '-D', 'WGR_BUILD_XML=' + str(BUILD / 'check.xml'),
+         '-cp', ROOT / 'src', '-cp', ROOT / 'test', '--main', 'CheckBindings',
+         '--cpp', BUILD / 'cpp-nodce', '-D', 'HAXE_OUTPUT_FILE=check-nodce',
+         '-dce', 'no', '--debug', '-D', 'no-compilation'], cwd=ROOT)
+
     print('type-check (js)')
     run([HAXE, '-cp', ROOT / 'src', '-cp', ROOT / 'test', '--main', 'CheckBindings',
          '--js', BUILD / 'check-js.js', '-D', 'js-es=6'])
