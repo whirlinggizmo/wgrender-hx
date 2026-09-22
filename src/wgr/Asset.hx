@@ -132,7 +132,10 @@ class Asset {
 		then the file's own path, so later rules sit on top. A miss under a path rule
 		isn't an error, just the next rule (on the web that costs a request). Download
 		rules don't stack — the newest one matching wins. Prefixes are plain text
-		matched at the start of the path, not globs. Up to 32 rules.
+		matched at the start of the path, not globs. Up to 32 rules; false when full,
+		given an empty prefix or target, or a prefix over 255 or target over 511
+		characters. Both refusals are logged. Adding the same prefix twice keeps both
+		rules rather than replacing the first.
 	**/
 	public static inline function addRedirect(prefix:String, target:String):Bool
 		return Raw.wgr_asset_add_redirect(prefix, target);

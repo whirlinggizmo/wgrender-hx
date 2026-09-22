@@ -1,8 +1,22 @@
 #!/usr/bin/env python3
-"""Which wgrender setters can refuse a value, and whether the binding lets you see it.
+"""Which wgrender calls can refuse, and whether the binding lets you see it.
 
     tools/setters.py [WGRENDER_DIR]     the report
-    tools/setters.py --check            fail if a property is swallowing a refusal
+    tools/setters.py --check            the gate: a documented refusal the binding
+                                        does not repeat, or a stale exception
+
+Two rules live here, and only the first is safe to fail a build on.
+
+  1. A refusal named in a wgrender header is repeated in the binding's doc comment.
+     Prose against prose, over every bool-returning wgr_* call -- not only setters.
+     wgr_asset_add_redirect is "false when full or given an empty prefix or target"
+     and went unaudited for exactly as long as this looked for `_set_` in a name.
+
+  2. A silent refusal does not sit behind a property. This one reads wgrender's C
+     control flow with regular expressions, so it warns and never gates; see the
+     note at the bottom. It is also the half with a shelf life: it exists to choose
+     between a property and a method, so an API of statics returning Bool retires it
+     and most of this file with it, leaving rule 1 under a more honest name.
 
 Every wgrender setter returns false for a dead handle, and wgrender logs that. Some
 refuse a *value* as well -- a negative rate, a zero-length light direction, an emitter
@@ -208,7 +222,12 @@ SAYS_SO = re.compile(r'\brefus(e|es|ed|ing)\b|\bfalse\b|\bkeeps? what it had\b'
 
 
 def documented_refusals():
-    """Setters whose header comment names a refusal, with the sentence it used.
+    """Functions whose header comment names a refusal, with the sentence it used.
+
+    Every bool-returning wgr_* call, not only the setters. The contract below is
+    about a refusal being documented, and nothing in it is specific to a setter --
+    wgr_asset_add_redirect is "false when full or given an empty prefix or target"
+    and was invisible here purely because its name has no `_set_` in it.
 
     AGENTS.md makes this a contract: "a setter's comment uses the word that matches
     the code, and 'false for ...' names every refusal ... a binding decides
@@ -219,7 +238,7 @@ def documented_refusals():
     for h in sorted((WGRENDER / 'include').glob('*.h')):
         text = h.read_text()
         for m in re.finditer(
-                r'(/\*(?:[^*]|\*(?!/))*\*/)?\s*bool\s+(wgr_\w+_set_\w+)\s*\([^;]*?\);'
+                r'(/\*(?:[^*]|\*(?!/))*\*/)?\s*bool\s+(wgr_\w+)\s*\([^;]*?\);'
                 r'((?:[ \t]*/\*(?:[^*]|\*(?!/))*\*/)?)', text):
         # the comment above the declaration, or the one trailing it on the same line
             comment = (m.group(1) or '') + (m.group(3) or '')
@@ -277,7 +296,10 @@ def binding():
             raw = m.group(2) or direct.get(m.group(3))
             if raw:
                 props[raw] = f'{f.stem}.{m.group(1)}'
-        for m in re.finditer(r'function (set[A-Z]\w*)\([^)]*\):Bool\s*\n?\s*return Raw\.(wgr_\w+)\(', s):
+        # Any Bool-returning member, not just setX: addRedirect, groupAdd and
+        # addEffect all document a refusal. get_/set_ accessors are excluded --
+        # they are the property half, counted in `props` above.
+        for m in re.finditer(r'function (?!get_|set_)(\w+)\([^)]*\):Bool\s*\n?\s*return Raw\.(wgr_\w+)\(', s):
             methods[m.group(2)] = f'{f.stem}.{m.group(1)}'
     return props, methods
 
@@ -350,10 +372,10 @@ def main():
             pass
         print(f'setters: {"stale" if undocumented else "current"} '
               f'({len(documented)} documented refusals, {len(undocumented)} not repeated; '
-              f'{len(props)} properties, {len(methods)} methods)')
+              f'{len(props)} properties, {len(methods)} bool methods)')
         return 1 if undocumented or stale else 0
 
-    print(f'{len(props)} properties and {len(methods)} methods wrap a wgrender setter.\n')
+    print(f'{len(props)} properties and {len(methods)} bool methods wrap a wgrender call.\n')
     # Same split as --check: an entry in DELEGATED has been read by hand and the answer
     # is below, so listing it here as a swallowed refusal would contradict it three
     # paragraphs later. The check gates on this; the report has to agree with the check.
@@ -366,7 +388,7 @@ def main():
                 print(f'  {"":<28}   false when  {cond}')
         print()
     print(f'{len(fine)} properties can only fail on a dead handle, which wgrender logs.')
-    print(f'\n{len(documented)} setters name a refusal in their header; '
+    print(f'\n{len(documented)} calls name a refusal in their header; '
           f'{len(documented) - len(undocumented)} are repeated in the binding\'s docs.')
     for where, c_name, sentence in undocumented:
         print(f'  {where:<28} {c_name} says so and the binding does not')
