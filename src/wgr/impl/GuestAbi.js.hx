@@ -26,15 +26,27 @@ class GuestAbi {
 	static var onFrame:(dt:Float, frameId:Int) -> Void;
 	static var onTick:(dt:Float) -> Void;
 	static var onAsset:(id:Int, path:String, ok:Bool) -> Void;
+	static var onShutdown:() -> Void;
 
+	/**
+		`shutdown` is optional and runs once, after the last frame, on the way out --
+		wgrender's `wgr_set_cleanup` for a guest. It is the op to release anything the
+		guest owns outside wgrender; anything wgrender owns is already being torn down.
+
+		Left out, the slot stays 0 rather than being filled with a function that does
+		nothing: an op costs a table entry in the wasm module for as long as it is
+		installed, and `addFunction` cannot take one back.
+	**/
 	public static function register(init:() -> Void, frame:(dt:Float, frameId:Int) -> Void,
-			asset:(id:Int, path:String, ok:Bool) -> Void):Void {
+			asset:(id:Int, path:String, ok:Bool) -> Void, ?shutdown:() -> Void):Void {
 		onInit = init;
 		onFrame = frame;
 		onAsset = asset;
+		onShutdown = shutdown;
 		Raw.host._wgr_guest_register(op("init", "i", () -> onInit()),
 			op("frame", "ifi", (dt:Float, frameId:Int) -> onFrame(dt, frameId)),
-			op("asset", "iiii", (id:Int, path:Int, ok:Int) -> onAsset(id, Raw.str(path), ok != 0)), 0);
+			op("asset", "iiii", (id:Int, path:Int, ok:Int) -> onAsset(id, Raw.str(path), ok != 0)),
+			shutdown == null ? 0 : op("shutdown", "i", () -> onShutdown()));
 	}
 
 	/**

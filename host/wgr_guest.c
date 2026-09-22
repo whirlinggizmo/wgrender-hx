@@ -98,6 +98,28 @@ static void host_frame(float dt, float tick_fraction, void *user)
     }
 }
 
+/* The last op to run, once, on the way out. It was stored by wgr_guest_register from
+ * the beginning and never called: nothing here registered a cleanup with wgrender, so
+ * the slot existed and no guest could observe it. Porting examples/quit.c, whose whole
+ * subject is what happens after the last frame, is what noticed.
+ *
+ * It runs even when the guest has faulted. A faulted guest is the case where releasing
+ * whatever it holds outside wgrender matters most, and by here there are no more frames
+ * for a second fault to spoil. */
+static void host_shutdown(void *user)
+{
+    (void)user;
+    if (guest_shutdown == NULL) {
+        return;
+    }
+    int rc = guest_shutdown();
+    if (rc != 0) {
+        /* Not fault(): that can call wgr_request_quit, and wgrender is already
+         * quitting. Say it happened and let the teardown finish. */
+        wgr_logger_message(WGR_LOGGER_LEVEL_ERROR, "wgr_guest: shutdown faulted (%d)", rc);
+    }
+}
+
 /* --- assets: the glue holds the function pointers, the guest holds an id --- */
 
 static void asset_done(const char *path, void *user, int ok)
@@ -136,6 +158,7 @@ GUEST_EXPORT int wgr_guest_start(int width, int height, const char *title, uint3
     wgr_init_values(width, height, kept_title, flags);
     wgr_set_init(host_init, NULL);
     wgr_set_frame(host_frame, NULL);
+    wgr_set_cleanup(host_shutdown, NULL);
     if (guest_tick != NULL && guest_tick_hz > 0) {
         wgr_set_tick(host_tick, NULL, guest_tick_hz);
     }

@@ -22,12 +22,19 @@ class GuestAbi {
 	static var onFrame:(dt:Float, frameId:Int) -> Void;
 	static var onTick:(dt:Float) -> Void;
 	static var onAsset:(id:Int, path:String, ok:Bool) -> Void;
+	static var onShutdown:() -> Void;
 
+	/**
+		`shutdown` is optional and runs once, after the last frame, on the way out --
+		wgrender's `wgr_set_cleanup` for a guest. It is the op to release anything the
+		guest owns outside wgrender; anything wgrender owns is already being torn down.
+	**/
 	public static function register(init:() -> Void, frame:(dt:Float, frameId:Int) -> Void,
-			asset:(id:Int, path:String, ok:Bool) -> Void):Void {
+			asset:(id:Int, path:String, ok:Bool) -> Void, ?shutdown:() -> Void):Void {
 		onInit = init;
 		onFrame = frame;
 		onAsset = asset;
+		onShutdown = shutdown;
 		GuestRaw.wgr_guest_register(cpp.Callable.fromStaticFunction(initOp), cpp.Callable.fromStaticFunction(frameOp),
 			cpp.Callable.fromStaticFunction(assetOp), cpp.Callable.fromStaticFunction(shutdownOp));
 	}
@@ -89,8 +96,17 @@ class GuestAbi {
 		return 0;
 	}
 
-	static function shutdownOp():Int
+	static function shutdownOp():Int {
+		if (onShutdown == null)
+			return 0;
+		try
+			onShutdown()
+		catch (e:haxe.Exception) {
+			Log.error('guest: uncaught exception in shutdown: ${e.message}');
+			return 1;
+		}
 		return 0;
+	}
 
 	/**
 		Refuses on a version mismatch rather than starting: unlike a frame fault, it is
