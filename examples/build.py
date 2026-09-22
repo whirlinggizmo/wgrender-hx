@@ -62,7 +62,7 @@ GUESTS = ['hello', 'hello3d', 'particles', 'simple', 'tick',
           'fetch', 'sprite2d', 'sprite3d', 'text3d', '2d',
           'model', 'meshes', 'textures', 'materials', 'lights',
           'instancing', 'shadows', 'render_target', 'postprocess', 'environment',
-          'shaders', 'gamepad', 'scene3d', 'pick', 'loading']
+          'shaders', 'gamepad', 'scene3d', 'pick', 'loading', 'touch', 'ui']
 OTHERS = ['simple-hxcpp']
 
 WHAT = {
@@ -112,6 +112,10 @@ WHAT = {
             'click through a sprite',
     'loading': 'six files loading while a cube spins, with a frame-time graph that '
                'shows what a background load costs against a synchronous one',
+    'touch': 'every finger as a numbered ring, and two fingers panning, pinching and '
+             'twisting a sprite',
+    'ui': 'buttons, a progress bar and a clipped scrolling list built out of 2D '
+          'shapes and text2d, beside a 3D model in the same scene',
     'simple-hxcpp': 'the same scene the other way: Haxe through hxcpp into one wasm, '
                     'for the size comparison',
 }
