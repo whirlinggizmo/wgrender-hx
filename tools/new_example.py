@@ -111,7 +111,10 @@ def main():
     if len(args) != 1:
         sys.exit(__doc__)
     name = args[0]
-    if not re.fullmatch(r'[a-z][a-z0-9_]*', name):
+    # A leading digit is allowed because wgrender has an example called 2d and these
+    # are named after the C file they port. Only the entry class cannot start with one,
+    # and that is what --entry is for.
+    if not re.fullmatch(r'[a-z0-9][a-z0-9_]*', name):
         sys.exit(f'{name}: an example name is lowercase letters, digits and underscores')
 
     def opt(flag, default):
