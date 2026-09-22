@@ -38,9 +38,56 @@ class GuestAbi {
 		onFrame = frame;
 		onAsset = asset;
 		onShutdown = shutdown;
+		installOps();
+	}
+
+	static var opsInstalled = false;
+
+	/** Hand wgrender the dispatchers, once; they read the statics when they fire. **/
+	static function ensureInstalled():Void {
+		if (!opsInstalled)
+			installOps();
+	}
+
+	static function installOps():Void {
+		opsInstalled = true;
 		GuestRaw.wgr_guest_register(cpp.Callable.fromStaticFunction(initOp), cpp.Callable.fromStaticFunction(frameOp),
 			cpp.Callable.fromStaticFunction(assetOp), cpp.Callable.fromStaticFunction(shutdownOp));
+		GuestRaw.wgr_guest_install();
 	}
+
+	/**
+		The ops, one at a time, after `register` or instead of it.
+
+		The op installed with wgrender is a dispatcher that reads these statics when it
+		fires, so re-pointing one is an assignment: nothing is re-registered, and on js
+		no second function enters the wasm table. That is what lets `wgr.Wgr`'s
+		lifecycle setters mean the same thing on both targets -- they land here.
+
+		`ensureInstalled` is why they can be used without `register`: the slots have to
+		be filled on wgrender's side before a frame happens, and `start` is the only
+		thing that would otherwise do it.
+	**/
+	public static function setInit(init:() -> Void):Void {
+		onInit = init;
+		ensureInstalled();
+	}
+
+	public static function setFrame(frame:(dt:Float, frameId:Int) -> Void):Void {
+		onFrame = frame;
+		ensureInstalled();
+	}
+
+	public static function setShutdown(shutdown:() -> Void):Void {
+		onShutdown = shutdown;
+		ensureInstalled();
+	}
+
+	public static function setAsset(asset:(id:Int, path:String, ok:Bool) -> Void):Void {
+		onAsset = asset;
+		ensureInstalled();
+	}
+
 
 	/**
 		Fixed-rate simulation: `tick` runs 0..N times before each frame, always with
@@ -60,6 +107,8 @@ class GuestAbi {
 		return GuestRaw.wgr_guest_tick_fraction();
 
 	static function tickOp(dt:Single):Int {
+		if (onTick == null)
+			return 0;
 		try
 			onTick(dt)
 		catch (e:haxe.Exception) {
@@ -70,6 +119,8 @@ class GuestAbi {
 	}
 
 	static function initOp():Int {
+		if (onInit == null)
+			return 0;
 		try
 			onInit()
 		catch (e:haxe.Exception) {
@@ -80,6 +131,8 @@ class GuestAbi {
 	}
 
 	static function frameOp(dt:Single, frameId:cpp.UInt32):Int {
+		if (onFrame == null)
+			return 0;
 		try
 			onFrame(dt, frameId)
 		catch (e:haxe.Exception) {
@@ -90,6 +143,8 @@ class GuestAbi {
 	}
 
 	static function assetOp(id:cpp.UInt32, path:cpp.ConstCharStar, ok:Int):Int {
+		if (onAsset == null)
+			return 0;
 		try
 			onAsset(id, path.toString(), ok != 0)
 		catch (e:haxe.Exception) {

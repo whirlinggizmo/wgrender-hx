@@ -97,7 +97,19 @@ def write_config(target, cflags, ldflags, libs, defines=()):
   <files id="haxe">
 {elements('compilerflag', 'value', cflags)}
   </files>
+  <!-- The guest glue. This example drives wgrender itself rather than being a guest,
+       but wgr.Wgr's lifecycle setters go through the glue on both targets now: it owns
+       wgrender's slots and dispatches to whatever Haxe set, which is what lets one
+       source build all-in-one or as a guest. -->
+  <files id="wgrguest">
+{elements('compilerflag', 'value', cflags)}
+    <file name="{LIB}/host/wgr_guest.c" />
+  </files>
+  <files id="__main__">
+{elements('compilerflag', 'value', cflags)}
+  </files>
   <target id="haxe">
+    <files id="wgrguest" />
 {elements('flag', 'value', ldflags)}
 {elements('lib', 'name', libs)}
   </target>
@@ -114,7 +126,7 @@ def build_desktop():
     print('wgrender (desktop)')
     run(make('all'))
     write_config('desktop',
-                 cflags=[f'-I{WGRENDER}/include'],
+                 cflags=[f'-I{WGRENDER}/include', f'-I{LIB}/host'],
                  ldflags=[],
                  libs=[str(WGRENDER / f'build/{host_os()}/libwgrender.a'), *DESKTOP_LIBS])
     print(f'simple (desktop) -> out/{host_os()}/simple')
@@ -135,6 +147,9 @@ def build_web():
     print('wgrender (web)')
     run(make('web', 'WEB_THREADS=0'))
     lib, cflags, ldflags = web_flags()
+    # The guest glue, as on desktop -- plus WGR_GUEST_NO_MAIN, because this build has
+    # hxcpp's main() and the glue would otherwise define a second one.
+    cflags = [*cflags, f'-I{LIB}/host', '-DWGR_GUEST_NO_MAIN']
     # wgrender's EM_JS glue makes emscripten's JS $stackSave/$stackRestore live, but
     # under hxcpp's -fwasm-exceptions nothing native references the wasm stack ops, so
     # emcc leaves them out and the link fails on them. Exporting them pulls them in.

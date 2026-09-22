@@ -1678,6 +1678,10 @@ class Raw {
 			user_data:Int):Bool
 		return Raw.host._wgr_asset_ping_host(cstr(host_), timeout_ms, on_done, user_data) != 0;
 
+	/** Fill wgrender's lifecycle slots with the guest glue's dispatchers. **/
+	public static inline function wgr_guest_install():Void
+		Raw.host._wgr_guest_install();
+
 	/** Turn a Haxe function into a wasm table index; `removeFunction` gives it back. **/
 	public static inline function addFunction(fn:Dynamic, signature:String):Int
 		return Raw.host.addFunction(fn, signature);

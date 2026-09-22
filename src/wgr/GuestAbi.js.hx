@@ -43,11 +43,71 @@ class GuestAbi {
 		onFrame = frame;
 		onAsset = asset;
 		onShutdown = shutdown;
-		Raw.host._wgr_guest_register(op("init", "i", () -> onInit()),
-			op("frame", "ifi", (dt:Float, frameId:Int) -> onFrame(dt, frameId)),
-			op("asset", "iiii", (id:Int, path:Int, ok:Int) -> onAsset(id, Raw.str(path), ok != 0)),
-			shutdown == null ? 0 : op("shutdown", "i", () -> onShutdown()));
+		installOps();
 	}
+
+	static var opsInstalled = false;
+
+	/**
+		Hand wgrender the dispatchers, once. They read `onInit` and the rest when they
+		fire, so this never has to run again however often a handler changes -- which
+		matters on js, where every `op` is a wasm table entry that cannot be taken back.
+	**/
+	static function ensureInstalled():Void {
+		if (!opsInstalled)
+			installOps();
+	}
+
+	static function installOps():Void {
+		opsInstalled = true;
+		Raw.host._wgr_guest_register(op("init", "i", () -> callInit()),
+			op("frame", "ifi", (dt:Float, frameId:Int) -> callFrame(dt, frameId)),
+			op("asset", "iiii", (id:Int, path:Int, ok:Int) -> callAsset(id, Raw.str(path), ok != 0)),
+			op("shutdown", "i", () -> callShutdown()));
+		Raw.host._wgr_guest_install();
+	}
+
+	// Null-tolerant, because a program may set only the ops it cares about.
+	static function callInit():Void if (onInit != null) onInit();
+
+	static function callFrame(dt:Float, frameId:Int):Void if (onFrame != null) onFrame(dt, frameId);
+
+	static function callAsset(id:Int, path:String, ok:Bool):Void if (onAsset != null) onAsset(id, path, ok);
+
+	static function callShutdown():Void if (onShutdown != null) onShutdown();
+
+	/**
+		The ops, one at a time, after `register` or instead of it.
+
+		The op installed with wgrender is a dispatcher that reads these statics when it
+		fires, so re-pointing one is an assignment: nothing is re-registered, and on js
+		no second function enters the wasm table. That is what lets `wgr.Wgr`'s
+		lifecycle setters mean the same thing on both targets -- they land here.
+
+		`ensureInstalled` is why they can be used without `register`: the slots have to
+		be filled on wgrender's side before a frame happens, and `start` is the only
+		thing that would otherwise do it.
+	**/
+	public static function setInit(init:() -> Void):Void {
+		onInit = init;
+		ensureInstalled();
+	}
+
+	public static function setFrame(frame:(dt:Float, frameId:Int) -> Void):Void {
+		onFrame = frame;
+		ensureInstalled();
+	}
+
+	public static function setShutdown(shutdown:() -> Void):Void {
+		onShutdown = shutdown;
+		ensureInstalled();
+	}
+
+	public static function setAsset(asset:(id:Int, path:String, ok:Bool) -> Void):Void {
+		onAsset = asset;
+		ensureInstalled();
+	}
+
 
 	/**
 		Fixed-rate simulation: `tick` runs 0..N times before each frame, always with

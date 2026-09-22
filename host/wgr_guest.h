@@ -57,6 +57,11 @@ void wgr_guest_set_fault_policy(int policy); /* default: CONTINUE */
  * wgr_set_tick has it. Call before wgr_guest_start; it takes effect there. */
 void wgr_guest_register_tick(wgr_guest_tick_fn tick, int hz);
 
+/* Put the ops in wgrender's lifecycle slots without opening a window or running, for
+ * a program that drives wgrender itself (wgr_init_values, then wgr_run) and still
+ * wants its handlers called. wgr_guest_start does this for a guest. Idempotent. */
+void wgr_guest_install(void);
+
 /* Open the window and run. Returns when the loop ends — at once on the web, where
  * the browser drives frames from here on. Register before calling this. */
 int wgr_guest_start(int width, int height, const char *title, uint32_t flags);

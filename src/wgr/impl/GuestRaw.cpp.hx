@@ -29,6 +29,9 @@ extern class GuestRaw {
 	static function wgr_guest_tick_fraction():Single;
 	@:native("wgr_guest_set_fault_policy")
 	static function wgr_guest_set_fault_policy(policy:Int):Void;
+	@:native("wgr_guest_install")
+	static function wgr_guest_install():Void;
+
 	@:native("wgr_guest_start")
 	static function wgr_guest_start(width:Int, height:Int, title:ConstCharStar, flags:UInt32):Int;
 	@:native("wgr_guest_asset_load")

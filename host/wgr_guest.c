@@ -24,8 +24,16 @@ static wgr_guest_shutdown_fn guest_shutdown;
 static wgr_guest_tick_fn guest_tick;
 static int guest_tick_hz;
 
+/* The ops, as wgrender's lifecycle callbacks; defined below, named here because
+ * wgr_guest_register_tick and wgr_guest_install both install them from above. */
+static void host_init(void *user);
+static void host_tick(float dt, void *user);
+static void host_frame(float dt, float tick_fraction, void *user);
+static void host_shutdown(void *user);
+
 static int fault_policy = WGR_GUEST_FAULT_CONTINUE;
 static int faulted;
+static int installed;
 static uint32_t frame_id;
 static float last_tick_fraction;
 
@@ -46,6 +54,11 @@ GUEST_EXPORT void wgr_guest_register_tick(wgr_guest_tick_fn tick, int hz)
 {
     guest_tick = tick;
     guest_tick_hz = hz;
+    /* Registering a tick after the ops are in place has to reach wgrender now;
+     * wgr_guest_install is what would have done it, and it has already run. */
+    if (installed && tick != NULL && hz > 0) {
+        wgr_set_tick(host_tick, NULL, hz);
+    }
 }
 GUEST_EXPORT int wgr_guest_faulted(void) { return faulted; }
 
@@ -143,6 +156,29 @@ GUEST_EXPORT int wgr_guest_asset_load(const char *path, uint32_t id, const char 
            == WGR_ASSET_ADD_TASK_OK;
 }
 
+/* Put the ops in wgrender's lifecycle slots, without opening a window or running.
+ *
+ * wgr_guest_start does this on its way to wgr_run, which is all a guest needs. A
+ * program driving wgrender itself -- wgr_init_values, its own callbacks, wgr_run --
+ * needs the slots filled without the rest, because host_init and friends are static
+ * here and it cannot reach them.
+ *
+ * Unconditional on purpose, and safe to call repeatedly. wgr_init_values memsets
+ * wgrender's runtime, so anything installed before it is erased: a program that sets
+ * a handler, then starts, has to have the slots filled again afterwards. Setting the
+ * same three function pointers twice costs nothing; skipping the second one costs the
+ * whole lifecycle, silently, which is how this was found. */
+GUEST_EXPORT void wgr_guest_install(void)
+{
+    installed = 1;
+    wgr_set_init(host_init, NULL);
+    wgr_set_frame(host_frame, NULL);
+    wgr_set_cleanup(host_shutdown, NULL);
+    if (guest_tick != NULL && guest_tick_hz > 0) {
+        wgr_set_tick(host_tick, NULL, guest_tick_hz);
+    }
+}
+
 GUEST_EXPORT int wgr_guest_start(int width, int height, const char *title, uint32_t flags)
 {
     /* Copied: a guest passing scratch memory shouldn't have to keep it alive. */
@@ -156,12 +192,7 @@ GUEST_EXPORT int wgr_guest_start(int width, int height, const char *title, uint3
     kept_title[i] = '\0';
 
     wgr_init_values(width, height, kept_title, flags);
-    wgr_set_init(host_init, NULL);
-    wgr_set_frame(host_frame, NULL);
-    wgr_set_cleanup(host_shutdown, NULL);
-    if (guest_tick != NULL && guest_tick_hz > 0) {
-        wgr_set_tick(host_tick, NULL, guest_tick_hz);
-    }
+    wgr_guest_install();
     return wgr_run();
 }
 
@@ -172,7 +203,12 @@ GUEST_EXPORT int wgr_guest_start(int width, int height, const char *title, uint3
  * the guest and calls wgr_guest_start.
  *
  * On desktop the guest is compiled in, and its own runtime supplies main() — hxcpp's
- * here. Defining one as well is a duplicate symbol at link time. */
-#ifdef __EMSCRIPTEN__
+ * here. Defining one as well is a duplicate symbol at link time.
+ *
+ * The same is true of an all-in-one *web* build: hxcpp through emcc produces one wasm
+ * with the Haxe program's main in it, and this glue linked alongside. That build
+ * defines WGR_GUEST_NO_MAIN to say so, because C cannot tell the two web shapes
+ * apart from in here. */
+#if defined(__EMSCRIPTEN__) && !defined(WGR_GUEST_NO_MAIN)
 int main(void) { return 0; }
 #endif

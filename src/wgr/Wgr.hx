@@ -7,15 +7,8 @@ import cpp.ConstCharStar;
 // wgr.h — the application: open a window, run the loop
 
 class Wgr {
-	// wgrender enters the loop here on hxcpp; on js the guest ABI does.
-	#if cpp
-	// --- lifecycle ---
-	static var initCallback:() -> Void;
-	static var frameCallback:(dt:Float, tickFraction:Float) -> Void;
-	static var tickCallback:(dt:Float) -> Void;
-	static var cleanupCallback:() -> Void;
-
-	#end
+	// The lifecycle handlers live in wgr.GuestAbi on both targets now: it owns
+	// wgrender's slots through the guest glue, and these setters point at them.
 
 	/**
 		An exception that escapes into wgrender's C frames takes the loop with it, and
@@ -31,43 +24,6 @@ class Wgr {
 	@:allow(wgr)
 	static function report(where:String, e:haxe.Exception):Void {
 		Log.error('uncaught exception in $where: ${e.message}');
-	}
-
-	#if cpp
-	static function initTrampoline(user:VoidStar):Void {
-		if (initCallback == null)
-			return;
-		try
-			initCallback()
-		catch (e:haxe.Exception)
-			report("the init callback", e);
-	}
-
-	static function tickTrampoline(dt:Single, user:VoidStar):Void {
-		if (tickCallback == null)
-			return;
-		try
-			tickCallback(dt)
-		catch (e:haxe.Exception)
-			report("the tick callback", e);
-	}
-
-	static function cleanupTrampoline(user:VoidStar):Void {
-		if (cleanupCallback == null)
-			return;
-		try
-			cleanupCallback()
-		catch (e:haxe.Exception)
-			report("the cleanup callback", e);
-	}
-
-	static function frameTrampoline(dt:Single, tickFraction:Single, user:VoidStar):Void {
-		if (frameCallback == null)
-			return;
-		try
-			frameCallback(dt, tickFraction)
-		catch (e:haxe.Exception)
-			report("the frame callback", e);
 	}
 
 	/** What `initValues` returns when the library is not the one this was built for. **/
@@ -86,17 +42,31 @@ class Wgr {
 		return Raw.wgr_init_values(width, height, title, flags == null ? 0 : (flags : Int));
 	}
 
-	/** Runs once, after the window exists and before the first frame. **/
-	public static function setInit(cb:() -> Void):Void {
-		initCallback = cb;
-		Raw.wgr_set_init(cpp.Callable.fromStaticFunction(initTrampoline), Native.nullPtr());
-	}
+	/**
+		The lifecycle, on both targets.
 
-	/** Runs every frame: `dt` seconds since the last one. **/
-	public static function setFrame(cb:(dt:Float, tickFraction:Float) -> Void):Void {
-		frameCallback = cb;
-		Raw.wgr_set_frame(cpp.Callable.fromStaticFunction(frameTrampoline), Native.nullPtr());
-	}
+		These go through the guest glue (`host/wgr_guest.h`), which owns wgrender's
+		lifecycle slots and dispatches to whatever is set here. That is what the js
+		host already does, so routing hxcpp the same way makes one source build either
+		shape: all-in-one, where the Haxe program is linked with wgrender, or as a
+		guest of a wasm host.
+
+		Setting the raw `wgr_set_frame` from a guest would replace the glue's own
+		handler and stop the ABI being called at all, which is why `Raw` does not offer
+		it on js. Going through the glue is the version that cannot do that.
+	**/
+
+	/** Runs once, after the window exists and before the first frame. **/
+	public static function setInit(cb:() -> Void):Void
+		GuestAbi.setInit(cb);
+
+	/**
+		Runs every frame: `dt` seconds since the last one, and how far into the next
+		tick it is. The glue reports a frame id instead, so `tickFraction` is read
+		beside it — the same number wgrender would have passed.
+	**/
+	public static function setFrame(cb:(dt:Float, tickFraction:Float) -> Void):Void
+		GuestAbi.setFrame((dt, _) -> cb(dt, GuestAbi.tickFraction()));
 
 	/**
 		Runs at a fixed rate, 0 to N times before each frame, always with `dt` of 1/`hz`
@@ -108,22 +78,22 @@ class Wgr {
 		belong to whichever callback reads them, and every press is seen by exactly one
 		tick. An `hz` of 0 or less turns the tick off.
 	**/
-	public static function setTick(cb:(dt:Float) -> Void, hz:Int):Void {
-		tickCallback = cb;
-		Raw.wgr_set_tick(cpp.Callable.fromStaticFunction(tickTrampoline), Native.nullPtr(), hz);
-	}
+	public static function setTick(cb:(dt:Float) -> Void, hz:Int):Void
+		GuestAbi.registerTick(cb, hz);
 
 	/** Runs as the window closes, before the GPU is torn down. **/
-	public static function setCleanup(cb:() -> Void):Void {
-		cleanupCallback = cb;
-		Raw.wgr_set_cleanup(cpp.Callable.fromStaticFunction(cleanupTrampoline), Native.nullPtr());
-	}
+	public static function setCleanup(cb:() -> Void):Void
+		GuestAbi.setShutdown(cb);
 
-	/** Drive the loop. On the web this returns at once and the browser drives frames. **/
+	#if cpp
+	/**
+		Drive the loop; hxcpp only, because on js the host owns it and there is nothing
+		to return from. A js program calls `GuestAbi.start` instead, which is
+		`initValues` and this in one.
+	**/
 	public static inline function run():Int {
 		return Raw.wgr_run();
 	}
-
 	#end
 
 	/** True once `initValues` has succeeded. **/
