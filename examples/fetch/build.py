@@ -25,5 +25,7 @@ if not (LIB / 'tools/guestbuild.py').exists():
 sys.path.insert(0, str(LIB / 'tools'))
 from guestbuild import Project  # noqa: E402
 
-Project(root=pathlib.Path(__file__).resolve().parent, name='fetch', entry='Fetch',
+# -D WGR_INCLUDE_FETCHER: this is the one example that downloads, so it is the one
+# that pays for a TLS stack. Everything else builds without it and without mbedtls.
+Project(root=pathlib.Path(__file__).resolve().parent, name='fetch', entry='Fetch', defines=['WGR_INCLUDE_FETCHER'], 
         title='fetch', background='#1c1c26').main()

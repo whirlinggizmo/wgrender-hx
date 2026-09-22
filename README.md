@@ -109,6 +109,14 @@ the same lookup a shipped one does:
 | web (js or hxcpp/Emscripten) | `/assets` — what `tools/serve.py` mounts, and what a host should serve |
 | native | `$WGR_ASSET_BASE`, then an `assets` directory beside the executable, then `assets` relative to the working directory |
 
+wgrender links no HTTP and no TLS, so a miss on a native build is a question it asks
+the program: `Asset.setFetcher`. The binding ships the answer —
+`Asset.setFetcher(Asset.httpFetcher)` installs `haxe.Http` over hxcpp's bundled
+mbedtls, verifying certificates from the system store. It costs about a megabyte of
+binary and only if you name it: a program that never installs a fetcher is byte for
+byte the size it was, measured. On the web there is nothing to install and
+`setFetcher` answers `false`, because the browser is already the downloader.
+
 An app's build is expected to put `assets` next to the built executable — the examples
 link it to wherever wgrender is checked out.
 

@@ -37,7 +37,10 @@ class Asset {
 		return Raw.wgr_asset_get_host();
 
 	static inline function set_host(v:String):String {
-		Raw.wgr_asset_set_host(v);
+		// Through setHost, not straight to Raw: the two are the same operation and a
+		// URL arriving by one route and not the other is exactly the kind of gap
+		// nobody finds until the assets do not load.
+		setHost(v);
 		return v;
 	}
 
@@ -47,8 +50,47 @@ class Asset {
 	}
 
 	/** Where relative asset paths resolve from: a directory or a URL base. **/
-	public static inline function setHost(host:String):Void
+	public static function setHost(host:String):Void {
+		#if (sys && !emscripten)
+		onHost(host);
+		#end
 		Raw.wgr_asset_set_host(host);
+	}
+
+	#if (sys && !emscripten)
+	static var fetcherInstalled = false;
+
+	/**
+		A URL host on a native build needs a downloader, because wgrender links none.
+
+		With `-D WGR_INCLUDE_FETCHER` the binding installs `httpFetcher` here, the
+		first time a URL host is set — which is the only moment it can be needed, since
+		wgrender consults a fetcher only when the host is a URL or a task was handed a
+		`fetchUrl` (wgr_asset.c). A directory host never reaches it.
+
+		Without the define, nothing is installed and nothing is linked: the reference
+		to `httpFetcher` is inside the `#if`, so `-dce full` leaves mbedtls out
+		entirely. Measured: with it always installed, a guest that never downloads
+		anything grows 2,807,448 -> 4,588,784 bytes. That is why this is a define and
+		not the default.
+
+		The warning is the other half. Set a URL host without a fetcher and wgrender's
+		miss path just resolves the task as failed — no complaint about the one thing
+		that was missing. Saying it once here costs nothing and is the difference
+		between a puzzle and a sentence.
+	**/
+	static function onHost(host:String):Void {
+		if (fetcherInstalled || host == null || host.indexOf("://") < 0)
+			return;
+		#if WGR_INCLUDE_FETCHER
+		setFetcher(httpFetcher);
+		fetcherInstalled = true;
+		#else
+		Log.warn('asset host "$host" is a URL and this build has no fetcher, so a miss '
+			+ 'will fail. Build with -D WGR_INCLUDE_FETCHER.');
+		#end
+	}
+	#end
 
 	/**
 		Where downloads land on desktop, and where later runs find them — created as
@@ -203,6 +245,45 @@ class Asset {
 		return false;
 		#end
 	}
+
+	#if (sys && !emscripten)
+	/**
+		A fetcher, ready to install: `Asset.setFetcher(Asset.httpFetcher)`.
+
+		wgrender links no HTTP and no TLS, so it asks the program to download a miss.
+		In C that means finding a client; in Haxe the standard library is one, and on
+		hxcpp `haxe.Http` does HTTPS through `sys.ssl.Socket` with hxcpp's bundled
+		mbedtls. So the hook stays -- it is how wgrender asks -- but nobody has to
+		write the answer.
+
+		It costs about a megabyte of mbedtls in the binary, and only if you name it:
+		`-dce full` leaves it out of a program that never installs it, which is why it
+		can sit here rather than being switched on by default. Certificates are
+		verified (`sys.ssl.Socket.DEFAULT_VERIFY_CERT`), from the system store on
+		Windows and macOS and from the usual bundle paths elsewhere.
+
+		Synchronous, so it blocks the frame it runs on -- fine for a handful of small
+		files, wrong for a large one. The hook is built for the other way round: start
+		a download and call `fetchDone` from a later tick. Wrap this, or write your
+		own, when that matters.
+	**/
+	public static function httpFetcher(request:Handle, url:String, destPath:String):Void {
+		var ok = false;
+		final http = new haxe.Http(url);
+		// onBytes, not onData: onData is a String and assets are images and audio.
+		http.onBytes = bytes -> {
+			sys.io.File.saveBytes(destPath, bytes);
+			ok = true;
+		};
+		http.onError = e -> Log.error('fetch failed: $url ($e)');
+		try
+			http.request(false)
+		catch (e:haxe.Exception)
+			Log.error('fetch failed: $url (${e.message})');
+		// Either way: a false is what makes the asset fail rather than wait for ever.
+		fetchDone(request, ok);
+	}
+	#end
 
 	#if cpp
 	@:allow(wgr.AssetTask)

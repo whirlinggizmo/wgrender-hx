@@ -10,20 +10,22 @@
 //     Asset.setHost("https://.../examples/assets");
 //     Asset.setFetcher((request, url, destPath) -> ...);
 //
-// This one is `haxe.Http`, which does HTTPS on hxcpp out of the standard library:
-// hxcpp builds its bundled mbedtls for `sys.ssl.Socket` the first time something asks
-// for it. No subprocess and nothing on PATH, so it behaves the same on Windows.
+// The C example writes a fetcher that shells out to curl, because C has no HTTP in the
+// box and the point is to link nothing. Haxe has one, so there is nothing here to
+// write: this example's build passes `-D WGR_INCLUDE_FETCHER`, and the binding
+// installs `haxe.Http` over hxcpp's bundled mbedtls the first time a URL host is set.
+// The program only says where the assets live.
 //
-// It costs a megabyte. Measured on Linux x64: 3,526,728 bytes with curl against
-// 4,595,952 with mbedtls linked, +30%. That trade is the reason the hook exists at
-// all -- wgrender links no HTTP and no TLS, so the program decides whether to pay for
-// a TLS stack, shell out to something that already has one (what examples/fetch.c
-// does, since C has nothing in the box), or use a platform client like WinHTTP or
-// NSURLSession. None of those choices reaches the library.
+// It is a define rather than the default because it costs about a megabyte and almost
+// no desktop program needs it: wgrender consults a fetcher only when the host is a URL
+// or a task was handed a fetchUrl, and a shipped game's host is the `assets` directory
+// beside the executable. Measured: installing it unconditionally grew a guest that
+// never downloads anything from 2,807,448 to 4,588,784 bytes. Without the define
+// nothing is referenced, so `-dce full` leaves the whole TLS stack out.
 //
-// It is synchronous, which is fine for a few small files and would hitch a frame on a
-// big one; the hook is built for the other way round -- start a download, call
-// `Asset.fetchDone` from a later tick, block nothing meanwhile.
+// Set a URL host in a build without the define and the binding says so once, because
+// wgrender's miss path would otherwise just fail the asset without mentioning the one
+// thing that was missing.
 //
 // Bytes never cross the boundary. wgrender names a URL and a destination file and the
 // fetcher writes that file, which is what curl, WinHTTP and NSURLSession all hand you
@@ -33,7 +35,7 @@
 // The guards here are Haxe's, not wgrender's, and that distinction is the point.
 // `Asset.setFetcher` compiles on both targets and answers false on the web, where
 // there is nothing to install -- the browser is the downloader. What needs `#if sys`
-// is reading an environment variable and running curl, which are facts about the
+// is reading an environment variable and writing a file, which are facts about the
 // standard library rather than about the binding.
 //
 //   ESC  quit
@@ -82,7 +84,6 @@ class Fetch {
 		remote = hostIsUp(host);
 		if (remote) {
 			Asset.setCacheDir(CACHE_DIR);
-			Asset.setFetcher(fetchWithHttp);
 		} else {
 			host = Assets.defaultBase(); // the local directory
 		}
@@ -97,23 +98,6 @@ class Fetch {
 	}
 
 	#if sys
-	/** Download `url` to `destPath`, then say how it went. A real one would not block. **/
-	static function fetchWithHttp(request:Handle, url:String, destPath:String):Void {
-		var ok = false;
-		final http = new haxe.Http(url);
-		// onBytes, not onData: onData is a String and these are images and audio.
-		http.onBytes = bytes -> {
-			sys.io.File.saveBytes(destPath, bytes);
-			downloads++;
-			ok = true;
-		};
-		http.onError = e -> Log.error('fetch failed: $url ($e)');
-		http.request(false);
-		// wgrender is told either way; a false is what makes the asset fail rather
-		// than wait forever.
-		Asset.fetchDone(request, ok);
-	}
-
 	/** Is anything serving there? Keeps an offline run, and a forgetful human, honest. **/
 	static function hostIsUp(host:String):Bool {
 		var up = false;
