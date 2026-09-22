@@ -1,0 +1,54 @@
+# wgrender-hx CI.
+#
+# The audit reads wgrender's C with clang (tools/refusals.py), and clang comes from
+# emsdk. Locally that is allowed to be missing -- the tool says it is skipping and
+# exits 0, because a desktop-only checkout builds and tests fine with gcc and hxcpp
+# and should not need emsdk to run `test/check.py`. A skip that can happen everywhere
+# is not a gate, so this is where it is made mandatory: --require-clang turns a
+# missing toolchain into a failure, and nothing reaches main without the step running.
+#
+# wgrender itself comes from the pinned submodule, so the binding is audited against
+# the wgrender it vendors rather than whatever wgrender's main happens to be.
+name: ci
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ["docs/**", "**/*.md"]
+  pull_request:
+    paths-ignore: ["docs/**", "**/*.md"]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    name: audit (refusals, setters, generated sources)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+
+      - uses: actions/cache@v6
+        with:
+          path: emsdk-cache
+          key: emsdk-5.0.7-${{ runner.os }}
+
+      - uses: mymindstorm/setup-emsdk@v16
+        with:
+          version: 5.0.7
+          actions-cache-folder: emsdk-cache
+
+      - name: Refusals read from the C with clang
+        # --require-clang: the whole point of this job. Skipping here would make the
+        # local skip unbounded, and the audit would quietly never run anywhere.
+        run: python3 tools/refusals.py --require-clang
+
+      - name: A documented refusal is repeated in the binding's docs
+        run: python3 tools/setters.py --check
+
+      - name: Raw.cpp.hx and Raw.js.hx are current
+        run: python3 tools/gen_raw.py --check
