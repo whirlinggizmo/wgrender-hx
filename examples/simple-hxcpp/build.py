@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build the wgrender simple example in Haxe (Haxe -> hxcpp -> C++ -> native/wasm).
 
-    ./build.py desktop     out/desktop/simple (builds wgrender's desktop lib first)
+    ./build.py desktop     out/<os>/simple (builds wgrender's native lib first)
     ./build.py web         out/web/: simple.js/.wasm + wgrender's page shell
     ./build.py all         both
 
@@ -117,9 +117,9 @@ def build_desktop():
                  cflags=[f'-I{WGRENDER}/include'],
                  ldflags=[],
                  libs=[str(WGRENDER / f'build/{host_os()}/libwgrender.a'), *DESKTOP_LIBS])
-    print('simple (desktop) -> out/desktop/simple')
+    print(f'simple (desktop) -> out/{host_os()}/simple')
     run([HAXE, 'build.hxml'])
-    out = ROOT / 'out/desktop'
+    out = ROOT / f'out/{host_os()}'
     out.mkdir(parents=True, exist_ok=True)
     shutil.copy2(ROOT / 'build/cpp/desktop/simple', out / 'simple')
     # wgr.Assets looks for `assets` beside the executable, the same lookup a shipped

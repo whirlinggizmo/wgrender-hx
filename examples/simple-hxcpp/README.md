@@ -14,7 +14,7 @@ Haxe, and what does Haxe cost in wasm.
 ## Build
 
 ```sh
-./build.py desktop     # out/desktop/simple
+./build.py desktop     # out/<os>/simple
 ./build.py web         # out/web/ (simple.js + simple.wasm + wgrender's page shell)
 ./build.py all
 ./build.py serve       # http://localhost:8000/

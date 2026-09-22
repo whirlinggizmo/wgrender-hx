@@ -26,7 +26,7 @@ out of the headers by parser rather than by hand — 72 of 76 unattended.
 
 ```sh
 ./build.py all        # host wasm + the JS guest + the native guest
-./build.py desktop    # out/desktop/particles-guest, with assets linked beside it
+./build.py desktop    # out/<os>/particles-guest, with assets linked beside it
 ./build.py sizes
 node tools/drive.mjs  # headless browser smoke test; clicks once for the confetti
 ```
