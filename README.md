@@ -34,7 +34,7 @@ src/wgr/impl/         the generated C surface, chosen by target. Nothing outside
   GuestRaw.cpp.hx       externs for host/wgr_guest.h, which is this binding's own C
 host/wgr_guest.{c,h}  the guest ABI: wgrender as a host, five ops
 test/                 the binding's own suite: 317 assertions against headless wgrender
-examples/             twenty guests, and simple-hxcpp built the other way (all-in-one)
+examples/             twenty-five guests, and simple-hxcpp the other way (all-in-one)
 project/              how an installed copy links wgrender, and the submodule it uses
 Run.hx                `haxelib run wgrender-hx setup`
 
@@ -199,7 +199,7 @@ examples/build.py compare  sizes against wgrender's own C build of each
 test/check.py              the binding's 317 assertions
 ```
 
-Twenty of wgrender's 33 C examples are ported, each named after the C file it ports
+Twenty-five of wgrender's 33 C examples are ported, each named after the C file it ports
 and keeping its numbers, keys and on-screen text. `examples/build.py list` prints them
 with a line each. The ones to read first:
 
@@ -214,6 +214,10 @@ with a line each. The ones to read first:
   the browser
 - [`materials`](examples/materials) — every material kind at once, all of them
   assigned before the mesh they belong to has loaded
+- [`environment`](examples/environment) — image-based lighting with no lights in the
+  scene at all, plus background blur and tone mapping
+- [`instancing`](examples/instancing) — 400 cubes that go up as one draw, and nothing
+  in the source asks for it
 
 [`simple-hxcpp`](examples/simple-hxcpp) is `simple` built the other way, for the size
 comparison against the C, Nim and Beef ports.

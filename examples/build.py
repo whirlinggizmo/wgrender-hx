@@ -60,7 +60,8 @@ C_BUILD = WGRENDER / 'examples/build/webgl2-nothreads'
 GUESTS = ['hello', 'hello3d', 'particles', 'simple', 'tick',
           'quit', 'window', 'font', 'audio', 'force_fetch',
           'fetch', 'sprite2d', 'sprite3d', 'text3d', '2d',
-          'model', 'meshes', 'textures', 'materials', 'lights']
+          'model', 'meshes', 'textures', 'materials', 'lights',
+          'instancing', 'shadows', 'render_target', 'postprocess', 'environment']
 OTHERS = ['simple-hxcpp']
 
 WHAT = {
@@ -93,6 +94,15 @@ WHAT = {
                  'blended, all assigned before the mesh loads',
     'lights': 'directional, point and spot, each switchable, on a scene that starts '
               'with none',
+    'instancing': '400 cubes sharing a mesh and a material, which is one draw; nothing '
+                  'asks for it',
+    'shadows': 'a casting light, and every knob that changes what it does',
+    'render_target': 'drawing into textures: a low-res view, a minimap, and a label '
+                     'a model wears',
+    'postprocess': 'screen effects over the finished frame, each a custom shader in a '
+                   'material',
+    'environment': 'image-based lighting with no lights at all, plus background and '
+                   'tone mapping',
     'simple-hxcpp': 'the same scene the other way: Haxe through hxcpp into one wasm, '
                     'for the size comparison',
 }
