@@ -1,0 +1,130 @@
+// wgrender's fetch example, as a Haxe guest: the desktop build downloads what the
+// browser downloads.
+//
+// A port of examples/fetch.c. On the web the browser fetches a missing asset and
+// caches it. On desktop wgrender ships no HTTP client and no TLS, so it asks the
+// program for one: set a URL as the asset host, hand it a fetcher, and a cache miss
+// becomes a download.
+//
+//     Asset.setCacheDir("build/asset-cache");
+//     Asset.setHost("https://.../examples/assets");
+//     Asset.setFetcher((request, url, destPath) -> ...);
+//
+// This one shells out to curl, so the example needs nothing built or linked. It is
+// synchronous, which is fine for a few small files and would hitch a frame on a big
+// one; the hook is built for the other way round -- start a download, call
+// `Asset.fetchDone` from a later tick, block nothing meanwhile.
+//
+// Bytes never cross the boundary. wgrender names a URL and a destination file and the
+// fetcher writes that file, which is what curl, WinHTTP and NSURLSession all hand you
+// anyway. Downloads land in the cache directory and the next run finds them there,
+// which is the job the browser's cache does on the web.
+//
+// This is the one example where the two targets genuinely differ rather than differing
+// at the edges. `Asset.setFetcher` takes a C function pointer and a `void *`, so it is
+// one of the ten calls the js target does not have -- and does not need, because on
+// the web the browser is the fetcher. So the whole desktop branch is behind `#if cpp`,
+// and the guest ABI has nothing to do with it either way.
+//
+//   ESC  quit
+import wgr.*;
+
+@:expose("WgrGuest")
+class Fetch {
+	static inline final SCREEN_WIDTH = 1024;
+	static inline final SCREEN_HEIGHT = 640;
+	static inline final TEXTURE_PATH = "sprites/logo/wg-logo-white-alpha.png";
+	static inline final ASSET_TEXTURE = 1;
+	static inline final CACHE_DIR = "build/asset-cache";
+	static inline final DEFAULT_HOST =
+		"https://raw.githubusercontent.com/whirlinggizmo/wgrender-c/main/examples/assets";
+
+	static var background:Color;
+	static var sprite:Sprite2D;
+	static var camera:Camera3D;
+	static var host = "";
+	static var remote = false;
+	static var downloads = 0;
+
+	static function main():Void {
+		GuestAbi.autostart(start);
+	}
+
+	public static function start(hostModule:Dynamic):Bool {
+		GuestAbi.attach(hostModule);
+		GuestAbi.register(onInit, (dt, _) -> onFrame(dt), onAsset);
+		return GuestAbi.start(SCREEN_WIDTH, SCREEN_HEIGHT, "fetch (wgrender host, Haxe guest)", Resizable);
+	}
+
+	static function onInit():Void {
+		background = Color.rgba(28, 30, 38, 255);
+		camera = new Camera3D(Perspective);
+		sprite = new Sprite2D(Handle.NONE); // the texture is attached when it loads
+		sprite.position = new Vec2(512, 380);
+		Debug.enableFps(12, 10, 16);
+
+		#if js
+		host = Assets.defaultBase(); // the browser fetches
+		remote = true;
+		#else
+		final wanted = Sys.getEnv("WGRENDER_ASSET_HOST");
+		host = wanted != null ? wanted : DEFAULT_HOST;
+		remote = hostIsUp(host);
+		if (remote) {
+			Asset.setCacheDir(CACHE_DIR);
+			Asset.setFetcher(fetchWithCurl);
+		} else {
+			host = Assets.defaultBase(); // the local directory
+		}
+		#end
+		Asset.setHost(host);
+
+		if (!GuestAbi.loadAsset(TEXTURE_PATH, ASSET_TEXTURE))
+			Log.error('failed to queue asset: $TEXTURE_PATH');
+	}
+
+	#if cpp
+	/** Download `url` to `destPath`, then say how it went. A real one would not block. **/
+	static function fetchWithCurl(request:Handle, url:String, destPath:String):Void {
+		final ok = Sys.command("curl", ["-fsS", "--max-time", "30", "-o", destPath, url]) == 0;
+		if (ok)
+			downloads++;
+		Asset.fetchDone(request, ok);
+	}
+
+	/** Is anything serving there? Keeps an offline run, and a forgetful human, honest. **/
+	static function hostIsUp(host:String):Bool {
+		return Sys.command("curl", ["-fsS", "-I", "--max-time", "2", "-o", "/dev/null",
+			'$host/$TEXTURE_PATH']) == 0;
+	}
+	#end
+
+	static function onAsset(id:Int, path:String, ok:Bool):Void {
+		if (!ok) {
+			Log.error('could not get $path');
+			return;
+		}
+		if (id != ASSET_TEXTURE)
+			return;
+		final texture = Texture.create(path);
+		sprite.setTexture(texture);
+		texture.release(); // the sprite holds its own reference
+	}
+
+	static function onFrame(dt:Float):Void {
+		Render.begin();
+		Render.clearBackground(background);
+		sprite.draw();
+		Text.draw("wgrender fetch: the desktop build downloads what the browser downloads", 12, 36, 20,
+			Color.RAYWHITE);
+		Text.draw('host: $host', 12, 64, 16, Color.LIGHTGRAY);
+		#if cpp
+		Text.draw(remote ? 'downloaded $downloads file(s) into $CACHE_DIR   (delete it and re-run: they come back)'
+			: 'no host reachable — reading ${Assets.defaultBase()} locally instead', 12, 86, 16, Color.LIGHTGRAY);
+		#end
+		Render.end();
+
+		if (Input.getKeyboardState().isPressed(Escape))
+			Wgr.requestQuit();
+	}
+}

@@ -58,7 +58,8 @@ C_BUILD = WGRENDER / 'examples/build/webgl2-nothreads'
 # than a JS guest on a wgrender host -- so it has its own commands and is not driven
 # or benched with the guests.
 GUESTS = ['hello', 'hello3d', 'particles', 'simple', 'tick',
-          'quit', 'window', 'font', 'audio', 'force_fetch']
+          'quit', 'window', 'font', 'audio', 'force_fetch',
+          'fetch', 'sprite2d', 'sprite3d', 'text3d', '2d']
 OTHERS = ['simple-hxcpp']
 
 WHAT = {
@@ -74,6 +75,14 @@ WHAT = {
     'audio': 'looping mp3 and a one-shot ogg, and a stall that only the web hears',
     'force_fetch': 'a per-call source URL and a cache bypass, under a key that '
                    'resolves to nothing',
+    'fetch': 'the desktop build downloading what the browser downloads, through a '
+             'fetcher the app supplies',
+    'sprite2d': 'screen-space sprites over a 3D scene: source rect, pivot, rotation, '
+                'flip, picking',
+    'sprite3d': 'the resource rule at its shortest: load, Texture.create, new Sprite3D',
+    'text3d': 'text in the world, 3D shapes, and what a pick query costs',
+    '2d': 'a 2D world with no Camera2D: sprite3d in the XY plane under an '
+          'orthographic camera',
     'simple-hxcpp': 'the same scene the other way: Haxe through hxcpp into one wasm, '
                     'for the size comparison',
 }

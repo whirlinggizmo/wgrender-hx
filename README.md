@@ -34,7 +34,7 @@ src/wgr/impl/         the generated C surface, chosen by target. Nothing outside
   GuestRaw.cpp.hx       externs for host/wgr_guest.h, which is this binding's own C
 host/wgr_guest.{c,h}  the guest ABI: wgrender as a host, five ops
 test/                 the binding's own suite: 317 assertions against headless wgrender
-examples/             nine guests, and simple-hxcpp built the other way (all-in-one)
+examples/             fifteen guests, and simple-hxcpp built the other way (all-in-one)
 project/              how an installed copy links wgrender, and the submodule it uses
 Run.hx                `haxelib run wgrender-hx setup`
 
@@ -158,12 +158,20 @@ examples/build.py compare  sizes against wgrender's own C build of each
 test/check.py              the binding's 317 assertions
 ```
 
-Nine of wgrender's 33 C examples are ported, each one a port of the C file it is named
-after: [`hello`](examples/hello) and [`hello3d`](examples/hello3d) are the smallest and
-load nothing, [`particles`](examples/particles) and [`simple`](examples/simple) are the
-fuller ones, [`tick`](examples/tick) is fixed-rate simulation against the render rate,
-and [`quit`](examples/quit), [`window`](examples/window), [`font`](examples/font) and
-[`audio`](examples/audio) each exercise one corner of the API.
+Fifteen of wgrender's 33 C examples are ported, each named after the C file it ports
+and keeping its numbers, keys and on-screen text. `examples/build.py list` prints them
+with a line each. The ones to read first:
+
+- [`hello`](examples/hello) and [`hello3d`](examples/hello3d) — the smallest; hello3d
+  loads nothing at all, which makes it the size floor
+- [`simple`](examples/simple) — a model, a sprite, text, audio and picking, and the one
+  the size and frame-cost tables are measured on
+- [`2d`](examples/2d) — a 2D world with no Camera2D, which is the point: sprite3d in
+  the XY plane under an orthographic camera keeps the 3D scene, layers and picking
+- [`fetch`](examples/fetch) — the one place the two targets genuinely differ rather
+  than differing at the edges, since `Asset.setFetcher` is hxcpp-only and the web has
+  the browser
+
 [`simple-hxcpp`](examples/simple-hxcpp) is `simple` built the other way, for the size
 comparison against the C, Nim and Beef ports.
 
