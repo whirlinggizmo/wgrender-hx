@@ -30,19 +30,27 @@ class Window {
 	public static var position(get, never):Vec2;
 
 	/**
-		Refused where the platform has no fullscreen, and said so in the log -- so the
-		property loses nothing. `setFullscreen` returns the answer for a caller that
-		wants it.
+		Whether the window is fullscreen *now*. Setting it asks; it does not arrive on
+		the same frame.
 
-		The web does support it: sokol calls `canvas.requestFullscreen()`, and the
-		browser allows that because the transient activation from the key or click that
-		led here is still live a frame later. What is *not* immediate is the reading --
-		the change arrives as a `fullscreenchange` event, so this still reports the old
-		value on the frame it was set.
+		The web supports it -- sokol calls `canvas.requestFullscreen()`, and the browser
+		allows that because the transient activation from the key or click that led here
+		is still live a frame later. But the change comes back as a `fullscreenchange`
+		event, so reading this on the frame it was set still gives the old value. Read
+		it on a later frame, or not at all; nothing needs polling.
+
+		`requestFullscreen` is the same thing with wgrender's return value, which says
+		only whether this platform has fullscreen -- not whether you got it.
 	**/
 	public static var fullscreen(get, set):Bool;
 
-	/** Hiding it doesn't stop the loop — the program keeps running either way. **/
+	/**
+		Hiding it doesn't stop the loop — the program keeps running either way.
+
+		A property and nothing else: wgrender's setter returns `true` on every platform
+		it has, so a method form would return a constant and read like a question that
+		had been asked.
+	**/
 	public static var visible(get, set):Bool;
 
 	public static var focused(get, never):Bool;
@@ -76,11 +84,13 @@ class Window {
 	}
 
 	/**
-		The property, with the answer. wgrender logs a refusal either way, so this is
-		for a caller that wants to act on it rather than read about it -- wgrender's own
-		window example prints it on screen.
+		Ask to enter or leave fullscreen. `false` means this platform has none at all,
+		and wgrender has already logged that; `true` means the request was made, which
+		is not the same as being fullscreen -- read `fullscreen` on a later frame for
+		that. Named for what it does, because a `setX` returning `Bool` everywhere else
+		here means the thing happened.
 	**/
-	public static inline function setFullscreen(fullscreen:Bool):Bool
+	public static inline function requestFullscreen(fullscreen:Bool):Bool
 		return Raw.wgr_window_set_fullscreen(fullscreen);
 
 	static inline function get_visible():Bool
@@ -91,9 +101,6 @@ class Window {
 		return v;
 	}
 
-	/** The property, with the answer. wgrender has no platform that refuses this yet. **/
-	public static inline function setVisible(visible:Bool):Bool
-		return Raw.wgr_window_set_visible(visible);
 
 	static inline function get_focused():Bool
 		return Raw.wgr_window_is_focused();

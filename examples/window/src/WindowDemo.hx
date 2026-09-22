@@ -15,8 +15,8 @@
 // On a Wayland desktop (through XWayland) the compositor places windows, so moving
 // and changing monitor report "not supported here". On the web the canvas is the
 // window: resizing and fullscreen work -- fullscreen because the browser's transient
-// activation from the keypress is still live when the frame op runs -- while moving
-// and other monitors do not.
+// activation from the keypress is still live when the frame op runs, though it lands a
+// frame later -- while moving and other monitors do not.
 //
 // `wgr.Window` is where this reads differently from the C. wgrender has getter and
 // setter functions throughout; the binding turns the plain reads into properties, so
@@ -25,10 +25,14 @@
 // has nowhere to put that -- and this example is entirely about the answer, so it
 // uses the methods throughout.
 //
-// The refusals are all logged, so the properties are not hiding anything; the methods
-// are for acting on a refusal rather than reading about it. Reading a property back
-// after setting it is *not* the same test: fullscreen arrives as an event, so on the
-// frame it is set the reading is still the old one -- while the call itself succeeded.
+// The refusals are all logged, so the properties hide nothing; the methods are for
+// acting on a refusal rather than reading about it.
+//
+// Fullscreen is the one that does not fit that shape, and it is named for it:
+// `requestFullscreen` returns whether the platform has fullscreen at all, not whether
+// you got it. The state arrives as an event a frame or more later, so the status line
+// says "requested" and the line above it, which reads the property, is what eventually
+// says "yes".
 //
 // The class is `WindowDemo` rather than `Window` for the dull reason that a module
 // named `Window` would shadow `wgr.Window` inside itself, and this example says
@@ -83,16 +87,23 @@ class WindowDemo {
 			report("grow", Window.setSize(Std.int(size.x * 1.1), Std.int(size.y * 1.1)));
 		if (keys.isPressed(Minus))
 			report("shrink", Window.setSize(Std.int(size.x / 1.1), Std.int(size.y / 1.1)));
-		if (keys.isPressed(F))
-			report("fullscreen", Window.setFullscreen(!Window.fullscreen));
-		if (keys.isPressed(H) && Window.setVisible(false)) {
+		if (keys.isPressed(F)) {
+			// "requested", not "done": the bool says this platform has fullscreen, and
+			// the state itself arrives a frame or more later.
+			status = Window.requestFullscreen(!Window.fullscreen) ? "fullscreen: requested"
+				: "fullscreen: not supported here";
+		}
+		if (keys.isPressed(H)) {
+			Window.visible = false;
 			hiddenFor = HIDE_FOR;
 			report("hide for 2 s", true);
 		}
 		if (hiddenFor > 0.0) {
 			hiddenFor -= dt; // it keeps running while hidden
-			if (hiddenFor <= 0.0)
-				report("show", Window.setVisible(true));
+			if (hiddenFor <= 0.0) {
+				Window.visible = true;
+				report("show", true);
+			}
 		}
 		if (keys.isPressed(M))
 			report("monitor", Window.setMonitor((Window.monitor + 1) % Window.monitorCount));
