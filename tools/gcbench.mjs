@@ -1,7 +1,14 @@
 // Allocation and GC for a built example, in a headless browser.
 //
 //   node gcbench.mjs --site=DIR [--label=NAME] [--warmup=MS] [--sample=MS]
-//                    [--url=PATH] [--probe=FILE] [--uncapped]
+//                    [--url=PATH] [--probe=FILE] [--uncapped] [--load=MS]
+//
+// --load burns that many milliseconds of arithmetic in the page's own rAF callback,
+// every frame, allocating nothing. It stands in for the game logic this scene does
+// not have, and its only purpose is to take the slack away: a collection that fits
+// inside a frame with 16 ms spare is invisible, and the same collection in a frame
+// with 4 ms spare is a dropped one. Injecting it from here rather than into each app
+// keeps it identical across builds written in different languages.
 //
 // --uncapped takes the vsync limiter off. Note what it does and does not tell you:
 // without vsync the rAF rate stops tracking the render rate, because the GPU work is
@@ -46,6 +53,7 @@ const sample = Number(arg("sample", 10000));
 const probe = arg("probe", "wgrender-host.js");
 const url = arg("url", "/");
 const uncapped = process.argv.includes("--uncapped");
+const load = Number(arg("load", 0));
 
 const run = new RunProcesses(label);
 try {
@@ -75,8 +83,27 @@ try {
         expression: `globalThis.__n = 0;
             globalThis.__dt = new Float64Array(${N});
             globalThis.__hp = new Float64Array(${N});
+            // The burn: 32-bit integer arithmetic, and the iteration count calibrated
+            // once so the loop never reads the clock. Both matter -- a float loop boxes
+            // its intermediates as heap numbers, and polling performance.now() a few
+            // thousand times a frame allocates one per call, either of which would make
+            // the harness the biggest allocator in the run and measure itself.
+            globalThis.__sink = 1;
+            globalThis.__spin = function (n) {
+                let x = globalThis.__sink | 0;
+                for (let i = 0; i < n; i++) x = (Math.imul(x, 1664525) + 1013904223) | 0;
+                globalThis.__sink = x;
+            };
+            globalThis.__iters = 0;
+            if (${load} > 0) {
+                globalThis.__spin(5e6); // let it tier up before timing it
+                const t0 = performance.now();
+                globalThis.__spin(2e7);
+                globalThis.__iters = Math.round(2e7 / (performance.now() - t0) * ${load});
+            }
             (function tick(p) {
                 requestAnimationFrame((t) => {
+                    if (globalThis.__iters > 0) globalThis.__spin(globalThis.__iters);
                     if (p && globalThis.__n < ${N}) {
                         globalThis.__dt[globalThis.__n] = t - p;
                         globalThis.__hp[globalThis.__n] = performance.memory.usedJSHeapSize;
@@ -105,6 +132,16 @@ try {
     }
     const gcUs = gcEvents.map((e) => e.us).sort((a, b) => a - b);
     const gcTotalMs = +(gcUs.reduce((a, b) => a + b, 0) / 1000).toFixed(1);
+    // Split them: a median over a handful of collections that are half major says
+    // something quite different from a median over three hundred that are nearly all
+    // minor, and reporting one number for both invites exactly the wrong reading.
+    const byKind = (name) => {
+        const us = gcEvents.filter((e) => e.name === name).map((e) => e.us).sort((a, b) => a - b);
+        return us.length ? { count: us.length, medianMs: +(us[us.length >> 1] / 1000).toFixed(2),
+                             maxMs: +(us[us.length - 1] / 1000).toFixed(2),
+                             totalMs: +(us.reduce((a, b) => a + b, 0) / 1000).toFixed(1) }
+                         : { count: 0, medianMs: null, maxMs: null, totalMs: 0 };
+    };
     const sorted = [...dt].sort((a, b) => a - b);
     const at = (q) => sorted[Math.min(n - 1, Math.floor(n * q))];
     const gcMs = collections.map((c) => c.ms).sort((a, b) => a - b);
@@ -120,11 +157,11 @@ try {
         gcFrameMs: gcMs.length ? { median: +gcMs[gcMs.length >> 1].toFixed(2),
                                    max: +gcMs[gcMs.length - 1].toFixed(2) } : null,
         // V8's own accounting, which does not care whether the frame had slack to hide in
-        gc: { minor: gcEvents.filter((e) => e.name === "MinorGC").length,
-              major: gcEvents.filter((e) => e.name === "MajorGC").length,
-              totalMs: gcTotalMs, pctOfWall: +(gcTotalMs / sample * 100).toFixed(2),
-              medianMs: gcUs.length ? +(gcUs[gcUs.length >> 1] / 1000).toFixed(2) : null,
-              maxMs: gcUs.length ? +(gcUs[gcUs.length - 1] / 1000).toFixed(2) : null },
+        loadMs: load,
+        lateFrames: { over20: dt.filter((f) => f > 20).length, over33: dt.filter((f) => f > 33).length,
+                      pct: +(dt.filter((f) => f > 20).length / n * 100).toFixed(2) },
+        gc: { totalMs: gcTotalMs, pctOfWall: +(gcTotalMs / sample * 100).toFixed(2),
+              minor: byKind("MinorGC"), major: byKind("MajorGC") },
         bufferFull: n >= N,
     }));
 } finally { await run.stop(); }
