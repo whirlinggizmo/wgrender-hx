@@ -82,13 +82,27 @@ UNREACHABLE = {
 # Keep this empty if you can: every entry is a silent failure someone will hit.
 ACCEPTED = {}
 
-# Setters whose body delegates past what this can read -- into wgr_platform.c, or into
-# sokol -- checked by hand instead, with what the reading found. An entry here is a
-# verdict; without one these are just a warning on every build that nobody has ever
-# answered, which is how all three of these sat for as long as they did.
+# Setters this tool gets wrong, with the verdict from reading the C by hand.
+#
+# Two ways it gets them wrong. It cannot follow a body that delegates -- into
+# wgr_platform.c, or into sokol -- so it reports "could not read". And it reads one
+# function at a time, so a refusal whose log_warn is one call up reads as silent: the
+# material setters call lookup() or custom_texture(), which log and return NULL, and
+# what is left in the setter is a bare `return false`.
+#
+# An entry here is a verdict. Without one these are a warning on every build that
+# nobody has to answer, which is how the three window setters sat for as long as they
+# did -- and the material one sent me to wgrender to add logging that was already
+# there, two lines above the branch the tool was looking at.
 #
 # The rule is unchanged: a property is right when every refusal is logged.
 DELEGATED = {
+    'wgr_material_set_texture': 'the refusal is logged, one call up: lookup() log_warns an '
+                                'unknown parameter and a wrong type, and custom_texture() does '
+                                'the same for a custom shader. Both return NULL, and this reads '
+                                'the `param == NULL && custom == NULL` that follows as silent. '
+                                'Checked by hand against wgr_material.c, and by running it: a '
+                                'bad name warns, a dead handle says "pool full" and nothing else.',
     'wgr_window_set_visible': 'never refuses -- wgri_platform_set_window_visible '
                               'returns true on every branch (sokol, headless, web)',
     'wgr_window_set_fullscreen': 'refuses only where the platform has none, and '
@@ -235,12 +249,34 @@ def doc_comments():
 
 
 def binding():
-    """What the API layer exposes as a property, and what as a method."""
+    """What the API layer exposes as a property, and what as a method.
+
+    Mapped by the Raw call each member makes, not by its name, so an idiomatic
+    binding is auditable at all -- `wgr_model_set_tint` -> `Model.tint` cannot be
+    inferred from spelling.
+
+    One hop of indirection is followed, because a property setter that needs to do
+    something besides the Raw call delegates to a sibling. `Asset.host` did exactly
+    that and silently vanished from this report: 97 properties became 96, no warning,
+    and the setter it audits stopped being audited. A rule that only sees direct calls
+    is a rule that quietly stops applying the moment a member grows a second line.
+    """
     props, methods = {}, {}
     for f in sorted((ROOT / 'src/wgr').glob('*.hx')):
         s = f.read_text()
-        for m in re.finditer(r'inline function set_(\w+)\([^)]*\)[^{]*\{\s*Raw\.(wgr_\w+)\(', s):
-            props[m.group(2)] = f'{f.stem}.{m.group(1)}'
+        # name -> the Raw call it makes, for resolving a delegating setter below
+        # Tempered: the body may not run past the next `function`, or a delegate
+        # picks up the Raw call of whatever is declared after it. It did --
+        # Material.occlusionStrength, which calls setFloat, came out as
+        # wgr_material_set_vec2, and the name being a real wgrender function is what
+        # made it look right.
+        direct = {m.group(1): m.group(2) for m in
+                  re.finditer(r'function (\w+)\([^)]*\)(?:(?!\bfunction\b)[\s\S])*?Raw\.(wgr_\w+)\(', s)}
+        for m in re.finditer(r'inline function set_(\w+)\([^)]*\)[^{]*\{\s*(?://[^\n]*\n\s*)*'
+                             r'(?:Raw\.(wgr_\w+)|(\w+))\(', s):
+            raw = m.group(2) or direct.get(m.group(3))
+            if raw:
+                props[raw] = f'{f.stem}.{m.group(1)}'
         for m in re.finditer(r'function (set[A-Z]\w*)\([^)]*\):Bool\s*\n?\s*return Raw\.(wgr_\w+)\(', s):
             methods[m.group(2)] = f'{f.stem}.{m.group(1)}'
     return props, methods
@@ -291,6 +327,8 @@ def main():
             print(f'  {where}: {c_name}\'s header names a refusal the doc comment does not')
             print(f'      header: {sentence[:120]}')
         for c_name, where, conds in swallowed:
+            if c_name in DELEGATED:
+                continue  # answered by hand; the reason is in the table
             print(f'  warning: {where} is a property, but {c_name} refuses: {"; ".join(conds)}')
         stale = [n for n in list(UNREACHABLE) + list(ACCEPTED) + list(DELEGATED)
                  if n not in props and n not in methods]
@@ -300,10 +338,14 @@ def main():
             if c_name in DELEGATED:
                 continue  # answered by hand; the report below still lists it
             print(f'  warning: could not read {c_name}\'s guard from the C ({where})')
+        # An entry earns its place by the tool getting this one wrong: either it could
+        # not read the body, or it read it and reached the wrong verdict because the
+        # log is one call up. If neither is true any more, the entry is stale.
+        answered = {n for n, _ in unparsed} | {n for n, _, _ in swallowed}
         for c_name in DELEGATED:
-            if c_name not in [n for n, _ in unparsed]:
-                print(f'  {c_name}: listed as delegated, but its C reads now -- '
-                      'drop the entry and let the tool judge it')
+            if c_name not in answered:
+                print(f'  {c_name}: listed as delegated, but the tool judges it correctly now -- '
+                      'drop the entry and let it')
         for n in stale:
             pass
         print(f'setters: {"stale" if undocumented else "current"} '
