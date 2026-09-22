@@ -38,12 +38,7 @@ OMISSIONS = {
     'wgr_set_tick': 'js: takes a C callback; the guest ABI installs ops instead',
     'wgr_set_cleanup': 'js: takes a C callback; the guest ABI installs ops instead',
     'wgr_asset_add_task': 'js: takes a C callback; wgr_guest_asset_load takes an id',
-    'wgr_event_on': 'js: takes a C callback',
-    'wgr_event_off': 'js: takes a C callback',
-    'wgr_event_once': 'js: takes a C callback',
-    'wgr_event_emit': 'js: takes a void * payload',
     'wgr_asset_set_fetcher': 'js: takes a C callback',
-    'wgr_asset_ping_host': 'js: takes a C callback',
 }
 
 

@@ -7,12 +7,15 @@ import cpp.ConstCharStar;
 // wgr_asset.h — making a file local before it is loaded
 
 class Asset {
-	#if cpp
-	static var pending = new Map<Int, {onSuccess:(path:String) -> Void, onFailure:(path:String) -> Void}>();
+	// The key every callback carries in its `void *`, and the tables it looks up in.
+	// Shared, because a ping crosses on both targets now; `pending` and `fetcher`
+	// belong to the two calls that are still hxcpp only.
 	static var nextId = 1;
-	static var fetcher:(request:Handle, url:String, destPath:String) -> Void;
 	static var pings = new Map<Int, (host:String, ms:Float) -> Void>();
 
+	#if cpp
+	static var pending = new Map<Int, {onSuccess:(path:String) -> Void, onFailure:(path:String) -> Void}>();
+	static var fetcher:(request:Handle, url:String, destPath:String) -> Void;
 	#end
 
 	/**
@@ -136,6 +139,40 @@ class Asset {
 		return (Raw.wgr_asset_ensure_async(path, #if cpp Native.cstr(fetchUrl) #else fetchUrl #end,
 			flags == null ? 0 : (flags : Int)) : Handle);
 
+	/**
+		Time the round trip to an asset host: `onDone` fires on a later frame with the
+		milliseconds, or a negative number when it couldn't be reached inside
+		`timeoutMs` (0 or less means 5000). A null `host` pings the current one.
+
+		On the web it is a HEAD request, and any response counts, even a 404. On desktop
+		the host is a local directory: 0 if it exists, negative if not — a URL host
+		can't be pinged there, since the fetcher hook deals in files rather than round
+		trips, so time an `ensureAsync` instead. False when eight pings are already
+		waiting.
+	**/
+	public static function pingHost(?host:String, timeoutMs:Int = 0, onDone:(host:String, ms:Float) -> Void):Bool {
+		final id = nextId++;
+		pings.set(id, onDone);
+		final ok = Raw.wgr_asset_ping_host(#if cpp Native.cstr(host) #else host #end, timeoutMs,
+			Trampoline.ping(pingTrampoline), Native.toUser(id));
+		if (!ok)
+			pings.remove(id);
+		return ok;
+	}
+
+	// One ping per call, so drop the closure as it fires.
+	static function pingTrampoline(host:CStr, milliseconds:F32, user:VoidStar):Void {
+		final id = Native.fromUser(user);
+		final cb = pings.get(id);
+		if (cb == null)
+			return;
+		pings.remove(id);
+		try
+			cb(#if cpp host.toString() #else Raw.str(host) #end, milliseconds)
+		catch (e:haxe.Exception)
+			Wgr.report("an asset ping callback", e);
+	}
+
 	#if cpp
 	@:allow(wgr.AssetTask)
 	static function addTask(task:Handle, onSuccess:(path:String) -> Void, ?onFailure:(path:String) -> Void):Bool {
@@ -169,27 +206,6 @@ class Asset {
 		return Raw.wgr_asset_set_fetcher(cpp.Callable.fromStaticFunction(fetchTrampoline), Native.nullPtr());
 	}
 
-	/**
-		Time the round trip to an asset host: `onDone` fires on a later frame with the
-		milliseconds, or a negative number when it couldn't be reached inside
-		`timeoutMs` (0 or less means 5000). A null `host` pings the current one.
-
-		On the web it is a HEAD request, and any response counts, even a 404. On desktop
-		the host is a local directory: 0 if it exists, negative if not — a URL host
-		can't be pinged there, since the fetcher hook deals in files rather than round
-		trips, so time an `ensureAsync` instead. False when eight pings are already
-		waiting. hxcpp only.
-	**/
-	public static function pingHost(?host:String, timeoutMs:Int = 0, onDone:(host:String, ms:Float) -> Void):Bool {
-		final id = nextId++;
-		pings.set(id, onDone);
-		final ok = Raw.wgr_asset_ping_host(Native.cstr(host), timeoutMs,
-			cpp.Callable.fromStaticFunction(pingTrampoline), Native.toUser(id));
-		if (!ok)
-			pings.remove(id);
-		return ok;
-	}
-
 	static function fetchTrampoline(request:WgrHandle, url:ConstCharStar, destPath:ConstCharStar,
 			user:VoidStar):Void {
 		if (fetcher == null)
@@ -200,19 +216,6 @@ class Asset {
 			Wgr.report('the asset fetcher for "${url.toString()}"', e);
 			Raw.wgr_asset_fetch_done(request, false);
 		}
-	}
-
-	// One ping per call, so drop the closure as it fires.
-	static function pingTrampoline(host:ConstCharStar, milliseconds:Single, user:VoidStar):Void {
-		final id = Native.fromUser(user);
-		final cb = pings.get(id);
-		if (cb == null)
-			return;
-		pings.remove(id);
-		try
-			cb(host.toString(), milliseconds)
-		catch (e:haxe.Exception)
-			Wgr.report("an asset ping callback", e);
 	}
 
 	// One callback per task, then the task is gone — so drop the closures here.

@@ -110,6 +110,39 @@ MANUAL_JS = '''
 		return area;
 	}
 
+	/**
+		The callback-taking calls, which the generator skips because a `void *` has no
+		js mapping. On wasm both a function pointer and a `void *` are an `Int` -- a
+		table index and an address -- so these are mechanical once someone says so.
+
+		They are here rather than in the generator's output because saying "`void *` is
+		an Int on js" in general would also un-skip wgr_set_init and friends, which are
+		omitted on purpose: the guest ABI is their replacement, and a guest reaching
+		past it would install a second frame callback.
+	**/
+	public static inline function wgr_event_on(event_name:String, listener:Int, user_data:Int):Int
+		return Raw.host._wgr_event_on(cstr(event_name), listener, user_data);
+
+	public static inline function wgr_event_once(event_name:String, listener:Int, user_data:Int):Int
+		return Raw.host._wgr_event_once(cstr(event_name), listener, user_data);
+
+	public static inline function wgr_event_off(event_name:String, listener:Int, user_data:Int):Int
+		return Raw.host._wgr_event_off(cstr(event_name), listener, user_data);
+
+	public static inline function wgr_event_emit(event_name:String, payload:Int):Int
+		return Raw.host._wgr_event_emit(cstr(event_name), payload);
+
+	public static inline function wgr_asset_ping_host(host_:String, timeout_ms:Int, on_done:Int,
+			user_data:Int):Bool
+		return Raw.host._wgr_asset_ping_host(cstr(host_), timeout_ms, on_done, user_data) != 0;
+
+	/** Turn a Haxe function into a wasm table index; `removeFunction` gives it back. **/
+	public static inline function addFunction(fn:Dynamic, signature:String):Int
+		return Raw.host.addFunction(fn, signature);
+
+	public static inline function removeFunction(pointer:Int):Void
+		Raw.host.removeFunction(pointer);
+
 	/** The varargs logger, fixed at one `%s` — enough for a Haxe string. **/
 	public static inline function wgr_logger_message(level:Int, format:String, text:String):Void
 		Raw.host._wgr_logger_message(level, cstr(format), vaString(text));
@@ -330,7 +363,9 @@ def emit_cpp(enums, structs, functions):
     lines = [header_comment(), 'import cpp.ConstCharStar;', 'import cpp.RawPointer;', 'import cpp.UInt32;', '',
              'typedef WgrHandle = UInt32;', 'typedef WgrColor = UInt32;', '',
              '/** C `void *`: the opaque user pointer every wgrender callback carries. **/',
-             'typedef VoidStar = RawPointer<cpp.Void>;', '']
+             'typedef VoidStar = RawPointer<cpp.Void>;',
+             '/** The ABI types the callback plumbing shares with js; see Raw.js.hx. **/',
+             'typedef CStr = ConstCharStar;', 'typedef F32 = Single;', '']
     for c in sorted(used_callbacks):
         lines.append(f'typedef {hx(c, enums, "cpp")} = cpp.Callable<{CALLBACKS[c]}>;')
     lines.append('')
@@ -460,6 +495,18 @@ import wgr.Vec3;
 
 typedef WgrHandle = Int;
 typedef WgrColor = Int;
+
+/**
+	The ABI types, so code that talks to wgrender's callbacks can be written once for
+	both targets. On wasm every one of these is an Int -- an address, a table index, a
+	32-bit float widened to Haxe's Float -- where hxcpp has a real pointer type for
+	each. Naming them is what keeps `#if` out of the signatures that use them.
+**/
+typedef VoidStar = Int;
+typedef CStr = Int;
+typedef F32 = Float;
+typedef EventListenerFn = Int;
+typedef AssetPingFn = Int;
 
 /**
 	The same C surface Raw.cpp.hx declares, reached through the host module's exports.

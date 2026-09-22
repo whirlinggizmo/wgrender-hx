@@ -15,15 +15,14 @@ package wgr;
 	conversion that it finds ambiguous. Reach for `wgr.impl.Raw` if you genuinely need
 	the pointer; that is what it is for.
 
-	Listening needs a C function pointer, so `on`, `once`, `off` and `emit` are hxcpp
-	only — on js the guest ABI takes that role, and a guest that wants a bus of its
-	own is better off with a Haxe one. `offAll` and `listenerCount` work on both.
+	Listening needs a C function pointer, which a Haxe closure is not — so both targets
+	register one dispatcher with wgrender and carry a table key in the `user_data`
+	(`wgr.impl.Trampoline`). On js that costs a single entry in the wasm function
+	table for the whole program, however many listeners there are.
 **/
 class Event {
-	#if cpp
 	static var listeners = new Map<Int, Registered>();
 	static var nextId = 1;
-	#end
 
 	/** Drop every listener on `name`. Returns how many went, or -1 if there is no bus. **/
 	public static inline function offAll(name:String):Int
@@ -33,7 +32,6 @@ class Event {
 	public static inline function listenerCount(name:String):Int
 		return Raw.wgr_event_listener_count(name);
 
-	#if cpp
 	/**
 		Listen on `name` until dropped. The token that comes back is what `off` takes —
 		not the function, because two Haxe closures over the same method are not
@@ -55,8 +53,7 @@ class Event {
 			return false;
 		listeners.remove(id);
 		// off returns how many it removed, and -1 when there is no bus at all
-		return Raw.wgr_event_off(entry.name, cpp.Callable.fromStaticFunction(trampoline),
-			Native.toUser(id)) > 0;
+		return Raw.wgr_event_off(entry.name, Trampoline.event(trampoline), Native.toUser(id)) > 0;
 	}
 
 	/** Fire `name`. Returns how many listeners ran. **/
@@ -70,7 +67,7 @@ class Event {
 		// static is called dynamically on hxcpp, and `name` then reaches C boxed
 		// instead of as a const char *, so the listener registers under a junk name.
 		// These return 0 for success and -1 for failure, not a count like the rest.
-		final fn = cpp.Callable.fromStaticFunction(trampoline);
+		final fn = Trampoline.event(trampoline);
 		final added = once ? Raw.wgr_event_once(name, fn, Native.toUser(id)) : Raw.wgr_event_on(name, fn,
 			Native.toUser(id));
 		if (added != 0) {
@@ -95,10 +92,8 @@ class Event {
 		catch (e:haxe.Exception)
 			Wgr.report('an event listener for "${entry.name}"', e);
 	}
-	#end
 }
 
-#if cpp
 /**
 	One registered listener. A named class rather than an anonymous structure: on
 	hxcpp an anon's fields are read through `Dynamic`, and `entry.name` then reaches
@@ -115,4 +110,3 @@ private class Registered {
 		this.once = once;
 	}
 }
-#end

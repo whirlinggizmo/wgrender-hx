@@ -194,8 +194,8 @@ The two it leaves alone are a decision, not a backlog: `wgr_text_draw_n` and
 units, so the two disagree for anything non-ASCII — passing a substring to `draw()` is
 correct and these would not be. `tools/coverage.py --check` fails if either is ever
 wrapped after all, so a decision and a to-do stay distinguishable. It holds the js
-omissions the same way: eleven calls that take a C function pointer or a `void *`,
-which the guest ABI replaces there.
+omissions the same way: six calls that take a C function pointer, which the guest ABI
+replaces there.
 
 `tools/setters.py` guards the other direction. wgrender's headers name every value a
 setter refuses, and this fails the build when one of those sentences is not repeated
@@ -252,8 +252,16 @@ wgrender-c: 480 functions, 18 enums, 12 structs
 ```
 
 **hxcpp reaches every one of wgrender's public functions.** On js it reaches all but
-ten, and those ten take a C function pointer or a `void *`, which the guest ABI
-replaces there.
+five, and those five take a C function pointer the guest ABI replaces: the four
+lifecycle setters and `wgr_asset_add_task`, whose job `wgr_guest_asset_load` does with
+an id instead.
+
+The rest of the callback-taking calls do cross, by the route librl's bindings use:
+register *one* dispatcher with wgrender and carry a table key in its `user_data`
+(`wgr.impl.Trampoline`). On hxcpp that dispatcher is a
+`cpp.Callable.fromStaticFunction`; on js it is a single `addFunction`, installed once
+for the whole program however many listeners there are. So `Event` and
+`Asset.pingHost` work on both targets.
 
 `wgr_input_get_keyboard_state` used to be an eleventh. Its struct is 2,324 bytes — 512
 ints of key state plus the keys and characters a frame produced — and the generator's
