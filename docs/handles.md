@@ -49,7 +49,7 @@ binding's types look like; it comes back as a logged `false` rather than a crash
 It moves the statically-knowable subset of that check from runtime to compile time. It
 does not replace it — see "what types cannot catch" below.
 
-Measured in Haxe 4.3.6 against `src/wgr/flat`, and in Nim 2.2.12 against a `distinct`
+Measured in Haxe 4.3.6 against `src/wgr`, and in Nim 2.2.12 against a `distinct`
 sketch of the same design:
 
 | | Haxe typed abstract | Nim `distinct` | one untyped handle | raw `Int` |
