@@ -354,9 +354,13 @@ def main():
         return 1 if undocumented or stale else 0
 
     print(f'{len(props)} properties and {len(methods)} methods wrap a wgrender setter.\n')
-    if swallowed:
+    # Same split as --check: an entry in DELEGATED has been read by hand and the answer
+    # is below, so listing it here as a swallowed refusal would contradict it three
+    # paragraphs later. The check gates on this; the report has to agree with the check.
+    real = [row for row in swallowed if row[0] not in DELEGATED]
+    if real:
         print('properties swallowing a silent value refusal:')
-        for c_name, where, conds in swallowed:
+        for c_name, where, conds in real:
             print(f'  {where:<28} {c_name}')
             for cond in conds:
                 print(f'  {"":<28}   false when  {cond}')
