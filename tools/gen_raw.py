@@ -91,14 +91,33 @@ MANUAL_CPP = '''
 		format:ConstCharStar, text:ConstCharStar):Void;'''
 
 MANUAL_JS = '''
+	/**
+		One `%s` argument as a C `va_list`, in the op's arena.
+
+		A variadic C function does not reach wasm as one: clang lowers it to take a
+		pointer to the argument area as its last parameter. So passing the string
+		pointer straight through hands the callee a va_list whose first four bytes are
+		the text -- `wgr_logger_message(Info, "%s", "hello")` made the C read 0x6c6c6568
+		as a pointer and trapped with "memory access out of bounds". It has to be a
+		real slot holding the pointer, and the address of the slot is what goes across.
+
+		8 bytes because that is the varargs area's alignment; only the first 4 are used.
+	**/
+	static inline function vaString(text:String):Int {
+		final value = cstr(text);
+		final area = scratch(8);
+		host.HEAP32[area >> 2] = value;
+		return area;
+	}
+
 	/** The varargs logger, fixed at one `%s` — enough for a Haxe string. **/
 	public static inline function wgr_logger_message(level:Int, format:String, text:String):Void
-		Raw.host._wgr_logger_message(level, cstr(format), cstr(text));
+		Raw.host._wgr_logger_message(level, cstr(format), vaString(text));
 
 	/** The same, with the call site the WGR_LOG_* macros would have filled in. **/
 	public static inline function wgr_logger_message_source(level:Int, sourceFile:String, sourceLine:Int,
 			format:String, text:String):Void
-		Raw.host._wgr_logger_message_source(level, cstr(sourceFile), sourceLine, cstr(format), cstr(text));'''
+		Raw.host._wgr_logger_message_source(level, cstr(sourceFile), sourceLine, cstr(format), vaString(text));'''
 
 SCALARS = {  # C type -> (hxcpp, js), size, how JS reads it out of the heap
     'void': ('Void', 'Void', 0, None),
