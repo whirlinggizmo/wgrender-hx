@@ -34,7 +34,7 @@ import subprocess
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / 'tools'))
-from wgrpath import find  # noqa: E402
+from wgrpath import find, host_os  # noqa: E402
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 WGRENDER = find()
 HAXE = os.environ.get('HAXE', 'haxe')
@@ -61,7 +61,7 @@ def main():
     <compilerflag value="-I{WGRENDER}/include" />
   </files>
   <target id="haxe">
-    <lib name="{WGRENDER}/build/headless/libwgrender.a" />
+    <lib name="{WGRENDER}/build/{host_os()}-headless/libwgrender.a" />
     <lib name="-ldl" />
     <lib name="-lm" />
     <lib name="-lpthread" />

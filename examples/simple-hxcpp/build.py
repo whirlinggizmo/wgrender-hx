@@ -46,7 +46,7 @@ if not (LIB / 'tools/wgrpath.py').exists():
                  '  haxelib git wgrender-hx https://github.com/whirlinggizmo/wgrender-hx')
     LIB = pathlib.Path(_found)
 sys.path.insert(0, str(LIB / 'tools'))
-from wgrpath import find  # noqa: E402  # examples/simple-hxcpp -> the library
+from wgrpath import find, host_os  # noqa: E402  # examples/simple-hxcpp -> the library
 WGRENDER = find(argv=[])
 HAXE = os.environ.get('HAXE', 'haxe')
 # The wgr binding, its generator and its host glue are the wgrender-hx haxelib.
@@ -116,7 +116,7 @@ def build_desktop():
     write_config('desktop',
                  cflags=[f'-I{WGRENDER}/include'],
                  ldflags=[],
-                 libs=[str(WGRENDER / 'build/desktop/libwgrender.a'), *DESKTOP_LIBS])
+                 libs=[str(WGRENDER / f'build/{host_os()}/libwgrender.a'), *DESKTOP_LIBS])
     print('simple (desktop) -> out/desktop/simple')
     run([HAXE, 'build.hxml'])
     out = ROOT / 'out/desktop'

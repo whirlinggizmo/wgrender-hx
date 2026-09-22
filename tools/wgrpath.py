@@ -17,6 +17,7 @@ WGRENDER_DIR altogether. Building an example out of a `haxelib git` install foun
 because there the sibling does not exist and every tool but one looked there anyway.
 """
 import os
+import platform
 import pathlib
 import sys
 
@@ -44,3 +45,18 @@ def find(explicit=None, argv=None):
     sys.exit('cannot find wgrender. Looked in:\n' + looked
              + '\n\nSet WGRENDER_DIR, or run `haxelib run wgrender-hx setup` to fetch '
                'the submodule.')
+
+
+def host_os():
+    """wgrender's name for this OS in its build directories.
+
+    Mirrors wgrender's mk/host.mk: `build/linux`, `build/macos`, alongside the
+    `build/windows` and `build/webgl2` that were already named that way. Keep the two
+    in step -- a wrong answer here is a link error naming a directory that was never
+    built, which reads like a missing build rather than a stale name.
+
+    "desktop" still means native-not-web everywhere it is prose or a define; it is
+    only the directories that name the OS.
+    """
+    system = platform.system()
+    return {'Linux': 'linux', 'Darwin': 'macos', 'Windows': 'windows'}.get(system, system.lower())
