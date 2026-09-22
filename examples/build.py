@@ -61,7 +61,8 @@ GUESTS = ['hello', 'hello3d', 'particles', 'simple', 'tick',
           'quit', 'window', 'font', 'audio', 'force_fetch',
           'fetch', 'sprite2d', 'sprite3d', 'text3d', '2d',
           'model', 'meshes', 'textures', 'materials', 'lights',
-          'instancing', 'shadows', 'render_target', 'postprocess', 'environment']
+          'instancing', 'shadows', 'render_target', 'postprocess', 'environment',
+          'shaders']
 OTHERS = ['simple-hxcpp']
 
 WHAT = {
@@ -103,6 +104,8 @@ WHAT = {
                    'material',
     'environment': 'image-based lighting with no lights at all, plus background and '
                    'tone mapping',
+    'shaders': 'four custom shaders: toon on a skinned model, dissolve, water that '
+               'moves its own vertices, and sprite effects',
     'simple-hxcpp': 'the same scene the other way: Haxe through hxcpp into one wasm, '
                     'for the size comparison',
 }
