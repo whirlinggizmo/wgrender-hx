@@ -8,7 +8,8 @@
 # missing toolchain into a failure, and nothing reaches main without the step running.
 #
 # wgrender itself comes from the pinned submodule, so the binding is audited against
-# the wgrender it vendors rather than whatever wgrender's main happens to be.
+# the wgrender it vendors rather than whatever wgrender's main happens to be -- and
+# its tools/deps.sh is what installs the system headers, for the same reason.
 name: ci
 
 on:
@@ -31,6 +32,14 @@ jobs:
       - uses: actions/checkout@v7
         with:
           submodules: recursive
+
+      # compile_flags.txt sets -DSOKOL_GLCORE, so parsing wgr_sokol_impl.c reaches
+      # GL/gl.h. Reading the C needs the same system headers compiling it does, and
+      # the library ships the list, so use that rather than a copy here that drifts.
+      - name: System headers the C includes
+        run: |
+          sudo apt-get update
+          project/lib/wgrender-c/tools/deps.sh install
 
       - uses: actions/cache@v6
         with:
