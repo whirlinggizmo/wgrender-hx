@@ -43,6 +43,7 @@ tools/setters.py      whether a refusal wgrender documents is repeated in these 
 tools/guestbuild.py   the host/guest build, shared by every example
 tools/compare.py      each example's size against wgrender's own C build of it
 tools/bench.mjs       frame cost, in a headless browser
+tools/gcbench.mjs     allocation and GC per frame, traced from V8
 tools/drive.mjs       run a built example and fail on anything the console calls an error
 ```
 
