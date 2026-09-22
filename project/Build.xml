@@ -45,6 +45,19 @@
         <compilerflag value="-I${WGRHX}/host" />
     </files>
 
+    <!-- The same flags again, because hxcpp compiles the entry class's __main__.cpp as
+         its own group rather than as part of `haxe`, and a group gets only the flags
+         named for it. It matters as soon as an app's own class names a type the
+         binding maps to a wgrender struct -- `KeyboardState` is one, so a `static
+         function f(keys:KeyboardState)` puts `#include "wgr.h"` in that class's
+         generated header, which __main__.cpp then includes. The examples/2d port is
+         where that first happened; before it, every entry class happened to use only
+         types that are Int underneath. -->
+    <files id="__main__">
+        <compilerflag value="-I${WGRENDER}/include" />
+        <compilerflag value="-I${WGRHX}/host" />
+    </files>
+
     <!-- The guest ABI glue. hxcpp compiles it, so a native build needs no separate
          C step of its own. -->
     <files id="wgrguest">
