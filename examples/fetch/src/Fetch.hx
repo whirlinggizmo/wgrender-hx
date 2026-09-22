@@ -10,9 +10,19 @@
 //     Asset.setHost("https://.../examples/assets");
 //     Asset.setFetcher((request, url, destPath) -> ...);
 //
-// This one shells out to curl, so the example needs nothing built or linked. It is
-// synchronous, which is fine for a few small files and would hitch a frame on a big
-// one; the hook is built for the other way round -- start a download, call
+// This one is `haxe.Http`, which does HTTPS on hxcpp out of the standard library:
+// hxcpp builds its bundled mbedtls for `sys.ssl.Socket` the first time something asks
+// for it. No subprocess and nothing on PATH, so it behaves the same on Windows.
+//
+// It costs a megabyte. Measured on Linux x64: 3,526,728 bytes with curl against
+// 4,595,952 with mbedtls linked, +30%. That trade is the reason the hook exists at
+// all -- wgrender links no HTTP and no TLS, so the program decides whether to pay for
+// a TLS stack, shell out to something that already has one (what examples/fetch.c
+// does, since C has nothing in the box), or use a platform client like WinHTTP or
+// NSURLSession. None of those choices reaches the library.
+//
+// It is synchronous, which is fine for a few small files and would hitch a frame on a
+// big one; the hook is built for the other way round -- start a download, call
 // `Asset.fetchDone` from a later tick, block nothing meanwhile.
 //
 // Bytes never cross the boundary. wgrender names a URL and a destination file and the
@@ -72,7 +82,7 @@ class Fetch {
 		remote = hostIsUp(host);
 		if (remote) {
 			Asset.setCacheDir(CACHE_DIR);
-			Asset.setFetcher(fetchWithCurl);
+			Asset.setFetcher(fetchWithHttp);
 		} else {
 			host = Assets.defaultBase(); // the local directory
 		}
@@ -88,17 +98,34 @@ class Fetch {
 
 	#if sys
 	/** Download `url` to `destPath`, then say how it went. A real one would not block. **/
-	static function fetchWithCurl(request:Handle, url:String, destPath:String):Void {
-		final ok = Sys.command("curl", ["-fsS", "--max-time", "30", "-o", destPath, url]) == 0;
-		if (ok)
+	static function fetchWithHttp(request:Handle, url:String, destPath:String):Void {
+		var ok = false;
+		final http = new haxe.Http(url);
+		// onBytes, not onData: onData is a String and these are images and audio.
+		http.onBytes = bytes -> {
+			sys.io.File.saveBytes(destPath, bytes);
 			downloads++;
+			ok = true;
+		};
+		http.onError = e -> Log.error('fetch failed: $url ($e)');
+		http.request(false);
+		// wgrender is told either way; a false is what makes the asset fail rather
+		// than wait forever.
 		Asset.fetchDone(request, ok);
 	}
 
 	/** Is anything serving there? Keeps an offline run, and a forgetful human, honest. **/
 	static function hostIsUp(host:String):Bool {
-		return Sys.command("curl", ["-fsS", "-I", "--max-time", "2", "-o", "/dev/null",
-			'$host/$TEXTURE_PATH']) == 0;
+		var up = false;
+		final http = new haxe.Http('$host/$TEXTURE_PATH');
+		http.cnxTimeout = 2; // per request, so an offline run gives up quickly
+		http.onStatus = status -> up = status >= 200 && status < 400;
+		http.onError = _ -> up = false;
+		try
+			http.request(false)
+		catch (_:Dynamic)
+			up = false;
+		return up;
 	}
 	#end
 
