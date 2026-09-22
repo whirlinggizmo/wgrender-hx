@@ -2,8 +2,23 @@
 """Every way a wgrender call can return false, read from the C with clang.
 
     tools/refusals.py [WGRENDER_DIR]        the report
-    tools/refusals.py --json [WGRENDER_DIR] the same, as JSON on stdout
+    tools/refusals.py --check [WGRENDER_DIR] the gate: a refusal a header names and
+                                             the binding's docs do not
+    tools/refusals.py --json [WGRENDER_DIR] the report, as JSON on stdout
     tools/refusals.py --require-clang       fail rather than skip when clang is missing
+
+Two halves, both about refusals. The report reads the C. The check reads prose
+against prose: AGENTS.md makes a header's "false for ..." a contract, so a binding
+that does not repeat the sentence is dropping what it was told.
+
+This replaces tools/setters.py, which asked a question that no longer has subjects.
+Its rule was "a property is right when every way the call can fail is one wgrender
+logs, and a method returning Bool is right when it can fail silently" -- which only
+matters while there are properties. There is one left, and it has no C call behind
+it. What made that tool 388 lines was inferring which C call a member wrapped, since
+`wgr_model_set_tint -> Model.tint` cannot be read off a name; flattening made the
+name the mapping, and the inference, the DELEGATED table of hand-written verdicts
+and the regex reader of C control flow all went with it.
 
 This replaces the regular expressions that tools/setters.py used to read wgrender's
 control flow with. Those could not be trusted -- they produced one false clean (a
@@ -24,6 +39,7 @@ compile_flags.txt was missing -Ideps/sokol_utils. Silently reading less of the
 library than you think is the exact failure this tool exists to end.
 """
 import json
+import re
 import os
 import shutil
 import subprocess
@@ -32,6 +48,93 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 from wgrpath import find  # noqa: E402
+
+ROOT = Path(__file__).resolve().parent.parent
+
+
+REFUSAL = re.compile(
+    r'\bfalse\b[^.;]{0,80}?\b(for|when|outside|below|above|if|unless)\b'
+    r'|\brefus(e|es|ed|ing)\b|\bnot accepted\b', re.I)
+
+SAYS_SO = re.compile(r'\brefus(e|es|ed|ing)\b|\bfalse\b|\bkeeps? what it had\b'
+                     r'|\bignored\b|\bnot a \w+\b', re.I)
+
+
+# Refusals the binding's types make unreachable, so documenting them would be noise
+# rather than accuracy: an `enum abstract` with two values cannot produce the third
+# that wgrender would reject. This is the only exception list left -- the tool this
+# replaced also needed DELEGATED (verdicts it could not read from the C) and ACCEPTED
+# (properties that swallowed a refusal anyway), and both went with the regex reader.
+UNREACHABLE = {
+    'wgr_camera3d_set_projection': 'Projection: the two values it refuses outside are all there are',
+    'wgr_material_set_shading': 'MaterialShading: same',
+    'wgr_sprite3d_set_facing': 'SpriteFacing: same',
+    'wgr_text3d_set_facing': 'SpriteFacing: same',
+    'wgr_text2d_set_align': "AlignX and AlignY: wgrender refuses one axis's value passed for "
+                            'the other, and the two abstracts make that unrepresentable '
+                            'rather than a runtime false',
+    'wgr_text3d_set_align': 'AlignX and AlignY: same',
+}
+
+
+def documented_refusals(wgrender):
+    """Every bool wgr_* whose header comment names a refusal, with that sentence."""
+    out = {}
+    for h in sorted((wgrender / 'include').glob('*.h')):
+        text = h.read_text()
+        for m in re.finditer(
+                r'(/\*(?:[^*]|\*(?!/))*\*/)?\s*bool\s+(wgr_\w+)\s*\([^;]*?\);'
+                r'((?:[ \t]*/\*(?:[^*]|\*(?!/))*\*/)?)', text):
+            comment = (m.group(1) or '') + (m.group(3) or '')
+            if comment and REFUSAL.search(comment):
+                out[m.group(2)] = ' '.join(comment.split())
+    return out
+
+
+def binding(root):
+    """{c_name: "Module.member"} -- read straight off the flat API.
+
+    One line each, because every member is a static whose body is its Raw call. The
+    tool this replaced needed 37 lines and a hand-maintained exception table to do
+    the same job, and still lost members silently when one grew a second line.
+    """
+    out, docs = {}, {}
+    for f in sorted((root / 'src/wgr').glob('*.hx')):
+        if f.suffixes[:1] in ([".cpp"], [".js"]):
+            continue
+        text = f.read_text()
+        for m in re.finditer(
+                r'(?:/\*\*((?:[^*]|\*(?!/))*)\*\*/\s*)?'
+                r'\tpublic static inline function (\w+)\([^)]*\)[^\n]*\n\s*'
+                r'(?:return )?(?:[\w.]*\()?Raw\.(wgr_\w+)\(', text):
+            out.setdefault(m.group(3), f'{f.stem}.{m.group(2)}')
+            docs[f'{f.stem}.{m.group(2)}'] = m.group(1) or ''
+    return out, docs
+
+
+def check(root, wgrender):
+    """Fail when a refusal a header names is not repeated in the binding's docs."""
+    documented = documented_refusals(wgrender)
+    where, docs = binding(root)
+    missing = []
+    for c_name, sentence in sorted(documented.items()):
+        member = where.get(c_name)
+        if member is None:
+            continue  # not wrapped; coverage.py answers for that
+        if c_name in UNREACHABLE:
+            continue
+        if not SAYS_SO.search(docs.get(member, '')):
+            missing.append((member, c_name, sentence))
+    for member, c_name, sentence in missing:
+        print(f"  {member}: {c_name}'s header names a refusal the doc comment does not")
+        print(f'      header: {sentence[:120]}')
+    stale = [n for n in UNREACHABLE if n not in where]
+    for n in stale:
+        print(f'  {n}: listed as unreachable, but the binding does not wrap it')
+    print(f'refusals: {"stale" if missing or stale else "current"} '
+          f'({len(documented)} documented, {len(missing)} not repeated; '
+          f'{len(where)} calls wrapped, {len(UNREACHABLE)} unreachable by type)')
+    return 1 if missing or stale else 0
 
 
 def find_clang():
@@ -276,6 +379,9 @@ def collect(clang, wgrender):
 def main():
     argv = [a for a in sys.argv[1:] if not a.startswith('--')]
     clang = find_clang()
+    if clang is None and '--check' in sys.argv:
+        # The check reads headers and doc comments, not the C, so it runs anywhere.
+        return check(ROOT, find(argv[0] if argv else None))
     if clang is None:
         if '--require-clang' in sys.argv:
             # What CI passes. A skip that can happen everywhere is not a gate, so the
@@ -286,6 +392,8 @@ def main():
         print('          skipping -- CI builds the web target, so it runs there')
         return 0
     wgrender = find(argv[0] if argv else None)
+    if '--check' in sys.argv:
+        return check(ROOT, wgrender)
     api = collect(clang, wgrender)
 
     if '--json' in sys.argv:
