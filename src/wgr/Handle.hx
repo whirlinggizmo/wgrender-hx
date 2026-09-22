@@ -4,7 +4,14 @@ package wgr;
 
 /** An untyped wgrender handle (what a pick result hits); 0 is none. **/
 abstract Handle(Int) from Int to Int {
-	/** The zero handle: not created (yet), or creation failed. Assignable to any kind. **/
+	/**
+		The zero handle — "nothing", and a value you pass on purpose.
+
+		Not only what a failed `create` returns. wgrender takes it as an argument:
+		`new Model(Handle.NONE)` makes an empty model that can go into a scene straight
+		away and get its mesh when the asset arrives, which is how every example here
+		loads one. Assignable to any kind, so it needs no cast.
+	**/
 	public static final NONE:Handle = 0;
 
 	/**

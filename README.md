@@ -55,9 +55,16 @@ small value objects (`Vec2`, `Vec3`, `MouseState`, `PickResult`) the wrappers re
 
 ### Why handles aren't `null`
 
-A handle is 0 when it doesn't exist, and `isNone` reports that — rather than the
-`model != null` a Haxe developer would reach for first. That is deliberate, and
-measured:
+A handle is 0 when it refers to nothing, and `isNone` reports that — rather than the
+`model != null` a Haxe developer would reach for first.
+
+0 is a value you *pass*, not only one you get back. `new Model(Handle.NONE)` is an
+empty model that joins the scene immediately and is given its mesh when the asset
+arrives, so the frame loop never asks whether it has loaded — which is how `model`,
+`materials`, `lights`, `sprite2d` and `text3d` are all written, following the C.
+So `isNone` means "empty", not "invalid", and that is why it is not called `isValid`.
+
+Using 0 rather than `null` is deliberate, and measured:
 
 - **`null` is not 0.** On hxcpp `Null<Int>(0) == null` is `false`, so the two would
   have to be mapped at every boundary, in both directions.
