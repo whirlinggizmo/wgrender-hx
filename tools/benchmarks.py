@@ -46,7 +46,7 @@ def version(cmd):
 
 def measure_all():
     env = dict(measure.WEB_VARS, WGRENDER_DIR=str(WGRENDER))
-    measure.run(['python3', EXAMPLES / 'build.py', 'web', 'simple'], cwd=EXAMPLES, env=env)
+    measure.run(['python3', EXAMPLES / 'build.py', 'web', 'simple', 'stress'], cwd=EXAMPLES, env=env)
     measure.run(['python3', 'build.py', 'web'], cwd=EXAMPLES / 'simple-hxcpp', env=env)
 
     haxe = f'Haxe {version(["haxe", "--version"])}'
@@ -62,6 +62,7 @@ def measure_all():
         'frame': measure.frame(guest, 'haxe-js'),
         'gc': measure.gc(guest, 'haxe-js'),
         'calls': measure.calls(guest, 'haxe-js'),
+        'stress': measure.stress(EXAMPLES / 'stress/out/web', 'haxe-js', '/?n={n}'),
     }
     native = EXAMPLES / 'simple-hxcpp/out/web'
     page = {'probe': 'simple.js'}

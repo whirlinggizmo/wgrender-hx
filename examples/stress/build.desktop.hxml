@@ -1,0 +1,12 @@
+# stress, native: the same guest source through hxcpp, with wgrender compiled into
+# the binary. `haxe build.desktop.hxml`; the program looks for assets/ beside itself.
+-cp src
+-lib wgrender-hx
+--main Stress
+--cpp build/cpp/desktop
+
+-D HAXE_OUTPUT_FILE=stress-guest
+# 64-bit on every OS: hxcpp builds 32-bit on Windows unless told otherwise
+-D HXCPP_M64
+-dce full
+-D analyzer-optimize

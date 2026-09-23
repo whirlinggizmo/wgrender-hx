@@ -279,7 +279,9 @@ subdirectory. Name examples to limit any command: `examples/build.py serve model
 Thirty-two of wgrender's 33 C examples are ported — all but `clay`, whose API is C
 macros over a C layout library that a JS guest cannot reach — each named after the C
 file it ports and keeping its numbers, keys and on-screen text. `examples/build.py list` prints them
-with a line each. The ones to read first:
+with a line each. One more, [`stress`](examples/stress), ports wgrender's benchmark scene
+(`tools/bench/stress.c`) rather than an example: thousands of entities for
+`tools/benchmarks.py` to measure. The ones to read first:
 
 - [`hello`](examples/hello) and [`hello3d`](examples/hello3d) — the smallest; hello3d
   loads nothing at all, which makes it the size floor
