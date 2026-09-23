@@ -13,7 +13,8 @@ to compare against. wgrender's docs/benchmarks.md collects this project's result
 from a sibling checkout.
 
 Run by hand, not in CI: it drives a browser for about a minute per configuration.
-Commit bench/results.json and docs/benchmarks.md afterwards.
+Commit bench/results.json and docs/benchmarks.md afterwards. bench/notes.md is the
+hand-written part of the page; edit it, then --doc.
 """
 import os
 import pathlib
@@ -84,7 +85,7 @@ def main():
             'costs are wgrender\'s baseline (its `bench/results.json`); every binding is '
             'collected in wgrender\'s `docs/benchmarks.md`.')
     DOC.write_text(measure.render_doc('wgrender-hx benchmarks', lead, [baseline, ours], baseline,
-                                      'tools/benchmarks.py'))
+                                      'tools/benchmarks.py', measure.read_notes(ROOT)))
     print(f'wrote {DOC}')
 
 
