@@ -56,7 +56,9 @@ def measure_all():
     js = {
         'id': 'haxe-js', 'label': 'Haxe -> JS guest', 'project': 'wgrender-hx', 'example': 'simple',
         'toolchain': haxe,
-        'sizes': measure.sizes([guest / 'wgrender-host.wasm', guest / 'wgrender-host.js', guest / 'simple.js']),
+        # the page is wgr.macros.WebHost's: index.html and boot.js, which loads host and guest
+        'sizes': measure.sizes([guest / 'wgrender-host.wasm', guest / 'wgrender-host.js', guest / 'simple.js',
+                                guest / 'index.html', guest / 'boot.js']),
         'frame': measure.frame(guest, 'haxe-js'),
         'gc': measure.gc(guest, 'haxe-js'),
         'calls': measure.calls(guest, 'haxe-js'),
@@ -66,7 +68,9 @@ def measure_all():
     cpp = {
         'id': 'haxe-hxcpp', 'label': 'Haxe -> hxcpp', 'project': 'wgrender-hx', 'example': 'simple',
         'toolchain': f'{haxe}, {hxcpp}',
-        'sizes': measure.sizes([native / 'simple.wasm', native / 'simple.js']),
+        # the page is wgrender's example shell, which fetches examples.json for its picker
+        'sizes': measure.sizes([native / 'simple.wasm', native / 'simple.js',
+                                native / 'index.html', native / 'examples.json']),
         'frame': measure.frame(native, 'haxe-hxcpp', **page),
         'gc': measure.gc(native, 'haxe-hxcpp', **page),
     }

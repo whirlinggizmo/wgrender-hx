@@ -9,7 +9,7 @@
     "emcc": "5.0.7"
   },
   "wgrender": {
-    "commit": "4d68abd",
+    "commit": "cb1bc58",
     "dirty": false,
     "source": "sibling checkout"
   },
@@ -42,12 +42,26 @@
             "raw": 22511,
             "gzip": 5599,
             "brotli": 4924
+          },
+          {
+            "name": "index.html",
+            "kind": "page",
+            "raw": 930,
+            "gzip": 526,
+            "brotli": 368
+          },
+          {
+            "name": "boot.js",
+            "kind": "js",
+            "raw": 466,
+            "gzip": 297,
+            "brotli": 238
           }
         ],
         "total": {
-          "raw": 781065,
-          "gzip": 320429,
-          "brotli": 263266
+          "raw": 782461,
+          "gzip": 321252,
+          "brotli": 263872
         }
       },
       "frame": {
@@ -56,22 +70,22 @@
         "median": 16.66,
         "p95": 16.67,
         "overCap": 0,
-        "scriptMs": 0.477,
-        "taskMs": 0.757,
+        "scriptMs": 0.543,
+        "taskMs": 0.842,
         "scriptRuns": [
-          0.468,
-          0.477,
-          0.552
+          0.478,
+          0.543,
+          0.556
         ]
       },
       "gc": {
         "label": "haxe-js",
-        "frames": 606,
+        "frames": 607,
         "uncapped": false,
-        "allocBytesPerFrame": 4501,
-        "allocMBPerMinute": 15.5,
-        "collections": 5,
-        "freedMB": 2.24,
+        "allocBytesPerFrame": 3025,
+        "allocMBPerMinute": 10.4,
+        "collections": 2,
+        "freedMB": 1.42,
         "heapStartMB": 8.9,
         "heapEndMB": 9.3,
         "frameMs": {
@@ -80,7 +94,7 @@
           "max": 16.67
         },
         "gcFrameMs": {
-          "median": 16.66,
+          "median": 16.67,
           "max": 16.67
         },
         "loadMs": 0,
@@ -90,13 +104,13 @@
           "pct": 0
         },
         "gc": {
-          "totalMs": 2.1,
-          "pctOfWall": 0.02,
+          "totalMs": 1.4,
+          "pctOfWall": 0.01,
           "minor": {
             "count": 1,
-            "medianMs": 2.11,
-            "maxMs": 2.11,
-            "totalMs": 2.1
+            "medianMs": 1.41,
+            "maxMs": 1.41,
+            "totalMs": 1.4
           },
           "major": {
             "count": 0,
@@ -148,12 +162,26 @@
             "raw": 70224,
             "gzip": 25197,
             "brotli": 22448
+          },
+          {
+            "name": "index.html",
+            "kind": "page",
+            "raw": 8612,
+            "gzip": 3592,
+            "brotli": 2916
+          },
+          {
+            "name": "examples.json",
+            "kind": "page",
+            "raw": 11,
+            "gzip": 31,
+            "brotli": 15
           }
         ],
         "total": {
-          "raw": 1773173,
-          "gzip": 490870,
-          "brotli": 383653
+          "raw": 1781796,
+          "gzip": 494493,
+          "brotli": 386584
         }
       },
       "frame": {
@@ -162,22 +190,22 @@
         "median": 16.66,
         "p95": 16.67,
         "overCap": 0,
-        "scriptMs": 0.496,
-        "taskMs": 0.772,
+        "scriptMs": 0.55,
+        "taskMs": 0.877,
         "scriptRuns": [
-          0.478,
-          0.496,
-          0.522
+          0.539,
+          0.55,
+          0.555
         ]
       },
       "gc": {
         "label": "haxe-hxcpp",
-        "frames": 607,
+        "frames": 606,
         "uncapped": false,
-        "allocBytesPerFrame": 1366,
-        "allocMBPerMinute": 4.7,
+        "allocBytesPerFrame": 1099,
+        "allocMBPerMinute": 3.8,
         "collections": 1,
-        "freedMB": 0.6,
+        "freedMB": 0.44,
         "heapStartMB": 8.7,
         "heapEndMB": 8.9,
         "frameMs": {
