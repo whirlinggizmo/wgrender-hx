@@ -41,6 +41,8 @@ DESKTOP_HXML = '''# {name}, native: the same guest source through hxcpp, with wg
 --cpp build/cpp/desktop
 
 -D HAXE_OUTPUT_FILE={name}-guest
+# 64-bit on every OS: hxcpp builds 32-bit on Windows unless told otherwise
+-D HXCPP_M64
 -dce full
 -D analyzer-optimize
 '''
