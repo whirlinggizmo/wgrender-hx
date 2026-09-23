@@ -3,9 +3,11 @@
 
     tools/new_example.py <name> [--entry Class] [--title "..."] [--background "#rgb"]
 
-Writes examples/<name>/ with the build script, the headless driver and a .gitignore,
-then a src/<Entry>.hx stub that starts and clears the screen. guestbuild.py generates
-the page, the boot module and both hxml files at build time, so those are not here.
+Writes examples/<name>/ with build.web.hxml and build.desktop.hxml -- the build, and
+what a user copies -- a .gitignore, and a src/<Entry>.hx stub that starts and clears
+the screen. That is the whole example: examples/build.py runs the suite's chores for it
+by name, and wgr.macros.WebHost writes the page and its boot module into out/web when
+the web build runs.
 
 There is one of these per example and they differ only by name, which is exactly the
 kind of thing that drifts when it is copied by hand.
@@ -16,44 +18,31 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 
-BUILD_PY = '''#!/usr/bin/env python3
-"""Build `{name}` as a wgrender host with a Haxe guest on top.
+WEB_HXML = '''# {name}, for the web: the Haxe guest compiled to JS, and a wasm host linked to
+# exactly the wgrender calls it makes. `haxe build.web.hxml`, then serve out/web; the
+# page loads its assets from /assets on the same origin.
+-cp src
+-lib wgrender-hx
+--main {entry}
+--js out/web/{name}.js
 
-The build itself is guestbuild.py in the wgrender-hx haxelib, shared with every other
-example; this says which example it is.
-
-    ./build.py host | guest | desktop | all | serve | sizes | clean
-"""
-import pathlib
-import subprocess
-import sys
-
-# The library: two directories up inside the repo, and wherever haxelib put it if
-# this example has been copied out to start a project from. Only the bootstrap needs
-# to know -- everything else comes from guestbuild.
-LIB = pathlib.Path(__file__).resolve().parents[2]
-if not (LIB / 'tools/guestbuild.py').exists():
-    found = subprocess.run(['haxelib', 'libpath', 'wgrender-hx'],
-                           capture_output=True, text=True).stdout.strip()
-    if not found:
-        sys.exit('wgrender-hx not found. Either keep this example inside the library, '
-                 'or install it:\\n'
-                 '  haxelib git wgrender-hx https://github.com/whirlinggizmo/wgrender-hx')
-    LIB = pathlib.Path(found)
-sys.path.insert(0, str(LIB / 'tools'))
-from guestbuild import Project  # noqa: E402
-
-Project(root=pathlib.Path(__file__).resolve().parent, name='{name}', entry='{entry}',
-        title='{title}', background='{background}').main()
+-D js-es=6
+-dce full
+-D analyzer-optimize
+{title}-D wgr-background={background}
+--macro wgr.macros.WebHost.build()
 '''
 
-DRIVE_MJS = '''// The shared driver, in the wgrender-hx haxelib; this names the example.
-import {{ dirname, join, resolve }} from "node:path";
-import {{ fileURLToPath, pathToFileURL }} from "node:url";
-const HERE = dirname(fileURLToPath(import.meta.url));
-const lib = join(HERE, "../../.."); // examples/<name>/tools -> the library
-process.argv.push(`--site=${{resolve(join(HERE, "../out/web"))}}`, "--label={name}");
-await import(pathToFileURL(join(lib, "tools/drive.mjs")).href);
+DESKTOP_HXML = '''# {name}, native: the same guest source through hxcpp, with wgrender compiled into
+# the binary. `haxe build.desktop.hxml`; the program looks for assets/ beside itself.
+-cp src
+-lib wgrender-hx
+--main {entry}
+--cpp build/cpp/desktop
+
+-D HAXE_OUTPUT_FILE={name}-guest
+-dce full
+-D analyzer-optimize
 '''
 
 STUB = '''// wgrender's {name} example, as a Haxe guest.
@@ -128,20 +117,19 @@ def main():
     if root.exists():
         sys.exit(f'{root} already exists')
     (root / 'src').mkdir(parents=True)
-    (root / 'tools').mkdir()
 
-    (root / 'build.py').write_text(BUILD_PY.format(
-        name=name, entry=entry, title=title, background=background))
-    (root / 'build.py').chmod(0o755)
-    (root / 'tools/drive.mjs').write_text(DRIVE_MJS.format(name=name))
-    (root / '.gitignore').write_text(
-        'out/\nbuild/\nweb/index.html\nweb/boot.js\nguest.hxml\ndesktop.hxml\n')
+    # the page's title defaults to the example's name, so only a different one is written
+    (root / 'build.web.hxml').write_text(WEB_HXML.format(
+        name=name, entry=entry, background=background,
+        title='' if title == name else f'-D wgr-title={title}\n'))
+    (root / 'build.desktop.hxml').write_text(DESKTOP_HXML.format(name=name, entry=entry))
+    (root / '.gitignore').write_text('out/\nbuild/\n')
     (root / f'src/{entry}.hx').write_text(STUB.format(name=name, entry=entry))
 
     print(f'examples/{name}/')
     print(f'  src/{entry}.hx   the stub to replace')
-    print(f'  build.py, tools/drive.mjs, .gitignore')
-    print(f'\nadd {name!r} to GUESTS in examples/build.py, then: cd examples/{name} && ./build.py all')
+    print(f'  build.web.hxml, build.desktop.hxml   the build')
+    print(f'\nadd {name!r} to GUESTS in examples/build.py, then: examples/build.py all {name}')
     return 0
 
 

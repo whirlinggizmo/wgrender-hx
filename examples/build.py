@@ -5,14 +5,15 @@
 
 Naming examples limits the command to those; naming none means all of them.
 
-    all        build it: the guest, the wasm host, and the native binary
-    guest      the Haxe-to-JS half only
-    host       the wasm host only (reads the built guest to know what to export)
-    desktop    the native binary only
-    web        everything a browser needs
+    all        build it: the web build (guest and host) and the native binary
+    web        the guest and its wasm host -- one build, each example's build.web.hxml
+    desktop    the native binary only, each example's build.desktop.hxml
+    guest      (the same as web: the host is linked by the guest's build now)
+    host       (likewise)
     drive      run each web build in a headless browser and fail on a console error
     site       collect every web build into out/www with a page that lists them
-    serve      build that site and serve it (--tls cert key for https on 8443)
+    serve      build that site and serve it: one server, each example a subdirectory;
+               name examples to serve just those (--tls cert key for https on 8443)
     sizes      what each web build weighs
     compare    those sizes against wgrender's own C build of the same example
     bench      frame cost, Haxe against C
@@ -51,6 +52,7 @@ if not (LIB / 'tools/wgrpath.py').exists():
     LIB = pathlib.Path(_found)
 sys.path.insert(0, str(LIB / 'tools'))
 from wgrpath import find  # noqa: E402
+from guestbuild import Project  # noqa: E402
 WGRENDER = find(argv=[])
 C_BUILD = WGRENDER / 'examples/build/webgl2-nothreads'
 
@@ -135,13 +137,27 @@ def run(cmd, cwd, **kw):
 
 
 def each(command, names=None, chosen=()):
+    """A guest is its hxml files, so this does its work in-process; an all-in-one
+    example (simple-hxcpp) is a different build and keeps its own script."""
     for name in wanted(names or GUESTS + OTHERS, chosen):
-        run(['./build.py', command], HERE / name)
+        if name in GUESTS:
+            print(f'\n=== {name}: {command}', flush=True)
+            Project(HERE / name, name).command(command)
+        else:
+            run(['./build.py', command], HERE / name)
+
+
+# What an example's drive does beyond loading the page and checking it drew. Each
+# example used to carry this in a tools/drive.mjs stub of its own; particles was the
+# only one that said anything, and without it the confetti path would go unexercised
+# while the drive still passed.
+DRIVE_FLAGS = {'particles': ['--click']}
 
 
 def drive(chosen=()):
     for name in wanted(GUESTS, chosen):
-        run(['node', 'tools/drive.mjs'], HERE / name)
+        run(['node', LIB / 'tools/drive.mjs', f'--site={HERE / name / "out/web"}', f'--label={name}',
+             *DRIVE_FLAGS.get(name, [])], HERE / name)
     if 'simple-hxcpp' in wanted(OTHERS, chosen):
         run(['node', 'check_web.mjs'], HERE / 'simple-hxcpp')
 
@@ -331,11 +347,10 @@ def main():
         listing()
     elif command == 'all':
         each('all', chosen=chosen)
-    elif command in ('guest', 'host'):
-        each(command, GUESTS, chosen)
-    elif command == 'web':
-        each('all', GUESTS, chosen)
-        each('web', OTHERS, chosen)
+    elif command in ('web', 'guest', 'host'):
+        each('web', GUESTS, chosen)
+        if command == 'web':
+            each('web', OTHERS, chosen)
     elif command in ('desktop', 'sizes', 'clean'):
         each(command, chosen=chosen)
     elif command == 'drive':

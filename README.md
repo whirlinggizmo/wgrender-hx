@@ -45,7 +45,7 @@ tools/coverage.py     what the binding reaches, and what wrapping next buys
 tools/refusals.py     every way a wgrender call can return false, read from the C
                       with clang; --check fails if a documented refusal is not
                       repeated in these docs
-tools/guestbuild.py   the host/guest build, shared by every example
+tools/guestbuild.py   the examples' suite runner: checks, desktop assets, sizes, serve
 tools/compare.py      each example's size against wgrender's own C build of it
 tools/bench.mjs       frame cost, in a headless browser
 tools/gcbench.mjs     allocation and GC per frame, traced from V8
@@ -263,8 +263,19 @@ examples/build.py compare  sizes against wgrender's own C build of each
 test/check.py              the binding's 317 assertions
 ```
 
-Twenty-six of wgrender's 33 C examples are ported, each named after the C file it ports
-and keeping its numbers, keys and on-screen text. `examples/build.py list` prints them
+Each example is what you would write yourself: `src/`, a `build.web.hxml` and a
+`build.desktop.hxml`. Those files *are* the build — `haxe build.web.hxml` in an
+example's directory gives you its `out/web`, host and page included — so copying an
+example is how to start a project. There is nothing else in an example to copy or to
+ignore: `examples/build.py` does the suite's chores for each one by name — it checks the
+binding is the one you are working on and current, points the build at this
+checkout's wgrender with `-D WGRENDER_DIR`, puts wgrender's sample assets beside a
+desktop binary, and serves every example from one server, each in its own
+subdirectory. Name examples to limit any command: `examples/build.py serve model`.
+
+Thirty-two of wgrender's 33 C examples are ported — all but `clay`, whose API is C
+macros over a C layout library that a JS guest cannot reach — each named after the C
+file it ports and keeping its numbers, keys and on-screen text. `examples/build.py list` prints them
 with a line each. The ones to read first:
 
 - [`hello`](examples/hello) and [`hello3d`](examples/hello3d) — the smallest; hello3d

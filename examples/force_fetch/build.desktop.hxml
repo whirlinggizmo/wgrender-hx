@@ -1,0 +1,10 @@
+# force_fetch, native: the same guest source through hxcpp, with wgrender compiled into
+# the binary. `haxe build.desktop.hxml`; the program looks for assets/ beside itself.
+-cp src
+-lib wgrender-hx
+--main ForceFetch
+--cpp build/cpp/desktop
+
+-D HAXE_OUTPUT_FILE=force_fetch-guest
+-dce full
+-D analyzer-optimize

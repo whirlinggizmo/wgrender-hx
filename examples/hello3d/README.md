@@ -7,9 +7,10 @@ guest on top of it; the same source also builds native through hxcpp.
 It loads nothing, which makes it the size floor for this architecture — what a Haxe
 game costs over the wgrender host when the game itself is seventy lines.
 
-    ./build.py all      the host, the guest, and the native binary
-    ./build.py serve    http://localhost:8000/
-    node tools/drive.mjs
+    haxe build.web.hxml                 the guest and its host, into out/web
+    haxe build.desktop.hxml             the native binary
+    examples/build.py serve hello3d     http://localhost:8000/hello3d/
+    examples/build.py drive hello3d     headless smoke test
 
 ## Against the C
 

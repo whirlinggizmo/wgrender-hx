@@ -1,0 +1,10 @@
+# text3d, native: the same guest source through hxcpp, with wgrender compiled into
+# the binary. `haxe build.desktop.hxml`; the program looks for assets/ beside itself.
+-cp src
+-lib wgrender-hx
+--main Text3DDemo
+--cpp build/cpp/desktop
+
+-D HAXE_OUTPUT_FILE=text3d-guest
+-dce full
+-D analyzer-optimize

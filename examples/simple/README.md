@@ -100,7 +100,7 @@ from `examples/build/` and needs an `examples.json`), median of 3, ms to
 157 ms.** Everywhere else it's a wash or slightly behind, because it is four files
 instead of two and more of the time goes on wiring rather than bytes.
 
-Before the `<link rel=modulepreload/preload>` hints in `web/index.html`, cold 4G was
+Before the page carried `<link rel=modulepreload/preload>` hints, cold 4G was
 **1,040 ms** — worse than `../simple-hxcpp`. `tools/waterfall.mjs` found why: the module
 graph was `html → boot.js → wgrender-host.js → wasm`, so the wasm request didn't start
 until 533 ms, against 241 ms for `../simple-hxcpp` (wgrender's shell kicks off
@@ -175,7 +175,7 @@ Three measured hazards, all handled in one place:
 
 ## Desktop: the same guest, native
 
-`./build.py desktop` builds `Guest.hx` through hxcpp instead of to JS. There is no
+`haxe build.desktop.hxml` builds `Guest.hx` through hxcpp instead of to JS. There is no
 wasm and no host module: hxcpp compiles `host/wgr_guest.c` and links wgrender straight
 into the binary, so the guest ABI is a set of plain function pointers. Verified
 running the same scene with `Platform: desktop`.
@@ -230,12 +230,13 @@ goes with it. Whatever carries the build config has to be something the build ke
   cheapest possible edge
 - fault policy is still the default (log and continue); see above
 
-## Build## Build
+## Build
 
 ```sh
-./build.py host     # out/web/wgrender-host.js + .wasm
-./build.py sizes
-node tools/drive.mjs   # headless browser smoke test; writes out/check.png
+haxe build.web.hxml                 # out/web: the guest, its host (.js + .wasm), the page
+examples/build.py web simple        # the same, with the suite's checks first
+examples/build.py sizes simple
+examples/build.py drive simple      # headless browser smoke test; writes out/check.png
 ```
 
 The host exports the guest ABI plus the slice of wgrender's C API the guest calls —
