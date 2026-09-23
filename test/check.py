@@ -2,6 +2,7 @@
 """Run the binding against headless wgrender and assert what it gets back.
 
     test/check.py [WGRENDER_DIR]
+    test/check.py --lists      only the WebHost list guards: pure Python, for CI
 
 Headless is wgrender's own test target (`make HEADLESS=1`): no window, GPU or audio,
 and WGR_HEADLESS_FRAMES runs a fixed number of frames and returns, so the checks can
@@ -110,11 +111,62 @@ def main():
          '--cpp', BUILD / 'cpp-nodce', '-D', 'HAXE_OUTPUT_FILE=check-nodce',
          '-dce', 'no', '--debug', '-D', 'no-compilation'], cwd=ROOT)
 
-    print('type-check (js)')
+    # -D wgr-listing makes wgr.macros.WebHost.build() return at once, as it does inside its own
+    # listing compile, so this types the macro without making a host or spawning a child.
+    print('type-check (js), with the WebHost macro')
     run([HAXE, '-cp', ROOT / 'src', '-cp', ROOT / 'test', '--main', 'CheckBindings',
-         '--js', BUILD / 'check-js.js', '-D', 'js-es=6'])
+         '--js', BUILD / 'check-js.js', '-D', 'js-es=6',
+         '-D', 'wgr-listing', '--macro', 'wgr.macros.WebHost.build()'])
+
+    print('WebHost lists')
+    return check_webhost_lists()
+
+
+def check_webhost_lists():
+    """The two lists src/wgr/macros/WebHost.hx keeps by hand still match what they describe.
+
+    Both are hand-kept on purpose -- the guest ABI is this binding's own contract, and
+    what the JS reaches on the Emscripten module only exists inside function bodies --
+    so this is what stops them drifting. One already had: the runtime list in the
+    prototype carried HEAP8, which nothing uses. That direction is harmless; the other
+    one is a runtime method the binding starts using that nobody adds, which fails in
+    the browser as an undefined function.
+    """
+    import re
+    web = (ROOT / 'src/wgr/macros/WebHost.hx').read_text()
+
+    def listed(name):
+        m = re.search(name + r'\s*=\s*\[(.*?)\];', web, re.S)
+        return set(re.findall(r'"(\w+)"', m.group(1))) if m else set()
+
+    failed = False
+    abi = set(re.findall(r'\b(wgr_guest_\w+)\s*\(', (ROOT / 'host/wgr_guest.h').read_text()))
+    have = listed('GUEST_ABI')
+    for n in sorted(abi - have):
+        print(f'  GUEST_ABI is missing {n}, which host/wgr_guest.h declares')
+        failed = True
+    for n in sorted(have - abi):
+        print(f'  GUEST_ABI lists {n}, which host/wgr_guest.h does not declare')
+        failed = True
+
+    reached = set()
+    for f in (ROOT / 'src/wgr').rglob('*.js.hx'):
+        reached |= {n for n in re.findall(r'\bhost\.([A-Za-z_]\w*)', f.read_text())
+                    if not n.startswith('_wgr_')}
+    runtime = listed('RUNTIME_METHODS')
+    for n in sorted(reached - runtime):
+        print(f'  RUNTIME_METHODS is missing {n}, which src/wgr reaches on the host module')
+        failed = True
+    for n in sorted(runtime - reached):
+        print(f'  RUNTIME_METHODS lists {n}, which nothing in src/wgr reaches')
+        failed = True
+
+    if failed:
+        return 1
+    print(f'  GUEST_ABI matches host/wgr_guest.h ({len(abi)}); '
+          f'RUNTIME_METHODS matches src/wgr ({len(runtime)})')
     return 0
 
 
 if __name__ == '__main__':
-    sys.exit(main())
+    sys.exit(check_webhost_lists() if '--lists' in sys.argv else main())

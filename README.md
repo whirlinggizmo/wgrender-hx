@@ -25,7 +25,8 @@ if (pick.handle == model) ...          // the untyped pick handle still compares
 ```
 src/wgr/*.hx          the API — one module per wgrender public header
 src/wgr/GuestAbi.hx   installing the guest's ops; .{cpp,js}.hx per target
-src/wgr/import.hx     gives those modules the C surface
+src/wgr/import.hx     gives those modules the C surface (not in macro context)
+src/wgr/macros/       compile-time code, run from an hxml: WebHost links a guest's host
 src/wgr/impl/         the generated C surface, chosen by target. Nothing outside the
                       binding imports from here; an app needs `import wgr.*` and no more
   Raw.hx                #error for a target with no implementation
@@ -186,7 +187,8 @@ cloned at; the binding is generated from wgrender's headers, so it then reports 
 STALE against the older ones and refuses to build. `setup` moves the submodule to the
 commit this library pins. It fetches what is missing and reports; for a
 native target it has nothing to build. `setup web` additionally builds wgrender's
-Emscripten library, which the examples' own build does for you.
+Emscripten library, which `wgr.macros.WebHost` and the examples' own build both do
+for you.
 
 `haxelib run wgrender-hx where` says what is present.
 
@@ -205,6 +207,48 @@ toolchain as your program, so a checkout is not exercising a path nobody else ru
 names an hxcpp build-tool XML outright, and wins over everything above. `test/check.py`
 uses it, because the checks link a *headless* wgrender (`SOKOL_DUMMY_BACKEND`), which
 is a different build rather than a different directory.
+
+### A web guest, from your own hxml
+
+A JS guest needs a wasm host beside it: wgrender compiled with Emscripten, exporting the
+calls the guest makes. One line in the section that builds your guest does that:
+
+```
+-lib wgrender-hx
+--main Game
+--js out/web/game.js
+--macro wgr.macros.WebHost.build()
+```
+
+It builds wgrender's web library if it has to, links `wgrender-host.js` and
+`wgrender-host.wasm` next to your `--js` output, and writes `boot.js` and an
+`index.html` to load them. `boot.js` is regenerated every build, since it has to match
+the host; `index.html` is written once and is yours after that. The line can sit
+anywhere in the section — Haxe reads the whole section before it runs the macro.
+
+The host exports exactly what your guest calls, which is about a quarter smaller
+gzipped than exporting the whole binding. To find out what that is, the macro compiles
+your program a second time in a child `haxe`, with your own arguments plus
+`-dce full -D no-inline --no-output --json`: with inlining off, dead-code elimination
+leaves the `wgr.impl.Raw` wrappers you reach as declarations, and `--json` lists them.
+So your own build is untouched — `-dce no --debug` is fine — and nothing is read out of
+generated JavaScript. `-D no-inline` can only ever list more than you need, never less,
+so the worst case is a slightly bigger wasm. The child takes a fraction of a second,
+and the link is skipped when the list, the flags, wgrender's library and the host glue
+are all unchanged.
+
+- `-D wgr-host=full` exports the whole binding and skips the child compile. Good for
+  development, since the host then only relinks when wgrender changes, and the way to
+  rule the listing out if something misbehaves.
+- `-D wgr-build-dir=<dir>` is where linked hosts are cached; `build/webhost` by default.
+- `-D wgr-title=<text>` and `-D wgr-background=<css colour>` shape the first `index.html`.
+- `WGRENDER_DIR`, `WEB_THREADS`, `BACKEND` and `WEB_DEBUG` in the environment mean what
+  they mean to wgrender's own web build.
+
+It needs `make` and Emscripten's `emcc` on the path. A call into wgrender made only
+through reflection is invisible to dead-code elimination and will not be listed; mark
+its caller `@:keep`. On a native target the line does nothing, so a shared hxml can
+carry it.
 
 ### The examples
 
