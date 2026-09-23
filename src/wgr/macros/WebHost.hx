@@ -42,8 +42,11 @@ using StringTools;
 	- `-D wgr-build-dir=<dir>` where the linked host is cached (default `build/webhost`).
 	- `-D wgr-title=<text>` and `-D wgr-background=<css colour>` for the generated page.
 
-	Environment: `WGRENDER_DIR`, `WEB_THREADS` (default 0), `BACKEND` and `WEB_DEBUG`, as
-	for wgrender's own web build. Needs `make` and Emscripten (`emcc`) on the path.
+	- `-D WGRENDER_DIR=<path>` builds against that wgrender instead of the submodule this
+	  binding pins — the same define, with the same meaning, as a native build.
+
+	Environment: `WEB_THREADS` (default 0), `BACKEND` and `WEB_DEBUG`, as for wgrender's
+	own web build. Needs `make` and Emscripten (`emcc`) on the path.
 
 	A reflection-only call into wgrender (`Reflect.callMethod` on `Raw`) is invisible to
 	DCE, so the listing will not have it; mark the caller `@:keep`.
@@ -253,17 +256,22 @@ class WebHost {
 		return {lib: lib, ldflags: ldflags};
 	}
 
-	/** Same order as tools/wgrpath.py: $WGRENDER_DIR, a checkout beside the binding, the submodule. **/
+	/**
+		Which wgrender: `-D WGRENDER_DIR=<path>`, or else the submodule this binding pins.
+
+		The same rule, spelled the same way, as `project/Build.xml` uses for a native
+		build, so one guest never builds its web host against one wgrender and its desktop
+		binary against another. An earlier version also looked for a `wgrender-c` checkout
+		beside the binding, which a native build never does; on a machine with one, the
+		same source got two different libraries depending on the target.
+	**/
 	static function findWgrender(binding:String):String {
-		final given = Sys.getEnv("WGRENDER_DIR");
-		final candidates = given != null && given != "" ? [given] : [
-			Path.join([binding, "../wgrender-c"]),
-			Path.join([binding, "project/lib/wgrender-c"])
-		];
-		for (c in candidates)
-			if (FileSystem.exists(Path.join([c, "include/wgr.h"])))
-				return FileSystem.fullPath(c);
-		return fail('WebHost: cannot find wgrender (no include/wgr.h) in: ${candidates.join(", ")}');
+		final given = Context.definedValue("WGRENDER_DIR");
+		final dir = given != null && given != "" && given != "1" ? given : Path.join([binding, "project/lib/wgrender-c"]);
+		if (!FileSystem.exists(Path.join([dir, "include/wgr.h"])))
+			return fail('WebHost: no wgrender at $dir (no include/wgr.h). '
+				+ (given != null ? "Check -D WGRENDER_DIR." : "Run `haxelib run wgrender-hx setup` to fetch the submodule."));
+		return FileSystem.fullPath(dir);
 	}
 
 	static function makeVars():Array<String>

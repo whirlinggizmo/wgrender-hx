@@ -242,8 +242,11 @@ are all unchanged.
   rule the listing out if something misbehaves.
 - `-D wgr-build-dir=<dir>` is where linked hosts are cached; `build/webhost` by default.
 - `-D wgr-title=<text>` and `-D wgr-background=<css colour>` shape the first `index.html`.
-- `WGRENDER_DIR`, `WEB_THREADS`, `BACKEND` and `WEB_DEBUG` in the environment mean what
-  they mean to wgrender's own web build.
+- `-D WGRENDER_DIR=<path>` builds against that wgrender instead of the pinned submodule,
+  exactly as it does for a native build — so the web host and the desktop binary always
+  agree on which wgrender they got.
+- `WEB_THREADS`, `BACKEND` and `WEB_DEBUG` in the environment mean what they mean to
+  wgrender's own web build.
 
 It needs `make` and Emscripten's `emcc` on the path. A call into wgrender made only
 through reflection is invisible to dead-code elimination and will not be listed; mark
