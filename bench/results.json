@@ -9,7 +9,7 @@
     "emcc": "5.0.7"
   },
   "wgrender": {
-    "commit": "cb1bc58",
+    "commit": "9b8fae3",
     "dirty": false,
     "source": "sibling checkout"
   },
@@ -70,23 +70,23 @@
         "median": 16.66,
         "p95": 16.67,
         "overCap": 0,
-        "scriptMs": 0.543,
-        "taskMs": 0.842,
+        "scriptMs": 0.526,
+        "taskMs": 0.815,
         "scriptRuns": [
-          0.478,
-          0.543,
-          0.556
+          0.515,
+          0.526,
+          0.532
         ]
       },
       "gc": {
         "label": "haxe-js",
         "frames": 607,
         "uncapped": false,
-        "allocBytesPerFrame": 3025,
-        "allocMBPerMinute": 10.4,
-        "collections": 2,
-        "freedMB": 1.42,
-        "heapStartMB": 8.9,
+        "allocBytesPerFrame": 3474,
+        "allocMBPerMinute": 11.9,
+        "collections": 4,
+        "freedMB": 1.68,
+        "heapStartMB": 9,
         "heapEndMB": 9.3,
         "frameMs": {
           "median": 16.66,
@@ -104,13 +104,13 @@
           "pct": 0
         },
         "gc": {
-          "totalMs": 1.4,
-          "pctOfWall": 0.01,
+          "totalMs": 1.7,
+          "pctOfWall": 0.02,
           "minor": {
             "count": 1,
-            "medianMs": 1.41,
-            "maxMs": 1.41,
-            "totalMs": 1.4
+            "medianMs": 1.69,
+            "maxMs": 1.69,
+            "totalMs": 1.7
           },
           "major": {
             "count": 0,
@@ -123,7 +123,7 @@
       },
       "calls": {
         "label": "haxe-js",
-        "frames": 481,
+        "frames": 482,
         "callsPerFrame": 16,
         "perFrame": {
           "wgr_input_get_mouse_state": 1,
@@ -186,36 +186,36 @@
       },
       "frame": {
         "label": "haxe-hxcpp",
-        "frames": 480,
+        "frames": 479,
         "median": 16.66,
         "p95": 16.67,
         "overCap": 0,
-        "scriptMs": 0.55,
-        "taskMs": 0.877,
+        "scriptMs": 0.528,
+        "taskMs": 0.822,
         "scriptRuns": [
-          0.539,
-          0.55,
-          0.555
+          0.514,
+          0.528,
+          0.529
         ]
       },
       "gc": {
         "label": "haxe-hxcpp",
-        "frames": 606,
+        "frames": 609,
         "uncapped": false,
-        "allocBytesPerFrame": 1099,
-        "allocMBPerMinute": 3.8,
+        "allocBytesPerFrame": 655,
+        "allocMBPerMinute": 2.2,
         "collections": 1,
-        "freedMB": 0.44,
+        "freedMB": 0.19,
         "heapStartMB": 8.7,
         "heapEndMB": 8.9,
         "frameMs": {
-          "median": 16.66,
+          "median": 16.67,
           "p99": 16.67,
           "max": 16.67
         },
         "gcFrameMs": {
-          "median": 16.67,
-          "max": 16.67
+          "median": 16.66,
+          "max": 16.66
         },
         "loadMs": 0,
         "lateFrames": {
