@@ -48,6 +48,9 @@ def measure_all():
     env = dict(measure.WEB_VARS, WGRENDER_DIR=str(WGRENDER))
     measure.run(['python3', EXAMPLES / 'build.py', 'web', 'simple', 'stress'], cwd=EXAMPLES, env=env)
     measure.run(['python3', 'build.py', 'web'], cwd=EXAMPLES / 'simple-hxcpp', env=env)
+    # the stress scene all-in-one through hxcpp: the Haxe GC inside the wasm, which
+    # gcbench cannot trace but a late frame shows
+    measure.run(['python3', ROOT / 'tools/hxcppweb.py', 'stress'], cwd=ROOT, env=env)
 
     haxe = f'Haxe {version(["haxe", "--version"])}'
     hxcpp = version(['haxelib', 'list', 'hxcpp']).split('[')[0].replace(':', '').strip()
@@ -74,6 +77,7 @@ def measure_all():
                                 native / 'index.html', native / 'examples.json']),
         'frame': measure.frame(native, 'haxe-hxcpp', **page),
         'gc': measure.gc(native, 'haxe-hxcpp', **page),
+        'stress': measure.stress(EXAMPLES / 'stress/out/hxcpp-web', 'haxe-hxcpp', '/?n={n}', 'stress.js'),
     }
     return measure.write_results(RESULTS, 'wgrender-hx', measure.wgrender_info(WGRENDER, source()),
                                  [js, cpp])

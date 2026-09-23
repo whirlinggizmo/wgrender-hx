@@ -31,6 +31,9 @@ private class Entity {
 }
 
 @:expose("WgrGuest")
+#if emscripten
+@:cppFileCode("#include <emscripten.h>")
+#end
 class Stress {
 	static inline final SCREEN_WIDTH = 1024;
 	static inline final SCREEN_HEIGHT = 1280;
@@ -64,6 +67,9 @@ class Stress {
 	static function entityCount():Int {
 		#if js
 		final given = Std.parseInt(new js.html.URLSearchParams(js.Browser.location.search).get("n"));
+		#elseif emscripten
+		// all-in-one through hxcpp (tools/hxcppweb.py): C++ in the page, no argv
+		final given:Null<Int> = untyped __cpp__('emscripten_run_script_int("+(new URLSearchParams(location.search).get(\'n\')) || 0")');
 		#else
 		final args = Sys.args();
 		final given = Std.parseInt(args.length > 0 ? args[0] : Sys.getEnv("STRESS_N"));

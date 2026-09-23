@@ -48,6 +48,7 @@ tools/refusals.py     every way a wgrender call can return false, read from the 
 tools/guestbuild.py   the examples' suite runner: checks, desktop assets, sizes, serve
 tools/compare.py      each example's size against wgrender's own C build of it
 tools/benchmarks.py   size, frame cost, GC and call cost against the C -> docs/benchmarks.md
+tools/hxcppweb.py     an example all-in-one through hxcpp for the web, for the benchmarks
 tools/drive.mjs       run a built example and fail on anything the console calls an error
 ```
 
