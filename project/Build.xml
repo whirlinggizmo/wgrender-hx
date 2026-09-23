@@ -91,10 +91,7 @@
 
              Also note hxcpp defaults to a 32-bit build on Windows, so an x64
              wgrender needs -D HXCPP_M64 or link.exe reports a machine type conflict
-             before it gets as far as any of the above. Compiling wgrender from source
-             as this file does, a 32-bit build currently fails sooner still (wgrender
-             cea38f7): wgr_thread.c asserts wgri_mutex_t can hold a CRITICAL_SECTION, and
-             it is sized for x64. Every example's build.desktop.hxml sets HXCPP_M64. -->
+             before it gets as far as any of the above. -->
 
         <lib name="${WGRENDER}/build/webgl2-nothreads/libwgrender.a" if="emscripten" />
 

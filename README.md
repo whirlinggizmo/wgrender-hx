@@ -178,9 +178,7 @@ compile. There is no library to build first and nothing to point at by hand, bec
 hxcpp compiles wgrender with the same toolchain it compiles your program with.
 
 **On Windows, add `-D HXCPP_M64`.** hxcpp builds 32-bit there unless told otherwise,
-which is rarely what a game wants — and as of wgrender `cea38f7` a 32-bit build does
-not compile, because `wgri_mutex_t` is sized for a 64-bit `CRITICAL_SECTION`. The
-examples' `build.desktop.hxml` files carry the flag; it does nothing on Linux or macOS,
+which is rarely what a game wants. The examples' `build.desktop.hxml` files carry the flag; it does nothing on Linux or macOS,
 which build 64-bit anyway.
 
 `haxelib run wgrender-hx setup` exists for when that is not true — a submodule that
