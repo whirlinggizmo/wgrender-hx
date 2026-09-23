@@ -1,0 +1,218 @@
+{
+  "schema": 1,
+  "project": "wgrender-hx",
+  "environment": {
+    "date": "2026-09-23",
+    "machine": "13th Gen Intel(R) Core(TM) i9-13900HX, Linux",
+    "browser": "Brave Browser 153.1.95.104",
+    "node": "v22.16.0",
+    "emcc": "5.0.7"
+  },
+  "wgrender": {
+    "commit": "4d68abd",
+    "dirty": false,
+    "source": "sibling checkout"
+  },
+  "configurations": [
+    {
+      "id": "haxe-js",
+      "label": "Haxe -> JS guest",
+      "project": "wgrender-hx",
+      "example": "simple",
+      "toolchain": "Haxe 4.3.6",
+      "sizes": {
+        "files": [
+          {
+            "name": "wgrender-host.wasm",
+            "kind": "wasm",
+            "raw": 691753,
+            "gzip": 290882,
+            "brotli": 237110
+          },
+          {
+            "name": "wgrender-host.js",
+            "kind": "js",
+            "raw": 66801,
+            "gzip": 23948,
+            "brotli": 21232
+          },
+          {
+            "name": "simple.js",
+            "kind": "js",
+            "raw": 22511,
+            "gzip": 5599,
+            "brotli": 4924
+          }
+        ],
+        "total": {
+          "raw": 781065,
+          "gzip": 320429,
+          "brotli": 263266
+        }
+      },
+      "frame": {
+        "label": "haxe-js",
+        "frames": 480,
+        "median": 16.66,
+        "p95": 16.67,
+        "overCap": 0,
+        "scriptMs": 0.477,
+        "taskMs": 0.757,
+        "scriptRuns": [
+          0.468,
+          0.477,
+          0.552
+        ]
+      },
+      "gc": {
+        "label": "haxe-js",
+        "frames": 606,
+        "uncapped": false,
+        "allocBytesPerFrame": 4501,
+        "allocMBPerMinute": 15.5,
+        "collections": 5,
+        "freedMB": 2.24,
+        "heapStartMB": 8.9,
+        "heapEndMB": 9.3,
+        "frameMs": {
+          "median": 16.66,
+          "p99": 16.67,
+          "max": 16.67
+        },
+        "gcFrameMs": {
+          "median": 16.66,
+          "max": 16.67
+        },
+        "loadMs": 0,
+        "lateFrames": {
+          "over20": 0,
+          "over33": 0,
+          "pct": 0
+        },
+        "gc": {
+          "totalMs": 2.1,
+          "pctOfWall": 0.02,
+          "minor": {
+            "count": 1,
+            "medianMs": 2.11,
+            "maxMs": 2.11,
+            "totalMs": 2.1
+          },
+          "major": {
+            "count": 0,
+            "medianMs": null,
+            "maxMs": null,
+            "totalMs": 0
+          }
+        },
+        "bufferFull": false
+      },
+      "calls": {
+        "label": "haxe-js",
+        "frames": 481,
+        "callsPerFrame": 16,
+        "perFrame": {
+          "wgr_input_get_mouse_state": 1,
+          "wgr_model_animate": 1,
+          "wgr_render_begin": 1,
+          "wgr_window_get_screen_size": 1,
+          "wgr_render_clear_background": 1,
+          "wgr_render_end": 1,
+          "wgr_scene_draw": 1,
+          "wgr_scene_pick": 1,
+          "wgr_sprite3d_set_transform": 1,
+          "wgr_text_draw_fps_ex": 1,
+          "wgr_text_measure_ex": 1,
+          "wgr_text_draw_ex": 5
+        }
+      }
+    },
+    {
+      "id": "haxe-hxcpp",
+      "label": "Haxe -> hxcpp",
+      "project": "wgrender-hx",
+      "example": "simple",
+      "toolchain": "Haxe 4.3.6, hxcpp 4.3.2 git",
+      "sizes": {
+        "files": [
+          {
+            "name": "simple.wasm",
+            "kind": "wasm",
+            "raw": 1702949,
+            "gzip": 465673,
+            "brotli": 361205
+          },
+          {
+            "name": "simple.js",
+            "kind": "js",
+            "raw": 70224,
+            "gzip": 25197,
+            "brotli": 22448
+          }
+        ],
+        "total": {
+          "raw": 1773173,
+          "gzip": 490870,
+          "brotli": 383653
+        }
+      },
+      "frame": {
+        "label": "haxe-hxcpp",
+        "frames": 480,
+        "median": 16.66,
+        "p95": 16.67,
+        "overCap": 0,
+        "scriptMs": 0.496,
+        "taskMs": 0.772,
+        "scriptRuns": [
+          0.478,
+          0.496,
+          0.522
+        ]
+      },
+      "gc": {
+        "label": "haxe-hxcpp",
+        "frames": 607,
+        "uncapped": false,
+        "allocBytesPerFrame": 1366,
+        "allocMBPerMinute": 4.7,
+        "collections": 1,
+        "freedMB": 0.6,
+        "heapStartMB": 8.7,
+        "heapEndMB": 8.9,
+        "frameMs": {
+          "median": 16.66,
+          "p99": 16.67,
+          "max": 16.67
+        },
+        "gcFrameMs": {
+          "median": 16.67,
+          "max": 16.67
+        },
+        "loadMs": 0,
+        "lateFrames": {
+          "over20": 0,
+          "over33": 0,
+          "pct": 0
+        },
+        "gc": {
+          "totalMs": 0,
+          "pctOfWall": 0,
+          "minor": {
+            "count": 0,
+            "medianMs": null,
+            "maxMs": null,
+            "totalMs": 0
+          },
+          "major": {
+            "count": 0,
+            "medianMs": null,
+            "maxMs": null,
+            "totalMs": 0
+          }
+        },
+        "bufferFull": false
+      }
+    }
+  ]
+}

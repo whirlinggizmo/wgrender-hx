@@ -170,7 +170,7 @@ def bench(chosen=()):
         for args in ([f'--site={C_BUILD}', f'--url=/?ex={name}', '--probe=examples.json',
                       f'--label={name}-c'],
                      [f'--site={HERE / name / "out/web"}', f'--label={name}-haxe']):
-            subprocess.run(['node', str(LIB / 'tools/bench.mjs'), *args], check=True)
+            subprocess.run(['node', str(WGRENDER / 'tools/bench/bench.mjs'), *args], check=True)
 
 
 SITE_INDEX = """<!doctype html>

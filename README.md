@@ -47,8 +47,7 @@ tools/refusals.py     every way a wgrender call can return false, read from the 
                       repeated in these docs
 tools/guestbuild.py   the examples' suite runner: checks, desktop assets, sizes, serve
 tools/compare.py      each example's size against wgrender's own C build of it
-tools/bench.mjs       frame cost, in a headless browser
-tools/gcbench.mjs     allocation and GC per frame, traced from V8
+tools/benchmarks.py   size, frame cost, GC and call cost against the C -> docs/benchmarks.md
 tools/drive.mjs       run a built example and fail on anything the console calls an error
 ```
 
@@ -333,11 +332,11 @@ Same wgrender, same backend, same threading, so the only difference is the langu
 | particles | 473,289 | 494,452 | 1.04x | **1.01x** | 21,996 |
 | simple | 757,457 | 779,052 | 1.03x | **1.01x** | 21,686 |
 
-The wasm is the same wgrender either way; the difference is the guest JS. Frame cost
-differs by about 0.07 ms of script time on `simple`, against a 16.7 ms budget —
-measured with `tools/bench.mjs`, which reads Chrome's CPU accounting because the frame
-interval alone is capped at the display rate and reads 16.66 ms on both sides whatever
-is happening inside it.
+The wasm is the same wgrender either way; the difference is the guest JS. Frame cost,
+JS heap and GC, and what a call across the boundary costs are in
+[docs/benchmarks.md](docs/benchmarks.md), which `tools/benchmarks.py` measures with
+wgrender's harness against wgrender's C baseline. On `simple`, 16 calls a frame cross
+into the wasm; what they cost is lost in the noise of the frame.
 
 For contrast, the same scene compiled all-in-one through hxcpp is 1.69 MB of wasm,
 2.3x the C. Keeping the Haxe runtime out of the binary is what the guest shape buys.
