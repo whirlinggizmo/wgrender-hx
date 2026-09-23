@@ -75,12 +75,21 @@ abstract Sprite3D(Handle) from Handle to Handle {
 	public static inline function setTint(sprite3D:Sprite3D, value:Color):Bool
 		return Raw.wgr_sprite3d_set_tint(sprite3D, value);
 
-	/** `rotation` in radians. **/
-	public static inline function setTransform(sprite3D:Sprite3D, position:Vec3, ?rotation:Vec3, ?scale:Vec3):Bool {
-		final r = rotation != null ? rotation : Transform.NO_ROTATION;
-		final s = scale != null ? scale : Transform.UNIT_SCALE;
-		return Raw.wgr_sprite3d_set_transform(sprite3D, position.x, position.y, position.z, r.x, r.y, r.z, s.x, s.y, s.z);
-	}
+	/** Position, rotation (radians) and scale in one call: the cheapest way to move it every frame. **/
+	public static inline function setTransform(sprite3D:Sprite3D, position:Vec3, rotation:Vec3, scale:Vec3):Bool
+		return Raw.wgr_sprite3d_set_transform(sprite3D, position.x, position.y, position.z, rotation.x, rotation.y, rotation.z, scale.x,
+			scale.y, scale.z);
+
+	/** One part of the transform, leaving the others as they are. **/
+	public static inline function setPosition(sprite3D:Sprite3D, value:Vec3):Bool
+		return Raw.wgr_sprite3d_set_position(sprite3D, value.x, value.y, value.z);
+
+	/** Radians. **/
+	public static inline function setRotation(sprite3D:Sprite3D, value:Vec3):Bool
+		return Raw.wgr_sprite3d_set_rotation(sprite3D, value.x, value.y, value.z);
+
+	public static inline function setScale(sprite3D:Sprite3D, value:Vec3):Bool
+		return Raw.wgr_sprite3d_set_scale(sprite3D, value.x, value.y, value.z);
 
 	/** The sprite takes its own reference; a none texture leaves it with nothing to draw. **/
 	public static inline function setTexture(sprite3D:Sprite3D, texture:Texture):Bool

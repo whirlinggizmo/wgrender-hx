@@ -122,7 +122,7 @@ class World2D {
 		Sprite3D.setSource(sprite, cell[0], cell[1], cell[2], cell[3]);
 		Sprite3D.setExtent(sprite, width, height);
 		Sprite3D.setPivot(sprite, 0.5, pivotY);
-		Sprite3D.setTransform(sprite, new Vec3(x, y, z));
+		Sprite3D.setPosition(sprite, new Vec3(x, y, z));
 		Sprite3D.setAlphaMode(sprite, layer == LAYER_GROUND ? Opaque : Mask, 0.5);
 		Scene.add(scene, sprite, layer);
 		return sprite;

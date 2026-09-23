@@ -89,7 +89,7 @@ class LightsDemo {
 	static function addModels():Void {
 		for (i in 0...MODEL_COUNT) {
 			final model = Model.create(Handle.NONE); // the mesh is attached when it loads
-			Model.setTransform(model, new Vec3(-4.0 + 2.0 * i, 0, i % 2 == 1 ? -0.8 : 0.8));
+			Model.setPosition(model, new Vec3(-4.0 + 2.0 * i, 0, i % 2 == 1 ? -0.8 : 0.8));
 			Model.setAnimation(model, 3);
 			Model.setAnimationLoop(model, true);
 			Scene.add(scene, model);
@@ -130,7 +130,7 @@ class LightsDemo {
 		Material.setRoughness(spriteMaterial, 0.55);
 		for (i in 0...SPRITE_COUNT) {
 			final sprite = Sprite3D.create(Handle.NONE);
-			Sprite3D.setTransform(sprite, new Vec3(-3.0 + 2.0 * i, 1.0, -2.5));
+			Sprite3D.setPosition(sprite, new Vec3(-3.0 + 2.0 * i, 1.0, -2.5));
 			Sprite3D.setSize(sprite, 1.6);
 			Sprite3D.setAlphaMode(sprite, Mask, 0.5);
 			Sprite3D.setMaterial(sprite, spriteMaterial);
@@ -184,7 +184,7 @@ class LightsDemo {
 		final lx = Math.sin(elapsed * 0.6) * 5.0;
 		final lz = Math.cos(elapsed * 0.6) * 2.0;
 		Light.setPosition(lamp, new Vec3(lx, 1.2, lz));
-		Shape3D.setTransform(lampMarker, new Vec3(lx, 1.2, lz));
+		Shape3D.setPosition(lampMarker, new Vec3(lx, 1.2, lz));
 		Shape3D.setVisible(lampMarker, Light.isEnabled(lamp));
 		Light.setDirection(spot, new Vec3(Math.sin(elapsed * 0.8) * 0.7, -1.0, -0.3));
 

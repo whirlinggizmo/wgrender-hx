@@ -126,7 +126,7 @@ class UiDemo {
 
 		divider = Shape2D.create();
 		Shape2D.setLine(divider, new Vec2(0, 0), new Vec2(220, 0), 2);
-		Shape2D.setTransform(divider, new Vec2(30, 300));
+		Shape2D.setPosition(divider, new Vec2(30, 300));
 		Shape2D.setColor(divider, theme.disabled);
 		Shape2D.setPickable(divider, false);
 		Scene.add(scene, divider, LAYER_CONTROL);

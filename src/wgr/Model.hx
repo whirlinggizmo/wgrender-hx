@@ -12,7 +12,7 @@ package wgr;
 
 	```haxe
 	final model = Model.create(mesh);
-	Model.setTransform(model, new Vec3(0, 0, 0));
+	Model.setPosition(model, new Vec3(0, 0, 0));
 	Model.setTint(model, Color.WHITE);
 	Scene.add(scene, model);
 	```
@@ -41,12 +41,32 @@ abstract Model(Handle) from Handle to Handle {
 	public static inline function setMesh(model:Model, mesh:Mesh):Bool
 		return Raw.wgr_model_set_mesh(model, mesh);
 
-	/** `rotation` in radians. **/
-	public static inline function setTransform(model:Model, position:Vec3, ?rotation:Vec3, ?scale:Vec3):Bool {
-		final r = rotation != null ? rotation : Transform.NO_ROTATION;
-		final s = scale != null ? scale : Transform.UNIT_SCALE;
-		return Raw.wgr_model_set_transform(model, position.x, position.y, position.z, r.x, r.y, r.z, s.x, s.y, s.z);
-	}
+	/** Position, rotation (radians) and scale in one call: the cheapest way to move it every frame. **/
+	public static inline function setTransform(model:Model, position:Vec3, rotation:Vec3, scale:Vec3):Bool
+		return Raw.wgr_model_set_transform(model, position.x, position.y, position.z, rotation.x, rotation.y, rotation.z, scale.x,
+			scale.y, scale.z);
+
+	/** One part of the transform, leaving the others as they are. **/
+	public static inline function setPosition(model:Model, value:Vec3):Bool
+		return Raw.wgr_model_set_position(model, value.x, value.y, value.z);
+
+	/** Radians. **/
+	public static inline function setRotation(model:Model, value:Vec3):Bool
+		return Raw.wgr_model_set_rotation(model, value.x, value.y, value.z);
+
+	public static inline function setScale(model:Model, value:Vec3):Bool
+		return Raw.wgr_model_set_scale(model, value.x, value.y, value.z);
+
+	/** Where it is, as last set. **/
+	public static inline function getPosition(model:Model):Vec3
+		return Vec3.of(Raw.wgr_model_get_position(model));
+
+	/** Radians, as last set. **/
+	public static inline function getRotation(model:Model):Vec3
+		return Vec3.of(Raw.wgr_model_get_rotation(model));
+
+	public static inline function getScale(model:Model):Vec3
+		return Vec3.of(Raw.wgr_model_get_scale(model));
 
 	public static inline function setTint(model:Model, color:Color):Bool
 		return Raw.wgr_model_set_tint(model, color);

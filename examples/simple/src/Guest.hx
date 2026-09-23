@@ -125,7 +125,7 @@ class Guest {
 				Model.setAnimation(model, 1);
 				Model.setAnimationSpeed(model, 1.0);
 				Model.setAnimationLoop(model, true);
-				Model.setTransform(model, new Vec3(0, 0, 0));
+				Model.setPosition(model, new Vec3(0, 0, 0));
 				Model.setTint(model, Color.RAYWHITE);
 				Scene.add(scene, model);
 
@@ -134,7 +134,7 @@ class Guest {
 				sprite = Sprite3D.create(texture);
 				Texture.release(texture); // the sprite holds its own reference
 				Sprite3D.setFacing(sprite, Free);
-				Sprite3D.setTransform(sprite, new Vec3(0, SPRITE_Y_OFFSET, 0));
+				Sprite3D.setPosition(sprite, new Vec3(0, SPRITE_Y_OFFSET, 0));
 				Sprite3D.setTint(sprite, Color.RAYWHITE);
 				Scene.add(scene, sprite);
 
@@ -154,7 +154,7 @@ class Guest {
 			Model.animate(model, dt);
 		if (!Sprite3D.isNone(sprite)) {
 			final y = Math.sin(elapsed * BOB_SPEED) * BOB_HEIGHT + SPRITE_Y_OFFSET;
-			Sprite3D.setTransform(sprite, new Vec3(0, y, 0));
+			Sprite3D.setPosition(sprite, new Vec3(0, y, 0));
 		}
 	}
 

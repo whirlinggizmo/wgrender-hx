@@ -18,6 +18,12 @@ class Vec3 {
 	public final y:Float;
 	public final z:Float;
 
+	/** No rotation, no offset: what to pass for a part of a transform that is not turned or moved. **/
+	public static final ZERO:Vec3 = new Vec3(0, 0, 0);
+
+	/** Unit scale. **/
+	public static final ONE:Vec3 = new Vec3(1, 1, 1);
+
 	public inline function new(x:Float = 0, y:Float = 0, z:Float = 0) {
 		this.x = x;
 		this.y = y;

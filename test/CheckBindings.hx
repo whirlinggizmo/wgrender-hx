@@ -352,7 +352,7 @@ class CheckBindings {
 		Model.setTransform(model, new Vec3(0, 0, 0), new Vec3(0, 0, 0), new Vec3(1, 1, 1));
 		Sprite3D.setFacing(sprite, Free);
 		Sprite3D.setTint(sprite, Color.WHITE);
-		Sprite3D.setTransform(sprite, new Vec3(0, 1, 0));
+		Sprite3D.setPosition(sprite, new Vec3(0, 1, 0));
 
 		Camera3D.setView(camera, new Vec3(0, 1, 5), new Vec3(0, 0, 0));
 	}
@@ -472,6 +472,70 @@ class CheckBindings {
 		check(Sprite3D.setTexture(s, Texture.getDefault()), "a sprite3d's texture can be swapped");
 		Sprite3D.destroy(s);
 		Texture.release(texture);
+	}
+
+	/**
+		Every kind with a transform: the combined setter, a part set alone leaving the
+		others as they were, and each part read back, through the binding's marshalling.
+	**/
+	static function checkTransforms():Void {
+		function vec3(v:Vec3, x:Float, y:Float, z:Float, what:String) {
+			near(v.x, x, '$what x');
+			near(v.y, y, '$what y');
+			near(v.z, z, '$what z');
+		}
+		function vec2(v:Vec2, x:Float, y:Float, what:String) {
+			near(v.x, x, '$what x');
+			near(v.y, y, '$what y');
+		}
+
+		final model = Model.create(Handle.NONE);
+		check(Model.setTransform(model, new Vec3(1, 2, 3), new Vec3(0.1, 0.2, 0.3), new Vec3(4, 5, 6)), "model setTransform");
+		check(Model.setPosition(model, new Vec3(7, 8, 9)), "model setPosition");
+		vec3(Model.getPosition(model), 7, 8, 9, "model position");
+		vec3(Model.getRotation(model), 0.1, 0.2, 0.3, "model rotation survives setPosition");
+		check(Model.setScale(model, new Vec3(2, 2, 2)) && Model.setRotation(model, new Vec3(0, 1, 0)), "model setScale, setRotation");
+		vec3(Model.getScale(model), 2, 2, 2, "model scale");
+		vec3(Model.getRotation(model), 0, 1, 0, "model rotation");
+
+		final sprite = Sprite3D.create(Handle.NONE);
+		check(Sprite3D.setTransform(sprite, new Vec3(1, 2, 3), Vec3.ZERO, Vec3.ONE), "sprite3d setTransform");
+		check(Sprite3D.setRotation(sprite, new Vec3(0, 0.5, 0)) && Sprite3D.setScale(sprite, new Vec3(3, 3, 3)), "sprite3d setRotation, setScale");
+		vec3(Sprite3D.getPosition(sprite), 1, 2, 3, "sprite3d position survives the parts");
+
+		final shape = Shape3D.create();
+		check(Shape3D.setPosition(shape, new Vec3(4, 5, 6)) && Shape3D.setScale(shape, new Vec3(0.5, 0.5, 0.5)), "shape3d setPosition, setScale");
+		vec3(Shape3D.getPosition(shape), 4, 5, 6, "shape3d position");
+		vec3(Shape3D.getScale(shape), 0.5, 0.5, 0.5, "shape3d scale");
+
+		final label = Text3D.create(Handle.NONE);
+		check(Text3D.setTransform(label, new Vec3(1, 1, 1), new Vec3(0, 0.25, 0)), "text3d setTransform");
+		check(Text3D.setPosition(label, new Vec3(2, 3, 4)), "text3d setPosition");
+		vec3(Text3D.getRotation(label), 0, 0.25, 0, "text3d rotation survives setPosition");
+
+		final sprite2D = Sprite2D.create(Handle.NONE);
+		check(Sprite2D.setTransform(sprite2D, new Vec2(10, 20), 0.5, new Vec2(2, 3)), "sprite2d setTransform");
+		check(Sprite2D.setPosition(sprite2D, new Vec2(30, 40)), "sprite2d setPosition");
+		vec2(Sprite2D.getPosition(sprite2D), 30, 40, "sprite2d position");
+		near(Sprite2D.getRotation(sprite2D), 0.5, "sprite2d rotation survives setPosition");
+		vec2(Sprite2D.getScale(sprite2D), 2, 3, "sprite2d scale");
+
+		final shape2D = Shape2D.create();
+		check(Shape2D.setTransform(shape2D, new Vec2(5, 6), 0, Vec2.ONE) && Shape2D.setRotation(shape2D, 1.25), "shape2d setTransform, setRotation");
+		vec2(Shape2D.getPosition(shape2D), 5, 6, "shape2d position survives setRotation");
+		near(Shape2D.getRotation(shape2D), 1.25, "shape2d rotation");
+
+		final text2D = Text2D.create(Handle.NONE);
+		Text2D.setPosition(text2D, new Vec2(12, 34));
+		vec2(Text2D.getPosition(text2D), 12, 34, "text2d position");
+
+		Model.destroy(model);
+		Sprite3D.destroy(sprite);
+		Shape3D.destroy(shape);
+		Text3D.destroy(label);
+		Sprite2D.destroy(sprite2D);
+		Shape2D.destroy(shape2D);
+		Text2D.destroy(text2D);
 	}
 
 	static function checkSceneState():Void {
@@ -856,6 +920,7 @@ class CheckBindings {
 		checkTexture();
 		checkMeshes();
 		checkSprite3D();
+		checkTransforms();
 		checkSceneState();
 		checkColor();
 		checkHandleKind();
@@ -898,8 +963,8 @@ class CheckBindings {
 		Shape3D.drawCubeWires(new Vec3(0, 0, 0), new Vec3(1, 1, 1), Color.WHITE);
 		Shape3D.drawSphere(new Vec3(0, 0, 0), 1, Color.GOLD);
 		Shape3D.drawLine(new Vec3(0, 0, 0), new Vec3(1, 1, 1), Color.LIME);
-		Shape3D.drawRectangle(new Vec3(0, 0, 0), 1, 1, Color.RED);
-		Shape3D.drawCircle(new Vec3(0, 0, 0), 1, Color.VIOLET);
+		Shape3D.drawRectangle(new Vec3(0, 0, 0), 1, 1, Vec3.ZERO, Color.RED);
+		Shape3D.drawCircle(new Vec3(0, 0, 0), 1, Vec3.ZERO, Color.VIOLET);
 		Render.endMode3D();
 		Scene.draw(scene);
 		Shape2D.drawRectangle(0, 0, 10, 10, Color.SKYBLUE);

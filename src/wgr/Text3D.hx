@@ -66,11 +66,25 @@ abstract Text3D(Handle) from Handle to Handle {
 	public static inline function setAlign(text3D:Text3D, horizontal:AlignX, vertical:AlignY):Bool
 		return Raw.wgr_text3d_set_align(text3D, horizontal, vertical);
 
-	/** `rotation` in radians. No scale: `size` is the scale. **/
-	public static inline function setTransform(text3D:Text3D, position:Vec3, ?rotation:Vec3):Bool {
-		final r = rotation != null ? rotation : Transform.NO_ROTATION;
-		return Raw.wgr_text3d_set_transform(text3D, position.x, position.y, position.z, r.x, r.y, r.z);
-	}
+	/** Position and rotation (radians) in one call. No scale: `size` is the scale. **/
+	public static inline function setTransform(text3D:Text3D, position:Vec3, rotation:Vec3):Bool
+		return Raw.wgr_text3d_set_transform(text3D, position.x, position.y, position.z, rotation.x, rotation.y, rotation.z);
+
+	/** One part of the transform, leaving the others as they are. **/
+	public static inline function setPosition(text3D:Text3D, value:Vec3):Bool
+		return Raw.wgr_text3d_set_position(text3D, value.x, value.y, value.z);
+
+	/** Radians. **/
+	public static inline function setRotation(text3D:Text3D, value:Vec3):Bool
+		return Raw.wgr_text3d_set_rotation(text3D, value.x, value.y, value.z);
+
+	/** Where it is, as last set. **/
+	public static inline function getPosition(text3D:Text3D):Vec3
+		return Vec3.of(Raw.wgr_text3d_get_position(text3D));
+
+	/** Radians, as last set. **/
+	public static inline function getRotation(text3D:Text3D):Vec3
+		return Vec3.of(Raw.wgr_text3d_get_rotation(text3D));
 
 	/** World-space width and height of the current text; (0, 0) until the font loads. **/
 	public static inline function measure(text3D:Text3D):Vec2

@@ -61,6 +61,14 @@ cannot return the `Bool` a wgrender setter uses to refuse.
 A member that only reads struct data keeps its shape, because there is no C name to
 mirror: `Vec3.x`, `MouseState`, `KeyboardState.isPressed`, `Handle.isNone`.
 
+Anything with a transform has the same calls for it, as in C: `setTransform` with every
+part it has (none of them optional), and `setPosition`, `setRotation`, `setScale` and
+their getters for one part at a time, which leave the others as they are. So moving a
+model is `Model.setPosition(model, p)`, with no need to know or keep its rotation and
+scale; `setTransform` is the one call a frame for something whose parts all change.
+Pass `Vec3.ZERO` or `Vec3.ONE` for a part that isn't turned or scaled. Nothing here
+allocates: a `new Vec3(...)` handed to an inline call compiles away.
+
 Every handle kind is an `abstract` over `Int` and every member is `inline`, so the API
 layer compiles away: a call costs what the C call costs. The only allocations are the
 small value objects (`Vec2`, `Vec3`, `MouseState`, `PickResult`) the wrappers return.

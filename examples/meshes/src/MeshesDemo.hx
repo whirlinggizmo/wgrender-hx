@@ -98,7 +98,7 @@ class MeshesDemo {
 			final x = (i - (SHAPE_COUNT - 1) * 0.5) * SPACING;
 			final model = Model.create(shape.mesh);
 			Mesh.release(shape.mesh);
-			Model.setTransform(model, new Vec3(x, shape.y, 0));
+			Model.setPosition(model, new Vec3(x, shape.y, 0));
 
 			final material = Material.create(Pbr);
 			Material.setBaseColor(material, shape.r, shape.g, shape.b, 1.0);

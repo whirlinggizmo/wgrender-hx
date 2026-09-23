@@ -114,7 +114,7 @@ class MaterialsDemo {
 	/** Place a sphere and give it `material`; the model keeps its own reference. **/
 	static function sphere(x:Float, y:Float, material:Material):Model {
 		final model = Model.create(Handle.NONE); // the mesh is attached when it loads
-		Model.setTransform(model, new Vec3(x, y, 0));
+		Model.setPosition(model, new Vec3(x, y, 0));
 		Model.setMaterial(model, 0, material);
 		Material.release(material);
 		Scene.add(scene, model);
@@ -202,12 +202,12 @@ class MaterialsDemo {
 		final ly = 1.4 + Math.sin(elapsed * 0.9) * 1.2;
 		final lz = Math.sin(elapsed * 0.7) * 1.5 + 2.0;
 		Light.setPosition(lamp, new Vec3(lx, ly, lz));
-		Shape3D.setTransform(lampMarker, new Vec3(lx, ly, lz));
+		Shape3D.setPosition(lampMarker, new Vec3(lx, ly, lz));
 		Shape3D.setVisible(lampMarker, Light.isEnabled(lamp));
 
 		// turn the bottom row, so the normal map has something to catch
 		for (i in 0...bottomRow.length)
-			Model.setTransform(bottomRow[i], new Vec3((i - 2.0) * SPACING, 0.0, 0), new Vec3(0, elapsed * 0.5, 0));
+			Model.setTransform(bottomRow[i], new Vec3((i - 2.0) * SPACING, 0.0, 0), new Vec3(0, elapsed * 0.5, 0), Vec3.ONE);
 		Model.animate(gumshoe, dt);
 
 		Render.begin();

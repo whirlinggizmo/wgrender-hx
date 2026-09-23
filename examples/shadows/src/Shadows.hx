@@ -84,7 +84,7 @@ class Shadows {
 		addScenery();
 
 		gumshoe = Model.create(Handle.NONE);
-		Model.setTransform(gumshoe, new Vec3(0, 0, 0));
+		Model.setPosition(gumshoe, new Vec3(0, 0, 0));
 		Scene.add(scene, gumshoe);
 		if (!GuestAbi.loadAsset(GUMSHOE_PATH, ASSET_GUMSHOE))
 			Log.error('failed to queue asset: $GUMSHOE_PATH');
@@ -125,7 +125,7 @@ class Shadows {
 	static function place(mesh:Mesh, position:Vec3, r:Float, g:Float, b:Float, roughness:Float):Model {
 		final model = Model.create(mesh);
 		Mesh.release(mesh); // the model holds it
-		Model.setTransform(model, position);
+		Model.setPosition(model, position);
 		final material = Material.create(Pbr);
 		Material.setBaseColor(material, r, g, b, 1.0);
 		Material.setMetallic(material, 0.0);
@@ -211,7 +211,7 @@ class Shadows {
 		final sz = 7.0 * Math.cos(elapsed * 0.35);
 		Light.setPosition(spot, new Vec3(sx, 6.5, sz));
 		Light.setDirection(spot, new Vec3(-sx, -6.5, -sz));
-		Shape3D.setTransform(spotMarker, new Vec3(sx, 6.5, sz));
+		Shape3D.setPosition(spotMarker, new Vec3(sx, 6.5, sz));
 		if (orbit)
 			angle += dt * 0.18;
 		Camera3D.setView(camera, new Vec3(11.0 * Math.sin(angle), 5.0, 11.0 * Math.cos(angle)), target);

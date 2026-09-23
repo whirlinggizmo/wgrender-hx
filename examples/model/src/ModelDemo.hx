@@ -64,7 +64,7 @@ class ModelDemo {
 		Debug.enableFps(12, 10, 16);
 
 		model = Model.create(Handle.NONE); // empty: the mesh is attached when it loads
-		Model.setTransform(model, new Vec3(0, 0, 0));
+		Model.setPosition(model, new Vec3(0, 0, 0));
 		Model.setTint(model, Color.RAYWHITE);
 		// Skeletal animation, if the glTF has any; a no-op until the mesh arrives.
 		Model.setAnimation(model, 3);
@@ -96,7 +96,7 @@ class ModelDemo {
 			Camera3D.setView(camera, new Vec3(Math.cos(t * ORBIT_SPEED) * ORBIT_RADIUS, 7.0,
 				Math.sin(t * ORBIT_SPEED) * ORBIT_RADIUS), target);
 		if (spinModel)
-			Model.setTransform(model, new Vec3(0, 0, 0), new Vec3(0, t * 0.5, 0));
+			Model.setTransform(model, new Vec3(0, 0, 0), new Vec3(0, t * 0.5, 0), Vec3.ONE);
 		Model.animate(model, dt);
 
 		Render.begin();

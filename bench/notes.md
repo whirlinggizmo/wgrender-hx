@@ -16,10 +16,8 @@ gcbench cannot see it, so the hxcpp row reads clean whether or not it pauses. Se
 wgrender's `docs/benchmarks.md` notes for the one measurement of it (the entity-churn
 experiment: a worst tick of about 3x Beef's and Nim's).
 
-**What the stress scene allocates.** Beyond the entities that die and the text, which
-any Haxe game would allocate, `Sprite3D.setTransform` costs two objects a call: its
-rotation and scale are optional (`?rotation:Vec3`, `?scale:Vec3`), and the null check
-on them stops Haxe's inline-constructor elimination, so `new Vec3(...)` passed there is
-really allocated (the position, which is not optional, is not). At one transform per
-entity that is two `Vec3`s per entity per frame. It is the binding's to fix, not the
-game's, and the stress numbers are taken with it as it is.
+**What the stress scene allocates.** The entities that die and are replaced, and the
+text built every frame: what any Haxe game would allocate. The transforms themselves
+allocate nothing. `setTransform` takes every part (none optional), so a `new Vec3(...)`
+handed to it compiles away; when rotation and scale were optional, the null check on
+them stopped that, and each call allocated two `Vec3`s, most of the guest's garbage.

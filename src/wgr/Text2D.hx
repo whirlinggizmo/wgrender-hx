@@ -35,6 +35,10 @@ abstract Text2D(Handle) from Handle to Handle {
 	public static inline function setPosition(text2D:Text2D, value:Vec2):Bool
 		return Raw.wgr_text2d_set_position(text2D, value.x, value.y);
 
+	/** Where it is, as last set. **/
+	public static inline function getPosition(text2D:Text2D):Vec2
+		return Vec2.of(Raw.wgr_text2d_get_position(text2D));
+
 	/** Pixel height of one line. **/
 	public static inline function setSize(text2D:Text2D, value:Float):Bool
 		return Raw.wgr_text2d_set_size(text2D, value);

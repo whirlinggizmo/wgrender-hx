@@ -99,7 +99,7 @@ class Loading {
 		Scene.add(scene, gumshoe);
 
 		sphere = Model.create(Handle.NONE);
-		Model.setTransform(sphere, new Vec3(1.2, 0.8, 0), null, new Vec3(0.8, 0.8, 0.8));
+		Model.setTransform(sphere, new Vec3(1.2, 0.8, 0), Vec3.ZERO, new Vec3(0.8, 0.8, 0.8));
 		material = Material.create(Pbr);
 		Material.setBaseColor(material, 0.9, 0.9, 0.9, 1.0);
 		Material.setRoughness(material, 0.25);

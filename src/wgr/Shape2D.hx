@@ -31,11 +31,32 @@ abstract Shape2D(Handle) from Handle to Handle {
 
 	// --- where it is, and how it looks ---
 
-	/** `rotation` in radians. **/
-	public static inline function setTransform(shape2D:Shape2D, position:Vec2, rotation:Float = 0, ?scale:Vec2):Bool {
-		final s = scale != null ? scale : Shape2D.UNIT_SCALE;
-		return Raw.wgr_shape2d_set_transform(shape2D, position.x, position.y, rotation, s.x, s.y);
-	}
+	/** Position, rotation (radians) and scale in one call: the cheapest way to move it every frame. **/
+	public static inline function setTransform(shape2D:Shape2D, position:Vec2, rotation:Float, scale:Vec2):Bool
+		return Raw.wgr_shape2d_set_transform(shape2D, position.x, position.y, rotation, scale.x, scale.y);
+
+	/** One part of the transform, leaving the others as they are. Where the pivot goes. **/
+	public static inline function setPosition(shape2D:Shape2D, value:Vec2):Bool
+		return Raw.wgr_shape2d_set_position(shape2D, value.x, value.y);
+
+	/** Radians around the pivot; positive turns clockwise, since y points down. **/
+	public static inline function setRotation(shape2D:Shape2D, value:Float):Bool
+		return Raw.wgr_shape2d_set_rotation(shape2D, value);
+
+	/** Multiplies the size. A negative component flips it on that axis. **/
+	public static inline function setScale(shape2D:Shape2D, value:Vec2):Bool
+		return Raw.wgr_shape2d_set_scale(shape2D, value.x, value.y);
+
+	/** Where the pivot is, as last set. **/
+	public static inline function getPosition(shape2D:Shape2D):Vec2
+		return Vec2.of(Raw.wgr_shape2d_get_position(shape2D));
+
+	/** Radians, as last set. **/
+	public static inline function getRotation(shape2D:Shape2D):Float
+		return Raw.wgr_shape2d_get_rotation(shape2D);
+
+	public static inline function getScale(shape2D:Shape2D):Vec2
+		return Vec2.of(Raw.wgr_shape2d_get_scale(shape2D));
 
 	/**
 		What the transform turns and scales about, as a **fraction of the shape's own
@@ -87,8 +108,6 @@ abstract Shape2D(Handle) from Handle to Handle {
 		Raw.wgr_shape2d_destroy(shape2D);
 
 	// --- immediate: no handle, drawn where they are called ---
-
-	static final UNIT_SCALE = new Vec2(1, 1);
 
 	public static inline function drawRectangle(x:Float, y:Float, width:Float, height:Float, color:Color):Void
 		Raw.wgr_shape2d_draw_rectangle(x, y, width, height, color);

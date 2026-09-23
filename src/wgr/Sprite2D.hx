@@ -26,7 +26,11 @@ abstract Sprite2D(Handle) from Handle to Handle {
 	public static inline function create(texture:Texture):Sprite2D
 		return (Raw.wgr_sprite2d_create(texture) : Handle);
 
-	/** Where the pivot goes, in logical pixels. **/
+	/** Position, rotation (radians) and scale in one call: the cheapest way to move it every frame. **/
+	public static inline function setTransform(sprite2D:Sprite2D, position:Vec2, rotation:Float, scale:Vec2):Bool
+		return Raw.wgr_sprite2d_set_transform(sprite2D, position.x, position.y, rotation, scale.x, scale.y);
+
+	/** One part of the transform, leaving the others as they are. Where the pivot goes, in logical pixels. **/
 	public static inline function setPosition(sprite2D:Sprite2D, value:Vec2):Bool
 		return Raw.wgr_sprite2d_set_position(sprite2D, value.x, value.y);
 
@@ -37,6 +41,17 @@ abstract Sprite2D(Handle) from Handle to Handle {
 	/** Multiplies the size. A negative component flips it on that axis. **/
 	public static inline function setScale(sprite2D:Sprite2D, value:Vec2):Bool
 		return Raw.wgr_sprite2d_set_scale(sprite2D, value.x, value.y);
+
+	/** Where the pivot is, as last set. **/
+	public static inline function getPosition(sprite2D:Sprite2D):Vec2
+		return Vec2.of(Raw.wgr_sprite2d_get_position(sprite2D));
+
+	/** Radians, as last set. **/
+	public static inline function getRotation(sprite2D:Sprite2D):Float
+		return Raw.wgr_sprite2d_get_rotation(sprite2D);
+
+	public static inline function getScale(sprite2D:Sprite2D):Vec2
+		return Vec2.of(Raw.wgr_sprite2d_get_scale(sprite2D));
 
 	public static inline function setTint(sprite2D:Sprite2D, value:Color):Bool
 		return Raw.wgr_sprite2d_set_tint(sprite2D, value);

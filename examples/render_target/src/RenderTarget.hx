@@ -102,7 +102,7 @@ class RenderTarget {
 
 	static function model(position:Vec3, scaleY:Float, scale:Float, material:Material):Model {
 		final m = Model.create(Handle.NONE); // the mesh arrives later
-		Model.setTransform(m, position, null, new Vec3(scale, scaleY, scale));
+		Model.setTransform(m, position, Vec3.ZERO, new Vec3(scale, scaleY, scale));
 		if (!Material.isNone(material)) {
 			Model.setMaterial(m, 0, material);
 			Material.release(material); // the model keeps its own reference

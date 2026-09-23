@@ -67,17 +67,17 @@ class Text3DDemo {
 
 		cube = Shape3D.create();
 		Shape3D.setCube(cube, new Vec3(1.2, 1.2, 1.2));
-		Shape3D.setTransform(cube, new Vec3(-3, 0.6, 0));
+		Shape3D.setPosition(cube, new Vec3(-3, 0.6, 0));
 		Scene.add(scene, cube);
 
 		sphere = Shape3D.create();
 		Shape3D.setSphere(sphere, 0.7);
-		Shape3D.setTransform(sphere, new Vec3(0, 0.7, 0));
+		Shape3D.setPosition(sphere, new Vec3(0, 0.7, 0));
 		Scene.add(scene, sphere);
 
 		panel = Shape3D.create();
 		Shape3D.setRectangle(panel, 1.4, 1.0);
-		Shape3D.setTransform(panel, new Vec3(3, 0.8, 0), new Vec3(0, -0.5, 0));
+		Shape3D.setTransform(panel, new Vec3(3, 0.8, 0), new Vec3(0, -0.5, 0), Vec3.ONE);
 		Scene.add(scene, panel);
 
 		addRings();
@@ -105,7 +105,7 @@ class Text3DDemo {
 		for (i in 0...3) {
 			final ring = Shape3D.create();
 			Shape3D.setCircle(ring, 1.0);
-			Shape3D.setTransform(ring, new Vec3(-3.0 + 3.0 * i, 0.01, 0), new Vec3(-Math.PI / 2, 0, 0));
+			Shape3D.setTransform(ring, new Vec3(-3.0 + 3.0 * i, 0.01, 0), new Vec3(-Math.PI / 2, 0, 0), Vec3.ONE);
 			Shape3D.setColor(ring, ringColor);
 			Shape3D.setPickable(ring, false);
 			Scene.add(scene, ring);
@@ -120,7 +120,7 @@ class Text3DDemo {
 			final a = t * 2 * Math.PI * 4.0;
 			Shape3D.addPoint(spiral, new Vec3(Math.cos(a) * (0.2 + t), t * 2.5, Math.sin(a) * (0.2 + t)));
 		}
-		Shape3D.setTransform(spiral, new Vec3(0, 0, -3));
+		Shape3D.setPosition(spiral, new Vec3(0, 0, -3));
 		Shape3D.setColor(spiral, teal);
 		Scene.add(scene, spiral);
 	}
@@ -129,7 +129,7 @@ class Text3DDemo {
 		final label = Text3D.create(Handle.NONE); // the font is attached when it loads
 		Text3D.setText(label, text);
 		Text3D.setSize(label, 0.35);
-		Text3D.setTransform(label, position);
+		Text3D.setPosition(label, position);
 		Text3D.setColor(label, Color.RAYWHITE);
 		Scene.add(scene, label);
 		return label;
@@ -170,7 +170,7 @@ class Text3DDemo {
 			Shape3D.setPickable(cube, !Shape3D.isPickable(cube));
 
 		elapsed += dt;
-		Shape3D.setTransform(cube, new Vec3(-3, 0.6, 0), new Vec3(0, elapsed * 0.7, 0));
+		Shape3D.setTransform(cube, new Vec3(-3, 0.6, 0), new Vec3(0, elapsed * 0.7, 0), Vec3.ONE);
 		Text3D.setTransform(sign, new Vec3(0, 3.2, -3), new Vec3(0, Math.sin(elapsed * 0.6) * 0.6, 0));
 
 		// hover: the nearest pickable object under the mouse

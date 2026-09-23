@@ -79,7 +79,7 @@ class UiButton {
 		this.height = height;
 		shape = Shape2D.create();
 		Shape2D.setRectangle(shape, width, height, 10);
-		Shape2D.setTransform(shape, new Vec2(x, y));
+		Shape2D.setPosition(shape, new Vec2(x, y));
 		Scene.add(scene, shape, layer);
 
 		// centered on the button, so the label needs no measuring
@@ -144,7 +144,7 @@ class UiBar {
 		this.height = height;
 		track = Shape2D.create();
 		Shape2D.setRectangle(track, width, height, height * 0.5);
-		Shape2D.setTransform(track, new Vec2(x, y));
+		Shape2D.setPosition(track, new Vec2(x, y));
 		Shape2D.setOutline(track, 2);
 		Shape2D.setPickable(track, false);
 		Scene.add(scene, track, layer + 1); // over the fill
@@ -171,10 +171,10 @@ class UiBar {
 
 		Shape2D.setColor(track, theme.track);
 		Shape2D.setRectangle(fill, length > height ? length : height, height, round);
-		Shape2D.setTransform(fill, new Vec2(x, y));
+		Shape2D.setPosition(fill, new Vec2(x, y));
 		Shape2D.setColor(fill, theme.fill);
 		Shape2D.setVisible(fill, any);
-		Shape2D.setTransform(knob, new Vec2(x + (length > round ? length - round : round), y + round));
+		Shape2D.setPosition(knob, new Vec2(x + (length > round ? length - round : round), y + round));
 		Shape2D.setColor(knob, theme.knob);
 		Shape2D.setVisible(knob, any);
 	}
@@ -234,7 +234,7 @@ class UiList {
 	function place():Void {
 		for (i in 0...rows.length) {
 			final rowY = y + i * rowHeight - scroll;
-			Shape2D.setTransform(rows[i], new Vec2(x, rowY));
+			Shape2D.setPosition(rows[i], new Vec2(x, rowY));
 			Text2D.setPosition(labels[i], new Vec2(x + 12, rowY + rowHeight * 0.5));
 		}
 	}

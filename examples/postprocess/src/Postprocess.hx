@@ -89,7 +89,7 @@ class Postprocess {
 		addScenery();
 
 		gumshoe = Model.create(Handle.NONE);
-		Model.setTransform(gumshoe, new Vec3(0, 0, 0));
+		Model.setPosition(gumshoe, new Vec3(0, 0, 0));
 		Scene.add(scene, gumshoe);
 
 		load(GUMSHOE_PATH, ASSET_GUMSHOE);
@@ -123,7 +123,7 @@ class Postprocess {
 			final s = shapes[i];
 			final model = Model.create(s.mesh);
 			Mesh.release(s.mesh);
-			Model.setTransform(model, new Vec3(s.x, s.y, -0.6));
+			Model.setPosition(model, new Vec3(s.x, s.y, -0.6));
 			final material = Material.create(Pbr);
 			Material.setBaseColor(material, s.r, s.g, s.b, 1.0);
 			Material.setRoughness(material, 0.4);
@@ -211,11 +211,11 @@ class Postprocess {
 		final lampX = 3.0 * Math.sin(elapsed * 0.9);
 		final lampZ = 2.2 + 1.2 * Math.cos(elapsed * 0.9);
 		Light.setPosition(lamp, new Vec3(lampX, 1.4, lampZ));
-		Shape3D.setTransform(lampMarker, new Vec3(lampX, 1.4, lampZ));
+		Shape3D.setPosition(lampMarker, new Vec3(lampX, 1.4, lampZ));
 		// isNone, not != null: Model is an abstract over Int, so on a static target
 		// there is no null to compare against.
 		if (!Model.isNone(torus))
-			Model.setTransform(torus, new Vec3(2.2, 0.7, -0.6), new Vec3(0, elapsed * 40.0, elapsed * 25.0));
+			Model.setTransform(torus, new Vec3(2.2, 0.7, -0.6), new Vec3(0, elapsed * 40.0, elapsed * 25.0), Vec3.ONE);
 
 		// An effect's parameters are its material's: change them any frame you like.
 		final live = breathing ? strength * (0.55 + 0.45 * Math.sin(elapsed * 0.8)) : strength;

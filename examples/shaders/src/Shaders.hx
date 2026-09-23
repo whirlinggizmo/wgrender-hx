@@ -129,7 +129,7 @@ class Shaders {
 		final fineSphere = Mesh.sphere(0.5, 96, 192);
 
 		final floor = Model.create(plane);
-		Model.setTransform(floor, new Vec3(0, FLOOR_Y, 0));
+		Model.setPosition(floor, new Vec3(0, FLOOR_Y, 0));
 		final ground = Material.create(Pbr);
 		Material.setBaseColor(ground, 0.04, 0.04, 0.045, 1.0); // dark, so the lights show on it
 		Material.setMetallic(ground, 0.0);
@@ -145,11 +145,11 @@ class Shaders {
 		Scene.add(scene, gumshoe);
 
 		dissolving = Model.create(sphere);
-		Model.setTransform(dissolving, new Vec3(0, SPHERE_Y, 0));
+		Model.setPosition(dissolving, new Vec3(0, SPHERE_Y, 0));
 		Scene.add(scene, dissolving);
 
 		rippling = Model.create(fineSphere);
-		Model.setTransform(rippling, new Vec3(1.9, SPHERE_Y, 0));
+		Model.setPosition(rippling, new Vec3(1.9, SPHERE_Y, 0));
 		Scene.add(scene, rippling);
 
 		Mesh.release(plane); // the models hold their own references
@@ -160,7 +160,7 @@ class Shaders {
 	/** The logo twice: in the world above the middle, and in the screen's corner. **/
 	static function addSprites():Void {
 		logo3d = Sprite3D.create(Handle.NONE);
-		Sprite3D.setTransform(logo3d, new Vec3(0, 1.55, -0.8));
+		Sprite3D.setPosition(logo3d, new Vec3(0, 1.55, -0.8));
 		Sprite3D.setSize(logo3d, 0.9);
 		Sprite3D.setTint(logo3d, Color.rgba(90, 190, 255, 255)); // so the white flash shows
 		Scene.add(scene, logo3d);
@@ -265,9 +265,9 @@ class Shaders {
 		final ly = 0.8 + Math.sin(elapsed * 0.7) * 1.0;
 		final lz = 1.8;
 		Light.setPosition(lamp, new Vec3(lx, ly, lz));
-		Shape3D.setTransform(lampMarker, new Vec3(lx, ly, lz));
+		Shape3D.setPosition(lampMarker, new Vec3(lx, ly, lz));
 		Shape3D.setVisible(lampMarker, Light.isEnabled(lamp));
-		Model.setTransform(dissolving, new Vec3(0, SPHERE_Y, 0), new Vec3(0, elapsed * 0.4, 0));
+		Model.setTransform(dissolving, new Vec3(0, SPHERE_Y, 0), new Vec3(0, elapsed * 0.4, 0), Vec3.ONE);
 		Model.animate(gumshoe, dt);
 
 		Render.begin();

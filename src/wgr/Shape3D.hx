@@ -54,12 +54,32 @@ abstract Shape3D(Handle) from Handle to Handle {
 
 	// --- where it is, and how it looks ---
 
-	/** `rotation` in radians. **/
-	public static inline function setTransform(shape3D:Shape3D, position:Vec3, ?rotation:Vec3, ?scale:Vec3):Bool {
-		final r = rotation != null ? rotation : Transform.NO_ROTATION;
-		final s = scale != null ? scale : Transform.UNIT_SCALE;
-		return Raw.wgr_shape3d_set_transform(shape3D, position.x, position.y, position.z, r.x, r.y, r.z, s.x, s.y, s.z);
-	}
+	/** Position, rotation (radians) and scale in one call: the cheapest way to move it every frame. **/
+	public static inline function setTransform(shape3D:Shape3D, position:Vec3, rotation:Vec3, scale:Vec3):Bool
+		return Raw.wgr_shape3d_set_transform(shape3D, position.x, position.y, position.z, rotation.x, rotation.y, rotation.z, scale.x,
+			scale.y, scale.z);
+
+	/** One part of the transform, leaving the others as they are. **/
+	public static inline function setPosition(shape3D:Shape3D, value:Vec3):Bool
+		return Raw.wgr_shape3d_set_position(shape3D, value.x, value.y, value.z);
+
+	/** Radians. **/
+	public static inline function setRotation(shape3D:Shape3D, value:Vec3):Bool
+		return Raw.wgr_shape3d_set_rotation(shape3D, value.x, value.y, value.z);
+
+	public static inline function setScale(shape3D:Shape3D, value:Vec3):Bool
+		return Raw.wgr_shape3d_set_scale(shape3D, value.x, value.y, value.z);
+
+	/** Where it is, as last set. **/
+	public static inline function getPosition(shape3D:Shape3D):Vec3
+		return Vec3.of(Raw.wgr_shape3d_get_position(shape3D));
+
+	/** Radians, as last set. **/
+	public static inline function getRotation(shape3D:Shape3D):Vec3
+		return Vec3.of(Raw.wgr_shape3d_get_rotation(shape3D));
+
+	public static inline function getScale(shape3D:Shape3D):Vec3
+		return Vec3.of(Raw.wgr_shape3d_get_scale(shape3D));
 
 	public static inline function setColor(shape3D:Shape3D, value:Color):Bool
 		return Raw.wgr_shape3d_set_color(shape3D, value);
@@ -113,15 +133,10 @@ abstract Shape3D(Handle) from Handle to Handle {
 		Raw.wgr_shape3d_draw_sphere(center.x, center.y, center.z, radius, color);
 
 	/** Filled, facing +Z before `rotation` (radians) turns it. **/
-	public static inline function drawRectangle(center:Vec3, width:Float, height:Float, color:Color,
-			?rotation:Vec3):Void {
-		final r = rotation != null ? rotation : Transform.NO_ROTATION;
-		Raw.wgr_shape3d_draw_rectangle(center.x, center.y, center.z, width, height, r.x, r.y, r.z, color);
-	}
+	public static inline function drawRectangle(center:Vec3, width:Float, height:Float, rotation:Vec3, color:Color):Void
+		Raw.wgr_shape3d_draw_rectangle(center.x, center.y, center.z, width, height, rotation.x, rotation.y, rotation.z, color);
 
 	/** An outline, facing +Z before `rotation` (radians) turns it. **/
-	public static inline function drawCircle(center:Vec3, radius:Float, color:Color, ?rotation:Vec3):Void {
-		final r = rotation != null ? rotation : Transform.NO_ROTATION;
-		Raw.wgr_shape3d_draw_circle(center.x, center.y, center.z, radius, r.x, r.y, r.z, color);
-	}
+	public static inline function drawCircle(center:Vec3, radius:Float, rotation:Vec3, color:Color):Void
+		Raw.wgr_shape3d_draw_circle(center.x, center.y, center.z, radius, rotation.x, rotation.y, rotation.z, color);
 }

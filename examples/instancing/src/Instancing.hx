@@ -71,7 +71,7 @@ class Instancing {
 		Material.setRoughness(material, 0.9);
 		final floor = Model.create(mesh);
 		Model.setMaterial(floor, -1, material);
-		Model.setTransform(floor, new Vec3(0, -0.6, 0));
+		Model.setPosition(floor, new Vec3(0, -0.6, 0));
 		Scene.add(scene, floor);
 		Mesh.release(mesh);
 		Material.release(material);
@@ -102,7 +102,7 @@ class Instancing {
 			final glass = Model.create(cube);
 			Model.setMaterial(glass, -1, sharedMaterial);
 			Model.setTint(glass, Color.rgba(255, 255, 255, 110));
-			Model.setTransform(glass, new Vec3(i * 2.0 - 4.0, 5.2, 5.0), null, new Vec3(2, 2, 2));
+			Model.setTransform(glass, new Vec3(i * 2.0 - 4.0, 5.2, 5.0), Vec3.ZERO, new Vec3(2, 2, 2));
 			Scene.add(scene, glass);
 		}
 		Mesh.release(cube);
@@ -112,7 +112,7 @@ class Instancing {
 	static function addWalkers():Void {
 		for (i in 0...WALKERS) {
 			final walker = Model.create(Handle.NONE);
-			Model.setTransform(walker, new Vec3(i * 2.4 - 6.0, 0.0, -2.0), new Vec3(0, Math.PI, 0));
+			Model.setTransform(walker, new Vec3(i * 2.4 - 6.0, 0.0, -2.0), new Vec3(0, Math.PI, 0), Vec3.ONE);
 			Model.setAnimation(walker, 3);
 			Model.setAnimationLoop(walker, true);
 			Scene.add(scene, walker);
@@ -162,7 +162,7 @@ class Instancing {
 			final z = (Std.int(i / FIELD_SIDE) - FIELD_SIDE * 0.5 + 0.5) * 1.5;
 			final wave = Math.sin(t * 1.5 + x * 0.6 + z * 0.4);
 			// Well clear of the floor, so every cube throws its own shadow onto it.
-			Model.setTransform(cubes[i], new Vec3(x, 2.4 + wave * 0.5, z), new Vec3(0, t * 0.3 + i, 0));
+			Model.setTransform(cubes[i], new Vec3(x, 2.4 + wave * 0.5, z), new Vec3(0, t * 0.3 + i, 0), Vec3.ONE);
 		}
 		// The same walk, out of step: a shared mesh, but each its own pose.
 		for (i in 0...WALKERS)

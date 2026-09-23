@@ -103,7 +103,7 @@ class EnvironmentDemo {
 
 	static function sphere(x:Float, y:Float, r:Float, g:Float, b:Float, metallic:Float, roughness:Float):Model {
 		final model = Model.create(Handle.NONE); // the mesh arrives later
-		Model.setTransform(model, new Vec3(x, y, 0));
+		Model.setPosition(model, new Vec3(x, y, 0));
 		final material = Material.create(Pbr);
 		Material.setBaseColor(material, r, g, b, 1.0);
 		Material.setMetallic(material, metallic);

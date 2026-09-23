@@ -57,7 +57,7 @@ class Sprite3DDemo {
 		// a pedestal, for somewhere to sit above and something to judge depth by
 		final pedestal = Shape3D.create();
 		Shape3D.setCube(pedestal, new Vec3(3.0, 0.5, 3.0));
-		Shape3D.setTransform(pedestal, new Vec3(0, 0.25, 0));
+		Shape3D.setPosition(pedestal, new Vec3(0, 0.25, 0));
 		Shape3D.setColor(pedestal, Color.DARKGRAY);
 		Scene.add(scene, pedestal);
 
@@ -91,7 +91,7 @@ class Sprite3DDemo {
 			Math.sin(t * ORBIT_SPEED) * ORBIT_RADIUS), target, up);
 
 		if (!Sprite3D.isNone(sprite))
-			Sprite3D.setTransform(sprite, new Vec3(0, BOB_CENTRE + Math.sin(t * BOB_SPEED) * BOB_HEIGHT, 0));
+			Sprite3D.setPosition(sprite, new Vec3(0, BOB_CENTRE + Math.sin(t * BOB_SPEED) * BOB_HEIGHT, 0));
 
 		Render.begin();
 		Render.clearBackground(background);

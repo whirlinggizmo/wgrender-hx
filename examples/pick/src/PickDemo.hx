@@ -63,13 +63,13 @@ class PickDemo {
 
 		cube = Shape3D.create();
 		Shape3D.setCube(cube, new Vec3(2.0, 2.0, 2.0));
-		Shape3D.setTransform(cube, new Vec3(-3.5, 1.0, 0), new Vec3(0, 0.6, 0));
+		Shape3D.setTransform(cube, new Vec3(-3.5, 1.0, 0), new Vec3(0, 0.6, 0), Vec3.ONE);
 		Shape3D.setColor(cube, Color.ORANGE);
 		Scene.add(scene, cube);
 
 		sphere = Shape3D.create();
 		Shape3D.setSphere(sphere, 1.5);
-		Shape3D.setTransform(sphere, new Vec3(3.5, 1.5, 0));
+		Shape3D.setPosition(sphere, new Vec3(3.5, 1.5, 0));
 		Shape3D.setColor(sphere, Color.GOLD);
 		Scene.add(scene, sphere);
 
@@ -98,7 +98,7 @@ class PickDemo {
 				Sprite3D.setSize(sprite, 4.0);
 				Sprite3D.setFacing(sprite, Camera);
 				Sprite3D.setTint(sprite, Color.WHITE);
-				Sprite3D.setTransform(sprite, new Vec3(0, 3.0, 4.0));
+				Sprite3D.setPosition(sprite, new Vec3(0, 3.0, 4.0));
 				// the transparent parts of the logo let the click through
 				Sprite3D.setPickAlphaTest(sprite, true, 0.5);
 				Scene.add(scene, sprite, 1);
@@ -109,7 +109,7 @@ class PickDemo {
 				Mesh.release(mesh); // the model holds its own reference
 				if (Model.isNone(model))
 					return;
-				Model.setTransform(model, new Vec3(0, 0, -4.0));
+				Model.setPosition(model, new Vec3(0, 0, -4.0));
 				Model.setTint(model, Color.RAYWHITE);
 				Scene.add(scene, model);
 		}
