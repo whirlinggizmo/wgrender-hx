@@ -26,30 +26,46 @@ Chrome's own CPU accounting over 8 s of steady state (`tools/bench/bench.mjs`), 
 
 ## JS heap and GC
 
-V8's traced collections over 10 s at 60 fps (`tools/bench/gcbench.mjs`). Only the JS heap: a configuration that runs inside the wasm allocates nothing there itself, so its reading is the page's noise floor, and a collector inside the wasm (hxcpp's) is not visible here at all.
+V8's traced collections over 10 s at 60 fps (`tools/bench/gcbench.mjs`). Only the JS heap: a collector inside the wasm (hxcpp's) is not visible here at all.
 
-| Configuration | alloc (B/frame) | alloc (MB/min) | collections traced | late frames |
-| --- | ---: | ---: | --- | ---: |
-| Haxe -> JS guest | 3,025 | 10.4 | 1 minor, 1.4 ms | 0 |
-| Haxe -> hxcpp | 1,099 | 3.8 | none | 0 |
-| C | 667 | 2.3 | none | 0 |
+| Configuration | game code runs in | alloc (B/frame) | alloc (MB/min) | collections traced | late frames |
+| --- | --- | ---: | ---: | --- | ---: |
+| Haxe -> JS guest | JS | 3,025 | 10.4 | 1 minor, 1.4 ms | 0 |
+| C | wasm | 667 | 2.3 | none | 0 |
+| Haxe -> hxcpp | wasm | 1,099 | 3.8 | none | 0 |
+
+Code running in the wasm allocates nothing on the JS heap itself, so those rows (667 to 1,099 B/frame here) are the page's own noise: Emscripten's glue, the page and the measuring. Their order means nothing.
 
 ## Calls from a JS guest
 
 What a call from JS into wgrender's wasm costs, against the same call made inside the wasm (`tools/bench/callbench`, node v22.16.0, median of 7 runs of 5,000,000 calls). The JS side marshals as a JS guest binding does: struct results read into a new object, strings copied in with stringToUTF8.
 
-| Shape | like | JS -> wasm (ns) | inside wasm (ns) | boundary (ns) |
-| --- | --- | ---: | ---: | ---: |
-| tint | `wgr_model_set_tint` | 2.66 | 1.22 | 1.45 |
-| transform | `wgr_model_set_transform` | 5.36 | 2.19 | 3.17 |
-| struct | `wgr_input_get_mouse_state` | 9.56 | 2.70 | 6.86 |
-| string | `wgr_text_measure` | 33.08 | 2.99 | 30.09 |
+| Shape | like | JS -> wasm (ns) | inside wasm (ns) | boundary (ns) | calls per ms of JS |
+| --- | --- | ---: | ---: | ---: | ---: |
+| tint | `wgr_model_set_tint` | 2.66 | 1.22 | 1.45 | 376,000 |
+| transform | `wgr_model_set_transform` | 5.36 | 2.19 | 3.17 | 187,000 |
+| struct | `wgr_input_get_mouse_state` | 9.56 | 2.70 | 6.86 | 105,000 |
+| string | `wgr_text_measure` | 33.08 | 2.99 | 30.09 | 30,000 |
 
 wgr calls per frame, counted at the host's exports (`tools/bench/callcount.mjs`):
 
-| Configuration | calls/frame | most called |
-| --- | ---: | --- |
-| Haxe -> JS guest | 16 | `wgr_text_draw_ex` 5, `wgr_input_get_mouse_state` 1, `wgr_model_animate` 1, `wgr_render_begin` 1 |
+| Call | Haxe -> JS guest |
+| --- | ---: |
+| `wgr_text_draw_ex` | 5 |
+| `wgr_input_get_mouse_state` | 1 |
+| `wgr_model_animate` | 1 |
+| `wgr_render_begin` | 1 |
+| `wgr_render_clear_background` | 1 |
+| `wgr_render_end` | 1 |
+| `wgr_scene_draw` | 1 |
+| `wgr_scene_pick` | 1 |
+| `wgr_sprite3d_set_transform` | 1 |
+| `wgr_text_draw_fps_ex` | 1 |
+| `wgr_text_measure_ex` | 1 |
+| `wgr_window_get_screen_size` | 1 |
+| **total** | **16** |
+
+Haxe -> JS guest: 16 calls a frame cost at most 0.53 µs even if every one were the dearest shape above (33 ns), against a 16.7 ms frame.
 
 ## Notes
 
@@ -57,14 +73,14 @@ Hand-written, from bench/notes.md; the tables above are generated.
 
 **Why the JS guest allocates.** The binding's calls compile away, but a call that
 returns a struct builds a Haxe value object from the heap every time: `Vec2`,
-`MouseState`, `PickResult`, the `Text.measureEx` result. `simple` makes four of those a
-frame, and that is the guest's JS heap traffic above the page's noise floor. Nothing is
-late because of it at 60 fps; the collections are absorbed in the frame's slack.
+`MouseState`, `PickResult`, the `Text.measureEx` result (the calls table lists which
+`simple` makes). That is the guest's JS heap traffic above the page's noise floor; at 60
+fps its collections are absorbed in the frame's slack.
 
 **Why the guest's host wasm is smaller than the C.** `wgr.macros.WebHost` links the
 host exporting only the wgrender calls the compiled guest makes, so wgrender code the
 example never reaches is stripped. The C build exports nothing but still links what
-its own `simple.c` reaches; the two land within a few hundred bytes.
+its own `simple.c` reaches, so the host comes out no larger than the C.
 
 **hxcpp's GC is not in the GC table.** It runs in the wasm's linear memory, where
 gcbench cannot see it, so the hxcpp row reads clean whether or not it pauses. See
