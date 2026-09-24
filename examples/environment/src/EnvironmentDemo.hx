@@ -208,7 +208,7 @@ class EnvironmentDemo {
 		Camera3D.setView(camera, new Vec3(Math.sin(elapsed * 0.15) * 7.5, 1.2, Math.cos(elapsed * 0.15) * 7.5), target);
 		Model.animate(gumshoe, dt);
 
-		Render.begin();
+		Render.beginFrame();
 		Render.clearBackground(background);
 		Scene.draw(scene);
 		Shape2D.drawRectangle(0, 0, Window.getScreenSize().x, 60, bar);
@@ -217,7 +217,7 @@ class EnvironmentDemo {
 		Text.draw('[E] ${ENVIRONMENT_NAMES[environmentIndex]}   [B] background ${BLUR_NAMES[blurIndex]}   '
 			+ '[T] tone mapping ${TONEMAP_NAMES[tonemapIndex]}   '
 			+ '[UP/DOWN] exposure ${exposure >= 0 ? "+" : ""}${fixed(exposure, 1)} EV', 12, 36, 16, Color.LIGHTGRAY);
-		Render.end();
+		Render.endFrame();
 	}
 
 	/** The same by-hand formatter the other examples carry; Haxe has no printf. **/

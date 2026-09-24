@@ -107,7 +107,7 @@ class Scene3D {
 			select(pick.hit ? pick.handle : Handle.NONE);
 		}
 
-		Render.begin();
+		Render.beginFrame();
 		Render.clearBackground(background);
 
 		Render.beginMode3D();
@@ -119,7 +119,7 @@ class Scene3D {
 		Text.draw("wgrender + sokol — scene pick", 12, 36, 24, Color.RAYWHITE);
 		Text.draw("click a shape to select it", 12, 70, 16, Color.LIGHTGRAY);
 		Text.draw(Shape3D.isNone(selected) ? "selected: none" : 'selected handle: $selected', 12, 94, 16, Color.LIGHTGRAY);
-		Render.end();
+		Render.endFrame();
 
 		if (Input.isKeyPressed(Escape))
 			Wgr.requestQuit();

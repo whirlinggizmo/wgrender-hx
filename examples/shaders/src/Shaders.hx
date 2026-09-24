@@ -270,7 +270,7 @@ class Shaders {
 		Model.setTransform(dissolving, new Vec3(0, SPHERE_Y, 0), new Vec3(0, elapsed * 0.4, 0), Vec3.ONE);
 		Model.animate(gumshoe, dt);
 
-		Render.begin();
+		Render.beginFrame();
 		Render.clearBackground(background);
 		Scene.draw(scene);
 		final screen = Window.getScreenSize();
@@ -278,6 +278,6 @@ class Shaders {
 		Sprite2D.draw(logo2d);
 		Text.draw("wgrender custom shaders: toon, dissolve, water, sprite effects", 12, 12, 20, Color.RAYWHITE);
 		Text.draw("1 sun, 2 point light, ESC quit", 12, 40, 16, Color.LIGHTGRAY);
-		Render.end();
+		Render.endFrame();
 	}
 }

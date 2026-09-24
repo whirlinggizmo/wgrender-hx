@@ -74,7 +74,7 @@ class Quit {
 		if (keys.isPressed(Q) || keys.isPressed(Escape))
 			Wgr.requestQuit();
 
-		Render.begin();
+		Render.beginFrame();
 		Render.clearBackground(background);
 		Text.draw("wgrender quit (Haxe guest)   Q: quit now", 12, 12, 16, Color.RAYWHITE);
 		if (quitting)
@@ -82,7 +82,7 @@ class Quit {
 		else
 			Text.draw('loading, stalling and quitting in ${fixed(quitAt - Wgr.getTime(), 1)} s', 12, 40, 16,
 				Color.LIGHTGRAY);
-		Render.end();
+		Render.endFrame();
 
 		if (!quitting && Wgr.getTime() >= quitAt) {
 			quitting = true;

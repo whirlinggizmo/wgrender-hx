@@ -21,7 +21,7 @@ class Hello {
 	static function onFrame(dt:Float):Void {
 		final mouse = Input.getMouseState();
 
-		Render.begin();
+		Render.beginFrame();
 		Render.clearBackground(Color.RAYWHITE);
 
 		// filled + outlined rectangles
@@ -41,7 +41,7 @@ class Hello {
 		Text.draw("press ESC to quit", 40, 410, 16, Color.GRAY);
 		Text.drawFps(40, 12);
 
-		Render.end();
+		Render.endFrame();
 
 		if (Input.getKeyboardState().isPressed(Escape))
 			Wgr.requestQuit();

@@ -91,13 +91,13 @@ class ForceFetch {
 		if (keys.isPressed(Escape))
 			Wgr.requestQuit();
 
-		Render.begin();
+		Render.beginFrame();
 		Render.clearBackground(background);
 		Text.draw("wgrender + sokol_audio + force_fetch (Haxe guest)", 24, 30, 28, Color.RAYWHITE);
 		Text.draw(Sound.isNone(music) ? "music: loading..."
 			: (musicOn ? "music: playing (mp3, looping)" : "music: paused"), 24, 80, 18, Color.SKYBLUE);
 		Text.draw("[M] toggle music   [ESC] quit", 24, 150, 16, Color.LIGHTGRAY);
 		Text.drawFps(24, 12);
-		Render.end();
+		Render.endFrame();
 	}
 }

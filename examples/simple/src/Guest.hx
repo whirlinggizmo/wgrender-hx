@@ -200,12 +200,12 @@ class Guest {
 		update(dt);
 		updatePickMessage(mouse);
 
-		Render.begin();
+		Render.beginFrame();
 		Render.clearBackground(backgroundColor);
 		Scene.draw(scene);
 		drawCenteredMessage();
 		drawOverlay(mouse);
-		Render.end();
+		Render.endFrame();
 	}
 
 	/** The same by-hand formatter ../simple uses, so the two read alike. **/

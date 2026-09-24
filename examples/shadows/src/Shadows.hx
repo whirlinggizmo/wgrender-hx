@@ -216,7 +216,7 @@ class Shadows {
 			angle += dt * 0.18;
 		Camera3D.setView(camera, new Vec3(11.0 * Math.sin(angle), 5.0, 11.0 * Math.cos(angle)), target);
 
-		Render.begin();
+		Render.beginFrame();
 		Render.clearBackground(Color.rgba(120, 150, 200, 255));
 		Scene.draw(scene);
 		Text.draw("wgrender shadows: a directional light casting into a depth map", 12, 36, 20, Color.RAYWHITE);
@@ -227,7 +227,7 @@ class Shadows {
 			Color.LIGHTGRAY);
 		Text.draw("UP/DOWN distance   [ ] bias   M map size   O camera   ESC quit", 12, 108, 16, Color.GRAY);
 		Text.draw("left ball casts nothing; right ball receives nothing", 12, 130, 16, Color.GRAY);
-		Render.end();
+		Render.endFrame();
 	}
 
 	/** The same by-hand formatter the other examples carry; Haxe has no printf. **/

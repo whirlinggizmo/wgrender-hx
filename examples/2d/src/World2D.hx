@@ -220,7 +220,7 @@ class World2D {
 		placeCamera();
 		updateCoins();
 
-		Render.begin();
+		Render.beginFrame();
 		Render.clearBackground(background);
 		Scene.draw(scene);
 		Render.beginMode2D(); // back to screen space for the HUD
@@ -229,7 +229,7 @@ class World2D {
 		Text.draw('coins: $collected of $COIN_COUNT   zoom: ${fixed(zoom, 1)} units   '
 			+ 'center: ${fixed(centreX, 1)}, ${fixed(centreY, 1)}${loaded ? "" : "   (loading)"}', 20, 46, 15, dim);
 		Text.draw("drag or arrows to scroll, wheel to zoom, click the coins", 20, 68, 15, dim);
-		Render.end();
+		Render.endFrame();
 	}
 
 	/** The same by-hand formatter the other examples carry; Haxe has no printf. **/

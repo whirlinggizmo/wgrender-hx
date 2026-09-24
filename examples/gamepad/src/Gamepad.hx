@@ -114,14 +114,14 @@ class Gamepad {
 			}
 		}
 
-		Render.begin();
+		Render.beginFrame();
 		Render.clearBackground(background);
 		Text.draw("wgrender + sokol — gamepads", 12, 36, 24, Color.RAYWHITE);
 		Text.draw('dead zone ${fixed(DEADZONES[deadzone], 2)} (SOUTH changes it)   '
 			+ "web: press a pad button first", 12, 70, 16, Color.LIGHTGRAY);
 		for (pad in 0...Input.MAX_GAMEPADS)
 			drawPad(pad, 20.0 + (pad % 2) * 320.0, 110.0 + Std.int(pad / 2) * 300.0);
-		Render.end();
+		Render.endFrame();
 
 		if (Input.isKeyPressed(Escape))
 			Wgr.requestQuit();

@@ -80,9 +80,9 @@ wgr calls per frame, counted at the host's exports (`tools/bench/callcount.mjs`)
 | `wgr_text_draw_ex` | 5 |
 | `wgr_input_get_mouse_state` | 1 |
 | `wgr_model_animate` | 1 |
-| `wgr_render_begin` | 1 |
+| `wgr_render_begin_frame` | 1 |
 | `wgr_render_clear_background` | 1 |
-| `wgr_render_end` | 1 |
+| `wgr_render_end_frame` | 1 |
 | `wgr_scene_draw` | 1 |
 | `wgr_scene_pick` | 1 |
 | `wgr_sprite3d_set_position` | 1 |

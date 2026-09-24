@@ -168,14 +168,14 @@ class Instancing {
 		for (i in 0...WALKERS)
 			Model.setAnimationTime(walkers[i], t + i * 0.35);
 
-		Render.begin();
+		Render.beginFrame();
 		Render.clearBackground(Color.rgba(28, 30, 38, 255));
 		Scene.draw(scene);
 		Text.draw("wgrender instancing: models that share a mesh and a material go up as one draw", 12, 36, 20,
 			Color.RAYWHITE);
 		Text.draw('$FIELD_COUNT cubes, ${ownMaterials ? "a material each (one draw each)" : "one material (one draw)"}'
 			+ "   SPACE toggles   ESC quit", 12, 64, 16, Color.LIGHTGRAY);
-		Render.end();
+		Render.endFrame();
 
 		final keys = Input.getKeyboardState();
 		if (keys.isPressed(Space))

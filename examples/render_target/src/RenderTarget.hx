@@ -170,7 +170,7 @@ class RenderTarget {
 		Model.animate(gumshoe, dt);
 		Model.setTransform(globe, new Vec3(-2.2, 1.2, 0), new Vec3(0, elapsed * 0.8, 0), new Vec3(1.6, 1.6, 1.6));
 
-		Render.begin();
+		Render.beginFrame();
 
 		// 1. the label first, so the views below use this frame's text
 		if (Render.beginTexture(label)) {
@@ -203,7 +203,7 @@ class RenderTarget {
 		panel(minimap, 700, 64, MINIMAP, MINIMAP, "minimap (orthographic, from above)");
 		panel(label, 700, 380, LABEL_W, LABEL_H, "label (text drawn into a texture)");
 		Text.draw("wgrender render targets: Texture.createTarget + Render.beginTexture", 12, 12, 16, Color.RAYWHITE);
-		Render.end();
+		Render.endFrame();
 	}
 
 	/** The same by-hand formatter the other examples carry; Haxe has no printf. **/

@@ -90,14 +90,14 @@ class FontDemo {
 		if (keys.isPressed(D) && !Font.isNone(komika))
 			Text.setDefaultFont(Font.isNone(Text.getDefaultFont()) ? komika : Handle.NONE);
 
-		Render.begin();
+		Render.beginFrame();
 		Render.clearBackground(background);
 		drawTitle();
 		drawSamples();
 		Text.draw(Font.isNone(Text.getDefaultFont()) ? "[D] default font: built in   {a|b} ~ \\ ^_`"
 			: "[D] default font: Komika   {a|b} ~ \\ ^_`", 40, 360, 16, Color.DARKGREEN);
 		Text.drawFps(12, 12);
-		Render.end();
+		Render.endFrame();
 
 		if (keys.isPressed(Escape))
 			Wgr.requestQuit();

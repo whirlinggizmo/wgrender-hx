@@ -93,7 +93,7 @@ class Sprite3DDemo {
 		if (!Sprite3D.isNone(sprite))
 			Sprite3D.setPosition(sprite, new Vec3(0, BOB_CENTRE + Math.sin(t * BOB_SPEED) * BOB_HEIGHT, 0));
 
-		Render.begin();
+		Render.beginFrame();
 		Render.clearBackground(background);
 
 		Render.beginMode3D();
@@ -106,7 +106,7 @@ class Sprite3DDemo {
 		Text.draw(Sprite3D.isNone(sprite) ? "loading logo..." : "logo: load -> Texture.create -> new Sprite3D", 12, 70, 16,
 			Color.LIGHTGRAY);
 
-		Render.end();
+		Render.endFrame();
 
 		if (Input.getKeyboardState().isPressed(Escape))
 			Wgr.requestQuit();

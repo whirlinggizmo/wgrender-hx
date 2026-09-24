@@ -955,7 +955,7 @@ class CheckBindings {
 			eq(keyboard.pressedChar, 0, "so there is no last character");
 			eq(keyboard.typedText(), "", "and no text to append");
 		}
-		Render.begin();
+		Render.beginFrame();
 		Render.clearBackground(Color.RAYWHITE);
 		Render.beginMode3D();
 		Shape3D.drawGrid(4, 1, Color.DARKGRAY);
@@ -978,7 +978,7 @@ class CheckBindings {
 		Shape2D.drawBorder(0, 0, 20, 10, 1, 1, 1, 1, 2, 2, 2, 2, Color.LIGHTGRAY);
 		Text.draw("built-in", 10, 10, 16, Color.BLACK);
 		Text2D.draw(label);
-		Render.end();
+		Render.endFrame();
 	}
 
 	#if !sys

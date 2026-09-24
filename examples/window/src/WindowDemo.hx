@@ -117,7 +117,7 @@ class WindowDemo {
 		final position = Window.getPosition();
 		var y = 12;
 
-		Render.begin();
+		Render.beginFrame();
 		Render.clearBackground(background);
 		Text.draw(Window.hasFullscreen() // ask before offering the key
 			? "wgrender window   arrows: move   =/-: size   F: fullscreen   M: next monitor   H: hide"
@@ -138,6 +138,6 @@ class WindowDemo {
 				+ 'at (${Std.int(monitorPosition.x)}, ${Std.int(monitorPosition.y)})', 12, y, 16, Color.LIGHTGRAY);
 			y += 22;
 		}
-		Render.end();
+		Render.endFrame();
 	}
 }

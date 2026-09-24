@@ -89,7 +89,7 @@ class TexturesDemo {
 	}
 
 	static function onFrame(dt:Float):Void {
-		Render.begin();
+		Render.beginFrame();
 		Render.clearBackground(Color.rgba(38, 42, 54, 255));
 		Text.draw("wgrender + sokol — textures: PNG (left) and compressed (right)", 12, 36, 22, Color.RAYWHITE);
 
@@ -107,7 +107,7 @@ class TexturesDemo {
 				Text.draw('${slot.width}x${slot.height}  GPU ${Math.round(gpuKb(slot))} KB  '
 					+ '${Math.round(slot.took * 1000)} ms', Std.int(x), Std.int(y) + 258, 14, Color.LIGHTGRAY);
 		}
-		Render.end();
+		Render.endFrame();
 
 		if (Input.isKeyPressed(Escape))
 			Wgr.requestQuit();

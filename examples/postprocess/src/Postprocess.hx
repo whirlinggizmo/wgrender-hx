@@ -222,7 +222,7 @@ class Postprocess {
 		if (!Material.isNone(vignette))
 			Material.setFloat(vignette, "strength", live);
 
-		Render.begin();
+		Render.beginFrame();
 		Render.clearBackground(Color.rgba(16, 18, 24, 255));
 		Scene.draw(scene);
 		Text.draw("wgrender post-processing: screen effects over the finished frame", 12, 36, 20, Color.RAYWHITE);
@@ -230,7 +230,7 @@ class Postprocess {
 			+ 'effects: ${Render.effectCount()}', 12, 64, 16, Color.LIGHTGRAY);
 		Text.draw('UP/DOWN strength ${fixed(strength, 2)}   SPACE ${breathing ? "stop breathing" : "breathe"}   '
 			+ "O camera   ESC quit", 12, 86, 16, Color.GRAY);
-		Render.end();
+		Render.endFrame();
 	}
 
 	/** The same by-hand formatter the other examples carry; Haxe has no printf. **/

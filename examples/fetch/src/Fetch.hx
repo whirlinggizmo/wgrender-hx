@@ -126,7 +126,7 @@ class Fetch {
 	}
 
 	static function onFrame(dt:Float):Void {
-		Render.begin();
+		Render.beginFrame();
 		Render.clearBackground(background);
 		Sprite2D.draw(sprite);
 		Text.draw("wgrender fetch: the desktop build downloads what the browser downloads", 12, 36, 20,
@@ -136,7 +136,7 @@ class Fetch {
 		Text.draw(remote ? 'downloaded $downloads file(s) into $CACHE_DIR   (delete it and re-run: they come back)'
 			: 'no host reachable — reading ${Assets.defaultBase()} locally instead', 12, 86, 16, Color.LIGHTGRAY);
 		#end
-		Render.end();
+		Render.endFrame();
 
 		if (Input.getKeyboardState().isPressed(Escape))
 			Wgr.requestQuit();

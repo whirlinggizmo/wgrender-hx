@@ -184,7 +184,7 @@ class Text3DDemo {
 			Text3D.setColor(label, hovered == label ? gold : Color.RAYWHITE);
 		final stats = Pick.getStats();
 
-		Render.begin();
+		Render.beginFrame();
 		Render.clearBackground(background);
 		Render.beginMode3D();
 		Shape3D.drawGrid(16, 1.0, grey);
@@ -197,6 +197,6 @@ class Text3DDemo {
 		Font.draw(font, 'pick stats: ${stats.broadphaseTests} box tests (${stats.broadphaseRejects} rejected), '
 			+ '${stats.narrowphaseTests} exact tests, ${stats.narrowphaseHits} hits', 12, 56, 16, Color.LIGHTGRAY);
 		Font.drawFps(font, 12, 80, 16, Color.LIME);
-		Render.end();
+		Render.endFrame();
 	}
 }

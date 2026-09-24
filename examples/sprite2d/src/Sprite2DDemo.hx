@@ -179,7 +179,7 @@ class Sprite2DDemo {
 		animate(dt);
 		final hovering = hover(mouse);
 
-		Render.begin();
+		Render.beginFrame();
 		Render.clearBackground(background);
 		Scene.draw(scene);
 		// one-off, with no object behind it
@@ -188,6 +188,6 @@ class Sprite2DDemo {
 		Text.draw("wgrender sprite2d: source rect, pivot, rotation, flip, picking", 12, 12, 16, Color.RAYWHITE);
 		Text.draw('mouse (${mouse.x}, ${mouse.y})  hover: $hovering  sheet frame $sheetFrame', 12, 36, 16,
 			Color.LIGHTGRAY);
-		Render.end();
+		Render.endFrame();
 	}
 }

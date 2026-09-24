@@ -169,12 +169,12 @@ class Simple {
 		update(dt);
 		updatePickMessage(mouse);
 
-		Render.begin();
+		Render.beginFrame();
 		Render.clearBackground(backgroundColor);
 		Scene.draw(scene);
 		drawCenteredMessage();
 		drawOverlay(mouse);
-		Render.end();
+		Render.endFrame();
 	}
 
 	/** Haxe has no printf, and Std.string drops trailing zeros — so, by hand. **/

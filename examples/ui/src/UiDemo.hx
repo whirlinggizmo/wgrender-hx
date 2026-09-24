@@ -203,7 +203,7 @@ class UiDemo {
 			placeCamera();
 		}
 
-		Render.begin();
+		Render.beginFrame();
 		Render.clearBackground(background);
 		Scene.draw(scene);
 		// the header is immediate drawing, next to the retained panel below it: the same
@@ -217,7 +217,7 @@ class UiDemo {
 		Text.draw('clicks: $clicks   selected: ${selected < 0 ? "nothing" : ROW_NAMES[selected]}   '
 			+ 'hovered: $what   pointer captured: ${Input.isPointerCaptured() ? "yes" : "no"}', 28, 43, 15,
 			theme.textDisabled);
-		Render.end();
+		Render.endFrame();
 	}
 
 	/** The C compares two handles with `==`; here both sides go through `Handle` first. **/

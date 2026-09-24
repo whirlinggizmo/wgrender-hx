@@ -188,7 +188,7 @@ class LightsDemo {
 		Shape3D.setVisible(lampMarker, Light.isEnabled(lamp));
 		Light.setDirection(spot, new Vec3(Math.sin(elapsed * 0.8) * 0.7, -1.0, -0.3));
 
-		Render.begin();
+		Render.beginFrame();
 		Render.clearBackground(background);
 		Render.beginMode3D();
 		Shape3D.drawGrid(20, 1.0, gridColor);
@@ -199,7 +199,7 @@ class LightsDemo {
 		Text.draw('[1] sun ${on(sun)}   [2] point light ${on(lamp)}   [3] spotlight ${on(spot)}', 12, 40, 16,
 			Color.LIGHTGRAY);
 		Text.drawFps(12, 64);
-		Render.end();
+		Render.endFrame();
 	}
 
 	static inline function on(light:Light):String

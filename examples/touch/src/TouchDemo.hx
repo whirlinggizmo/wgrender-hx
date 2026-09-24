@@ -135,7 +135,7 @@ class TouchDemo {
 			}
 		}
 
-		Render.begin();
+		Render.beginFrame();
 		Render.clearBackground(Color.rgba(22, 25, 33, 255));
 		if (!Sprite2D.isNone(logo)) {
 			Sprite2D.setPosition(logo, new Vec2(logoX, logoY));
@@ -171,7 +171,7 @@ class TouchDemo {
 			Color.WHITE);
 		Text.draw("two fingers: pan, pinch, twist the logo; one finger drags the coin", 16, 64, 16,
 			Color.rgba(150, 158, 175, 255));
-		Render.end();
+		Render.endFrame();
 	}
 
 	/** The same by-hand formatter the other examples carry; Haxe has no printf. **/

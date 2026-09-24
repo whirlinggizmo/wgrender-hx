@@ -152,7 +152,7 @@ class PickDemo {
 			select(last.hit ? last.handle : Handle.NONE);
 		}
 
-		Render.begin();
+		Render.beginFrame();
 		Render.clearBackground(background);
 		Render.beginMode3D();
 		Shape3D.drawGrid(24, 1.0, Color.DARKGRAY);
@@ -169,7 +169,7 @@ class PickDemo {
 		} else {
 			Text.draw("no hit", 12, 94, 16, Color.LIGHTGRAY);
 		}
-		Render.end();
+		Render.endFrame();
 
 		if (Input.isKeyPressed(Escape))
 			Wgr.requestQuit();

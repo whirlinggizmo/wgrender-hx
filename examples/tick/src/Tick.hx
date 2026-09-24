@@ -67,7 +67,7 @@ class Tick {
 
 		final fraction = GuestAbi.tickFraction();
 
-		Render.begin();
+		Render.beginFrame();
 		Render.clearBackground(background);
 
 		Text.draw("wgrender tick: 10 Hz simulation, rendered every frame", 20, 20, 20, Color.RAYWHITE);
@@ -82,7 +82,7 @@ class Tick {
 		Shape2D.drawRectangle(Std.int(previousX + (x - previousX) * fraction), 275, SQUARE, SQUARE, Color.SKYBLUE);
 
 		Text.drawFps(20, SCREEN_HEIGHT - 30);
-		Render.end();
+		Render.endFrame();
 	}
 
 	/** C's "%.Nf"; Haxe has no printf and the numbers here are worth reading. **/

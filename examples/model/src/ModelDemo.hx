@@ -99,7 +99,7 @@ class ModelDemo {
 			Model.setTransform(model, new Vec3(0, 0, 0), new Vec3(0, t * 0.5, 0), Vec3.ONE);
 		Model.animate(model, dt);
 
-		Render.begin();
+		Render.beginFrame();
 		Render.clearBackground(background);
 
 		Render.beginMode3D();
@@ -111,7 +111,7 @@ class ModelDemo {
 		Text.draw("wgrender + sokol — model (glTF/cgltf)", 12, 36, 22, Color.RAYWHITE);
 		Text.draw(loaded ? "gumshoe.glb — skeletal animation (glTF skin)" : "loading model...", 12, 68, 16,
 			Color.LIGHTGRAY);
-		Render.end();
+		Render.endFrame();
 
 		if (Input.getKeyboardState().isPressed(Escape))
 			Wgr.requestQuit();

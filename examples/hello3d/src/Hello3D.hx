@@ -49,7 +49,7 @@ class Hello3D {
 		Camera3D.setView(camera, new Vec3(Math.cos(t * ORBIT_SPEED) * ORBIT_RADIUS, CAMERA_HEIGHT,
 			Math.sin(t * ORBIT_SPEED) * ORBIT_RADIUS), LOOK_AT);
 
-		Render.begin();
+		Render.beginFrame();
 		Render.clearBackground(background);
 
 		Render.beginMode3D();
@@ -69,7 +69,7 @@ class Hello3D {
 		Text.draw("wgrender + sokol — 3D", 12, 36, 24, Color.RAYWHITE);
 		Text.draw("orbiting camera3d, depth-tested sokol_gl", 12, 70, 16, Color.LIGHTGRAY);
 
-		Render.end();
+		Render.endFrame();
 
 		// the whole keyboard at once, as the C does. On js this is a view into the
 		// wasm heap that is only good for this frame, which is why it is read here.

@@ -103,7 +103,7 @@ class AudioDemo {
 	static function onFrame(dt:Float):Void {
 		handleKeys();
 
-		Render.begin();
+		Render.beginFrame();
 		Render.clearBackground(background);
 		Text.draw("wgrender + sokol_audio (Haxe guest)", 24, 30, 28, Color.RAYWHITE);
 		Text.draw(Sound.isNone(music) ? "music: loading..."
@@ -112,6 +112,6 @@ class AudioDemo {
 		Text.draw("[SPACE] play click   [M] toggle music   [S] stall 300 ms   [ESC] quit", 24, 150, 16,
 			Color.LIGHTGRAY);
 		Text.drawFps(24, 12);
-		Render.end();
+		Render.endFrame();
 	}
 }

@@ -228,7 +228,7 @@ class Particles {
 		Camera3D.setView(camera, new Vec3(ORBIT_RADIUS * Math.sin(orbitAngle), 6, ORBIT_RADIUS * Math.cos(orbitAngle)),
 			new Vec3(0, 3, 0));
 
-		Render.begin();
+		Render.beginFrame();
 		Render.clearBackground(background);
 
 		Render.beginMode3D();
@@ -243,7 +243,7 @@ class Particles {
 		Text.draw('fountain ${Emitter3D.getCount(fountain)}   sparks ${Emitter3D.getCount(sparks)}   flame ${Emitter3D.getCount(flame)}   '
 			+ 'smoke ${Emitter3D.getCount(smoke)}   confetti ${Emitter2D.getCount(confetti)}', 12, 94, 16, Color.LIGHTGRAY);
 
-		Render.end();
+		Render.endFrame();
 
 		if (Input.isKeyPressed(Escape))
 			Wgr.requestQuit();

@@ -210,7 +210,7 @@ class MaterialsDemo {
 			Model.setTransform(bottomRow[i], new Vec3((i - 2.0) * SPACING, 0.0, 0), new Vec3(0, elapsed * 0.5, 0), Vec3.ONE);
 		Model.animate(gumshoe, dt);
 
-		Render.begin();
+		Render.beginFrame();
 		Render.clearBackground(background);
 		Scene.draw(scene);
 		Text.draw("wgrender materials: metallic-roughness, unlit, emissive, normal map, blend", 12, 12, 16,
@@ -218,6 +218,6 @@ class MaterialsDemo {
 		Text.draw('roughness 0 -> 1 (left to right)   rows: plastic, gold   '
 			+ '[1] sun ${Light.isEnabled(sun) ? "on" : "off"}  [2] lamp ${Light.isEnabled(lamp) ? "on" : "off"}', 12, 36, 16,
 			Color.LIGHTGRAY);
-		Render.end();
+		Render.endFrame();
 	}
 }

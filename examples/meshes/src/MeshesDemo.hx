@@ -134,13 +134,13 @@ class MeshesDemo {
 			angle += dt * 0.2;
 		Camera3D.setView(camera, new Vec3(9.0 * Math.sin(angle), 3.5, 9.0 * Math.cos(angle)), target);
 
-		Render.begin();
+		Render.beginFrame();
 		Render.clearBackground(Color.rgba(20, 22, 28, 255));
 		Scene.draw(scene);
 		Text.draw("wgrender generated meshes: plane, cube, sphere, cylinder, cone, capsule, torus", 12, 36, 20,
 			Color.RAYWHITE);
 		Text.draw(orbit ? "O: stop the camera   ESC: quit" : "O: turn the camera   ESC: quit", 12, 64, 16,
 			Color.LIGHTGRAY);
-		Render.end();
+		Render.endFrame();
 	}
 }

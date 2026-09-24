@@ -167,10 +167,10 @@ class Stress {
 		if (entities != null)
 			for (i in 0...n)
 				update(i);
-		Render.begin();
+		Render.beginFrame();
 		Render.clearBackground(background);
 		Scene.draw(scene);
 		drawText();
-		Render.end();
+		Render.endFrame();
 	}
 }

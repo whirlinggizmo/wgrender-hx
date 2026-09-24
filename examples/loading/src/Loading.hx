@@ -227,7 +227,7 @@ class Loading {
 		elapsed += dt;
 		Model.animate(gumshoe, dt);
 
-		Render.begin();
+		Render.beginFrame();
 		Render.clearBackground(background);
 		Scene.draw(scene);
 		Render.beginMode3D();
@@ -259,7 +259,7 @@ class Loading {
 				Color.LIGHTGRAY);
 		}
 		drawGraph(12, screen.y - 132, screen.x - 24, 120);
-		Render.end();
+		Render.endFrame();
 	}
 
 	/** The same by-hand formatter the other examples carry; Haxe has no printf. **/

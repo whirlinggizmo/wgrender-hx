@@ -75,10 +75,10 @@ class {entry} {{
 	}}
 
 	static function onFrame(dt:Float):Void {{
-		Render.begin();
+		Render.beginFrame();
 		Render.clearBackground(background);
 		Text.draw("{name}", 12, 36, 24, Color.RAYWHITE);
-		Render.end();
+		Render.endFrame();
 	}}
 }}
 '''
