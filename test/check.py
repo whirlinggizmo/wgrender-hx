@@ -4,7 +4,7 @@
     test/check.py [WGRENDER_DIR]
     test/check.py --lists      only the WebHost list guards: pure Python, for CI
 
-Headless is wgrender's own test build (its `headless` CMake preset): no window, GPU or audio,
+Headless is wgrender's own test build (its `<os>-headless` CMake preset): no window, GPU or audio,
 and WGR_HEADLESS_FRAMES runs a fixed number of frames and returns, so the checks can
 assert values rather than only compile.
 

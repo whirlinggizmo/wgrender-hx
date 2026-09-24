@@ -54,7 +54,7 @@ sys.path.insert(0, str(LIB / 'tools'))
 from wgrpath import find  # noqa: E402
 from guestbuild import Project  # noqa: E402
 WGRENDER = find(argv=[])
-C_BUILD = WGRENDER / 'build/web-webgl2-nothreads'
+C_BUILD = WGRENDER / 'build/web/webgl2-nothreads'
 
 
 # simple-hxcpp is the other architecture -- Haxe through hxcpp into one wasm, rather

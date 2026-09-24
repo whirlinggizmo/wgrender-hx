@@ -69,7 +69,7 @@
              hxcpp defaults to a 32-bit build on Windows, so add -D HXCPP_M64 for
              x64. -->
 
-        <lib name="${WGRENDER}/build/webgl2-nothreads/libwgrender.a" if="emscripten" />
+        <lib name="${WGRENDER}/build/web/webgl2-nothreads/libwgrender.a" if="emscripten" />
 
         <files id="wgrender" />
 

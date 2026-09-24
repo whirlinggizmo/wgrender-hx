@@ -5,8 +5,9 @@
 // These assertions catch that class: field order in the struct reads, property
 // round-trips, packing, and the handful of behaviours that are cheap to state exactly.
 //
-// `./build.py check` builds this against build/headless/libwgrender.a (no window, GPU
-// or audio) and runs it for a few frames. Non-zero exit means a failure.
+// `./build.py check` builds this against wgrender's headless library
+// (build/linux/headless/, ...: no window, GPU or audio) and runs it for a few frames.
+// Non-zero exit means a failure.
 import wgr.*;
 
 class CheckBindings {

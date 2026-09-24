@@ -27,7 +27,7 @@ LIB = pathlib.Path(__file__).resolve().parent.parent
 # argv here is example directories, so wgrender comes from the environment or
 # the usual places -- not from a positional that means something else.
 WGRENDER = find(argv=[])
-C_BUILD = WGRENDER / 'build/web-webgl2-nothreads'
+C_BUILD = WGRENDER / 'build/web/webgl2-nothreads'
 
 
 def measure(*paths):

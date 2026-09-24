@@ -177,7 +177,7 @@ def compare():
     defaults to WEB_THREADS=1; build it with WEB_THREADS=0 to line the numbers up.
     """
     ports = [
-        ('C (wgrender example)', WGRENDER / 'examples/build/webgl2-nothreads'),
+        ('C (wgrender example)', WGRENDER / 'build/web/webgl2-nothreads'),
         ('Nim', ROOT / '../../../../../nim/simple/out/web'),
         ('Beef', ROOT / '../../../../../beef/simple/build/web'),
         ('Haxe (this)', ROOT / 'out/web'),

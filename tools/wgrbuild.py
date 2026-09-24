@@ -8,8 +8,10 @@ compiles and links against them with, read from wgrender's build.json.
 
 The web library comes from wgrender's tools/buildweb.py (emcc and Python, nothing
 else), single-threaded because hxcpp's emscripten target has none, with BACKEND and
-WEB_DEBUG from the environment. The desktop one is wgrender's `desktop` or `headless`
-CMake preset, built as far as the library (build/<preset>/). For the programs here that
+WEB_DEBUG from the environment. The desktop one is wgrender's `<os>-release` or
+`<os>-headless` CMake preset (`windows-mingw[-headless]` on Windows: this is gcc or
+clang), built as far as the library. Either is in wgrender's build/<platform>/<variant>/,
+the wg* family layout (whirlinggizmo/.github CONVENTIONS.md, "Build directories"). For the programs here that
 link a library rather than compiling wgrender in (simple-hxcpp, the checks, the hxcpp web
 builds); an installed binding compiles its sources instead (project/wgrender.xml).
 """
@@ -42,19 +44,23 @@ def web(wgrender):
          f'WEB_DEBUG={debug}'], cwd=wgrender)
     name = f'{backend}-nothreads' + ('-debug' if debug == '1' else '')
     target = manifest(wgrender)['web'][name]
-    return (wgrender / 'build' / name / 'libwgrender.a',
+    return (wgrender / 'build' / 'web' / name / 'libwgrender.a',
             [f'-I{wgrender / "include"}', *target['program_cflags']], list(target['ldflags']))
 
 
 def desktop(wgrender, headless=False):
     """(library, link flags) of the desktop or headless library, for gcc or clang."""
     wgrender = Path(wgrender)
-    preset = 'headless' if headless else 'desktop'
+    system = {'Linux': 'linux', 'Darwin': 'macos', 'Windows': 'windows'}[platform.system()]
+    if system == 'windows':
+        variant = 'mingw-headless' if headless else 'mingw'
+    else:
+        variant = 'headless' if headless else 'release'
+    preset = f'{system}-{variant}'
     run(['cmake', '--preset', preset], cwd=wgrender, stdout=subprocess.DEVNULL)
     run(['cmake', '--build', '--preset', preset, '--target', 'wgrender'], cwd=wgrender)
-    system = {'Linux': 'linux', 'Darwin': 'macos', 'Windows': 'windows'}[platform.system()]
     target = manifest(wgrender)['desktop'][system + ('-headless' if headless else '')]
     flags = [f'-l{lib}' for lib in target['libs']]
     for framework in target.get('frameworks', []):
         flags += ['-framework', framework]
-    return wgrender / 'build' / preset / 'libwgrender.a', flags
+    return wgrender / 'build' / system / variant / 'libwgrender.a', flags
