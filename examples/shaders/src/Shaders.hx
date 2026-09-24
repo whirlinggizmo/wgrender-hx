@@ -187,7 +187,7 @@ class Shaders {
 				Model.setMaterial(gumshoe, GUMSHOE_BODY_SLOT, material);
 
 			case ASSET_DISSOLVE:
-				Material.setBaseColor(material, 0.55, 0.6, 0.7, 1.0); // linear
+				Material.setVec4(material, "color", 0.55, 0.6, 0.7, 1.0); // the shader's own colour, linear
 				Material.setVec3(material, "edge_color", 4.0, 1.2, 0.2);
 				Material.setFloat(material, "speed", 0.15);
 				Material.setDoubleSided(material, true); // the inside shows through the holes
