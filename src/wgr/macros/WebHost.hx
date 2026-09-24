@@ -46,7 +46,9 @@ using StringTools;
 	  binding pins — the same define, with the same meaning, as a native build.
 
 	Environment: `WEB_THREADS` (default 0), `BACKEND` and `WEB_DEBUG`, as for wgrender's
-	own web build. Needs `make` and Emscripten (`emcc`) on the path.
+	own web build. Needs Emscripten (`emcc`) on the path, and nothing else: wgrender's
+	web library is built by its `tools/buildweb.py`, on the Python emsdk brings
+	(`EMSDK_PYTHON`), from its `mk/build.json`. No make, no shell, so the same on Windows.
 
 	A reflection-only call into wgrender (`Reflect.callMethod` on `Raw`) is invisible to
 	DCE, so the listing will not have it; mark the caller `@:keep`.
@@ -91,9 +93,9 @@ class WebHost {
 		final wgrender = findWgrender(binding);
 		final state = define("wgr-build-dir", "build/webhost");
 
-		final threads = 'WEB_THREADS=${env("WEB_THREADS", "0")}';
-		run("make", ["--no-print-directory", "-s", "-C", wgrender, "web", threads].concat(makeVars()));
-		final flags = webFlags(wgrender, threads);
+		final web = webSettings();
+		run(python(), [Path.join([wgrender, "tools/buildweb.py"])].concat([for (k => v in web) '$k=$v']));
+		final flags = webFlags(wgrender, web);
 
 		final full = define("wgr-host", "") == "full";
 		final api = full ? bindingExports(binding) : listExports(state);
@@ -116,7 +118,7 @@ class WebHost {
 		} else {
 			Sys.println('WebHost: linking the host ($what)');
 			FileSystem.createDirectory(out);
-			run("emcc", ["-O2", '-I$wgrender/include', '-I$binding/host', glue, lib].concat(flags.ldflags).concat([
+			run("emcc", ["-O2", '-I$wgrender/include', '-I$binding/host'].concat(flags.cflags).concat([glue, lib]).concat(flags.ldflags).concat([
 				"-sALLOW_TABLE_GROWTH=1", // the guest installs its ops as JS functions turned into C pointers
 				"-sMODULARIZE=1",
 				"-sEXPORT_ES6=1",
@@ -234,26 +236,46 @@ class WebHost {
 		return dedupe(found);
 	}
 
-	static function webFlags(wgrender:String, threads:String):{lib:String, ldflags:Array<String>} {
-		final out = capture("make", ["--no-print-directory", "-s", "-C", wgrender, "print-web-flags", threads].concat(makeVars()));
-		var lib:String = null;
-		var ldflags:Array<String> = [];
-		for (line in out.split("\n")) {
-			final colon = line.indexOf(":");
-			if (colon < 0)
-				continue;
-			final value = line.substr(colon + 1).trim();
-			switch line.substr(0, colon).trim() {
-				case "lib":
-					lib = value;
-				case "ldflags":
-					ldflags = [for (f in ~/\s+/g.split(value)) if (f != "") f];
-				default:
-			}
-		}
-		if (lib == null)
-			fail('WebHost: could not read wgrender web flags:\n$out');
-		return {lib: lib, ldflags: ldflags};
+	/**
+		The web build's settings, as wgrender's web build spells them: `WEB_THREADS`
+		(default 0 here: a threaded page needs COOP/COEP headers), `BACKEND`, `WEB_DEBUG`.
+	**/
+	static function webSettings():Map<String, String>
+		return ["BACKEND" => env("BACKEND", "webgl2"), "WEB_THREADS" => env("WEB_THREADS", "0"),
+			"WEB_DEBUG" => env("WEB_DEBUG", "0")];
+
+	/**
+		The library and the flags a program compiles and links against it with, from
+		wgrender's mk/build.json: its build as data, so no make is needed to ask.
+	**/
+	static function webFlags(wgrender:String, web:Map<String, String>):{lib:String, cflags:Array<String>, ldflags:Array<String>} {
+		final dir = web["BACKEND"] + (web["WEB_THREADS"] == "1" ? "" : "-nothreads") + (web["WEB_DEBUG"] == "1" ? "-debug" : "");
+		final manifest = Path.join([wgrender, "mk/build.json"]);
+		if (!FileSystem.exists(manifest))
+			fail('WebHost: no $manifest. This wgrender predates it; update the submodule (haxelib run wgrender-hx setup).');
+		final target:Dynamic = Reflect.field(Reflect.field(haxe.Json.parse(File.getContent(manifest)), "web"), dir);
+		if (target == null)
+			fail('WebHost: $manifest has no web target $dir');
+		return {lib: 'build/$dir/libwgrender.a', cflags: target.program_cflags, ldflags: target.ldflags};
+	}
+
+	/**
+		The Python to run wgrender's build script on: emsdk's own when it says so
+		(`EMSDK_PYTHON`, which emsdk sets on Windows), else the first on the path.
+	**/
+	static function python():String {
+		final emsdk = Sys.getEnv("EMSDK_PYTHON");
+		if (emsdk != null && emsdk != "" && FileSystem.exists(emsdk))
+			return emsdk;
+		for (name in ["python3", "python"])
+			try {
+				final p = new Process(name, ["--version"]);
+				final ok = p.exitCode() == 0;
+				p.close();
+				if (ok)
+					return name;
+			} catch (_:Dynamic) {}
+		return fail("WebHost: no Python on the path (emsdk brings one: activate emsdk, or set EMSDK_PYTHON)");
 	}
 
 	/**
@@ -273,9 +295,6 @@ class WebHost {
 				+ (given != null ? "Check -D WGRENDER_DIR." : "Run `haxelib run wgrender-hx setup` to fetch the submodule."));
 		return FileSystem.fullPath(dir);
 	}
-
-	static function makeVars():Array<String>
-		return [for (v in ["BACKEND", "WEB_DEBUG"]) if (Sys.getEnv(v) != null) '$v=${Sys.getEnv(v)}'];
 
 	static function env(name:String, fallback:String):String {
 		final v = Sys.getEnv(name);

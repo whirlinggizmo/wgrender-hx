@@ -260,7 +260,9 @@ are all unchanged.
 - `WEB_THREADS`, `BACKEND` and `WEB_DEBUG` in the environment mean what they mean to
   wgrender's own web build.
 
-It needs `make` and Emscripten's `emcc` on the path. A call into wgrender made only
+It needs Emscripten's `emcc` on the path, and nothing else: wgrender's web library is
+built by its own `tools/buildweb.py`, on the Python emsdk brings, from its
+`mk/build.json`, so there is no make or shell to install, on Windows either. A call into wgrender made only
 through reflection is invisible to dead-code elimination and will not be listed; mark
 its caller `@:keep`. On a native target the line does nothing, so a shared hxml can
 carry it.
