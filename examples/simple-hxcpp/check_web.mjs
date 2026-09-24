@@ -6,14 +6,18 @@
 //
 //   node check_web.mjs [--site=DIR] [--settle=MS]    (settle default 8000; LIBWGR_ROOT
 //                                                     overrides wgrender)
-import { writeFileSync } from "node:fs";
-import { homedir } from "node:os";
+import { existsSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const WGRENDER = process.env.LIBWGR_ROOT ?? join(homedir(), "projects/github/whirlinggizmo/wgrender-c");
-const { findBrowser, freePort, launchBrowser, openSession, RunProcesses, sleep, waitFor } =
+const ROOT_HX = resolve(HERE, "../..");
+/* wgrender: LIBWGR_ROOT (examples/build.py passes the one tools/wgrpath.py finds), else
+ * a wgrender-c checkout beside this repository, else the pinned submodule. */
+const WGRENDER = process.env.LIBWGR_ROOT ??
+    [join(ROOT_HX, "../wgrender-c"), join(ROOT_HX, "project/lib/wgrender-c")].find((d) => existsSync(join(d, "include/wgr.h")));
+if (!WGRENDER) throw new Error("no wgrender: set LIBWGR_ROOT, or git submodule update --init");
+const { findBrowser, freePort, launchBrowser, openSession, PYTHON, RunProcesses, sleep, waitFor } =
     await import(pathToFileURL(join(WGRENDER, "tools/weblib.mjs")).href);
 const site = resolve(process.argv.find((a) => a.startsWith("--site="))?.split("=")[1] ?? join(HERE, "out/web"));
 const settle = Number(process.argv.find((a) => a.startsWith("--settle="))?.split("=")[1] ?? 8000);
@@ -23,7 +27,7 @@ const errors = [];
 const lines = [];
 try {
     const port = await freePort();
-    run.spawn("python3", [join(WGRENDER, "tools/serve.py"), String(port), site]);
+    run.spawn(PYTHON, [join(WGRENDER, "tools/serve.py"), String(port), site]);
     const url = `http://127.0.0.1:${port}/`;
     await waitFor(`${url}examples.json`, "tools/serve.py");
     const { debugBase, browser } = await launchBrowser(run, findBrowser(process.env.WEBCHECK_BROWSER),

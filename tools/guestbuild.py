@@ -88,9 +88,9 @@ class Project:
             return  # the binding is the same for every example in one run of the suite
         Project._checked = True
         self.check_library()
-        self.run([LIB / 'tools/gen_raw.py', '--check', self.wgrender])
-        self.run([LIB / 'tools/coverage.py', '--check', self.wgrender])
-        self.run([LIB / 'tools/refusals.py', '--check', self.wgrender])
+        self.run([sys.executable, LIB / 'tools/gen_raw.py', '--check', self.wgrender])
+        self.run([sys.executable, LIB / 'tools/coverage.py', '--check', self.wgrender])
+        self.run([sys.executable, LIB / 'tools/refusals.py', '--check', self.wgrender])
 
     # ---------------------------------------------------------------- build ---
 

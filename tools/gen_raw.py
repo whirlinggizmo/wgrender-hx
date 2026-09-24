@@ -266,7 +266,7 @@ def header_digest(wgrender):
     digest = hashlib.sha256()
     for h in headers:
         digest.update(h.name.encode())
-        digest.update(h.read_bytes())
+        digest.update(h.read_bytes().replace(b'\r\n', b'\n'))  # the same on a CRLF checkout (Windows)
     return digest.hexdigest()[:16], len(headers)
 
 

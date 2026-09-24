@@ -51,7 +51,7 @@ def run(cmd, **kw):
 
 def main():
     for tool in ('gen_raw.py', 'gen_keys.py', 'coverage.py', 'refusals.py', 'gen_sources.py'):
-        run([ROOT / 'tools' / tool, '--check', WGRENDER])
+        run([sys.executable, ROOT / 'tools' / tool, '--check', WGRENDER])
 
     print('wgrender (headless)')
     lib, libs = wgrbuild.desktop(WGRENDER, headless=True)

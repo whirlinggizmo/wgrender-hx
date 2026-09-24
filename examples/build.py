@@ -56,6 +56,20 @@ from guestbuild import Project  # noqa: E402
 WGRENDER = find(argv=[])
 C_BUILD = WGRENDER / 'build/web-webgl2-nothreads'
 
+
+def web_tools():
+    """How to run wgrender's web tools: on Emscripten's own Node, which every web build
+    here already needs, told which wgrender and which Python to use."""
+    sys.path.insert(0, str(WGRENDER / 'tools'))
+    try:
+        import emsdk
+    except ImportError:
+        sys.exit(f'{WGRENDER} predates tools/emsdk.py; update the submodule')
+    node = emsdk.node()
+    if node is None:
+        sys.exit('the browser checks need Emscripten (emsdk): set EMSDK, or put emcc on PATH')
+    return node, dict(os.environ, LIBWGR_ROOT=str(WGRENDER), WGR_PYTHON=sys.executable)
+
 # simple-hxcpp is the other architecture -- Haxe through hxcpp into one wasm, rather
 # than a JS guest on a wgrender host -- so it has its own commands and is not driven
 # or benched with the guests.
@@ -144,7 +158,7 @@ def each(command, names=None, chosen=()):
             print(f'\n=== {name}: {command}', flush=True)
             Project(HERE / name, name).command(command)
         else:
-            run(['./build.py', command], HERE / name)
+            run([sys.executable, 'build.py', command], HERE / name)
 
 
 # What an example's drive does beyond loading the page and checking it drew. Each
@@ -155,11 +169,12 @@ DRIVE_FLAGS = {'particles': ['--click']}
 
 
 def drive(chosen=()):
+    node, env = web_tools()
     for name in wanted(GUESTS, chosen):
-        run(['node', LIB / 'tools/drive.mjs', f'--site={HERE / name / "out/web"}', f'--label={name}',
-             *DRIVE_FLAGS.get(name, [])], HERE / name)
+        run([node, LIB / 'tools/drive.mjs', f'--site={HERE / name / "out/web"}', f'--label={name}',
+             *DRIVE_FLAGS.get(name, [])], HERE / name, env=env)
     if 'simple-hxcpp' in wanted(OTHERS, chosen):
-        run(['node', 'check_web.mjs'], HERE / 'simple-hxcpp')
+        run([node, 'check_web.mjs'], HERE / 'simple-hxcpp', env=env)
 
 
 def bench(chosen=()):
@@ -167,11 +182,12 @@ def bench(chosen=()):
         sys.exit(f'no C builds at {C_BUILD}\n'
                  f'  cd {WGRENDER} && cmake --preset web-webgl2-nothreads && '
                  'cmake --build --preset web-webgl2-nothreads')
+    node, env = web_tools()
     for name in wanted(GUESTS, chosen):
         for args in ([f'--site={C_BUILD}', f'--url=/?ex={name}', '--probe=examples.json',
                       f'--label={name}-c'],
                      [f'--site={HERE / name / "out/web"}', f'--label={name}-haxe']):
-            subprocess.run(['node', str(WGRENDER / 'tools/bench/bench.mjs'), *args], check=True)
+            subprocess.run([node, str(WGRENDER / 'tools/bench/bench.mjs'), *args], check=True, env=env)
 
 
 SITE_INDEX = """<!doctype html>
@@ -320,7 +336,7 @@ def serve(args, chosen=()):
         sys.exit('TLS needs both a certificate and a key')
 
     out = site(chosen)
-    cmd = ['python3', str(WGRENDER / 'tools/serve.py'), port, str(out)]
+    cmd = [sys.executable, str(WGRENDER / 'tools/serve.py'), port, str(out)]
     if cert:
         cmd += ['--tls', cert, key]
     scheme = 'https' if cert else 'http'
@@ -363,7 +379,7 @@ def main():
     elif command == 'compare':
         # compare.py prints what is missing and why; a traceback on top of that adds
         # a stack trace to a message that was already the answer.
-        return subprocess.run([str(LIB / 'tools/compare.py')]
+        return subprocess.run([sys.executable, str(LIB / 'tools/compare.py')]
                               + [str(HERE / n) for n in chosen]).returncode
     elif command == 'bench':
         bench(chosen)

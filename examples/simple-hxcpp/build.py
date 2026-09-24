@@ -148,7 +148,7 @@ def build_web():
     shell.write_text((WGRENDER / 'examples/web/index.html').read_text()
                      .replace('params.get("ex") || "hello"', 'params.get("ex") || "simple"')
                      .replace('<title>wgrender examples</title>', '<title>simple (wgrender, Haxe)</title>'))
-    run(['python3', WGRENDER / 'tools/webdeploy.py', site, shell])
+    run([sys.executable, WGRENDER / 'tools/webdeploy.py', site, shell])
     shell.unlink()
     sizes()
     print('built out/web — ./build.py serve, then open http://localhost:8000/')
@@ -196,7 +196,7 @@ def compare():
 
 
 def serve(port='8000'):
-    run(['python3', WGRENDER / 'tools/serve.py', port, ROOT / 'out/web', '--gzip'])
+    run([sys.executable, WGRENDER / 'tools/serve.py', port, ROOT / 'out/web', '--gzip'])
 
 
 def clean():

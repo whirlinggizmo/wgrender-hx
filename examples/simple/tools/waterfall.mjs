@@ -1,18 +1,23 @@
 #!/usr/bin/env node
 // Per-resource timings for one cold visit on emulated 4G — which requests happen when,
 // and what depends on what.
-import { homedir } from "node:os";
+import { existsSync } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
-import { pathToFileURL } from "node:url";
-const W = process.env.LIBWGR_ROOT ?? join(homedir(), "projects/github/whirlinggizmo/wgrender-c");
-const { findBrowser, freePort, launchBrowser, openSession, RunProcesses, sleep, waitFor } =
+import { fileURLToPath, pathToFileURL } from "node:url";
+/* wgrender: LIBWGR_ROOT (examples/build.py passes the one tools/wgrpath.py finds), else
+ * a wgrender-c checkout beside this repository, else the pinned submodule. */
+const ROOT_HX = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
+const W = process.env.LIBWGR_ROOT ??
+    [join(ROOT_HX, "../wgrender-c"), join(ROOT_HX, "project/lib/wgrender-c")].find((d) => existsSync(join(d, "include/wgr.h")));
+if (!W) throw new Error("no wgrender: set LIBWGR_ROOT, or git submodule update --init");
+const { findBrowser, freePort, launchBrowser, openSession, PYTHON, RunProcesses, sleep, waitFor } =
     await import(pathToFileURL(join(W, "tools/weblib.mjs")).href);
 const site = resolve(process.argv[2]);
 const label = basename(dirname(dirname(site)));
 const run = new RunProcesses(`waterfall-${label}`);
 try {
     const port = await freePort();
-    run.spawn("python3", [join(W, "tools/serve.py"), String(port), site, "--cache", "--gzip"]);
+    run.spawn(PYTHON, [join(W, "tools/serve.py"), String(port), site, "--cache", "--gzip"]);
     await waitFor(`http://127.0.0.1:${port}/index.html`, "serve.py");
     const { debugBase, browser } = await launchBrowser(run, findBrowser(process.env.WEBCHECK_BROWSER),
         { display: "headless", backend: "webgl2" });

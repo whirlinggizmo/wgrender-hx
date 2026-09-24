@@ -11,12 +11,17 @@
 // wgr:first-frame. Transferred bytes come from the resource timings.
 //
 // cold = fresh profile, nothing cached. warm = second visit in the same profile.
-import { homedir } from "node:os";
+import { existsSync } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
-const W = process.env.LIBWGR_ROOT ?? join(homedir(), "projects/github/whirlinggizmo/wgrender-c");
-const { findBrowser, freePort, launchBrowser, openSession, RunProcesses, sleep, waitFor } =
+/* wgrender: LIBWGR_ROOT (examples/build.py passes the one tools/wgrpath.py finds), else
+ * a wgrender-c checkout beside this repository, else the pinned submodule. */
+const ROOT_HX = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
+const W = process.env.LIBWGR_ROOT ??
+    [join(ROOT_HX, "../wgrender-c"), join(ROOT_HX, "project/lib/wgrender-c")].find((d) => existsSync(join(d, "include/wgr.h")));
+if (!W) throw new Error("no wgrender: set LIBWGR_ROOT, or git submodule update --init");
+const { findBrowser, freePort, launchBrowser, openSession, PYTHON, RunProcesses, sleep, waitFor } =
     await import(pathToFileURL(join(W, "tools/weblib.mjs")).href);
 
 const arg = (name, fallback) =>
@@ -56,7 +61,7 @@ for (const site of sites) {
         const run = new RunProcesses(`webstart-${label}`);
         try {
             const port = await freePort();
-            run.spawn("python3", [join(W, "tools/serve.py"), String(port), site, "--cache", "--gzip"]);
+            run.spawn(PYTHON, [join(W, "tools/serve.py"), String(port), site, "--cache", "--gzip"]);
             const entry = site.includes("simple-js") ? "wgrender-host.js" : "index.html";
             await waitFor(`http://127.0.0.1:${port}/${entry}`, "serve.py");
             const url = `http://127.0.0.1:${port}/`;

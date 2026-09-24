@@ -11,8 +11,7 @@
 // rendered nothing at all: a lifecycle bug wiped the frame callback and this said ok
 // over a black canvas. A screen of one colour is a failure whatever the console says.
 // --min-colours=1 turns it off for an example that really is one flat colour.
-import { writeFileSync } from "node:fs";
-import { homedir } from "node:os";
+import { existsSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 const { decodePng, distinctColours } =
@@ -20,8 +19,13 @@ const { decodePng, distinctColours } =
 
 const arg = (name, fallback) =>
     process.argv.find((a) => a.startsWith(`--${name}=`))?.split("=").slice(1).join("=") ?? fallback;
-const W = process.env.LIBWGR_ROOT ?? join(homedir(), "projects/github/whirlinggizmo/wgrender-c");
-const { findBrowser, freePort, launchBrowser, openSession, RunProcesses, sleep, waitFor } =
+const ROOT_HX = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+/* wgrender: LIBWGR_ROOT (examples/build.py passes the one tools/wgrpath.py finds), else
+ * a wgrender-c checkout beside this repository, else the pinned submodule. */
+const W = process.env.LIBWGR_ROOT ??
+    [join(ROOT_HX, "../wgrender-c"), join(ROOT_HX, "project/lib/wgrender-c")].find((d) => existsSync(join(d, "include/wgr.h")));
+if (!W) throw new Error("no wgrender: set LIBWGR_ROOT, or git submodule update --init");
+const { findBrowser, freePort, launchBrowser, openSession, PYTHON, RunProcesses, sleep, waitFor } =
     await import(pathToFileURL(join(W, "tools/weblib.mjs")).href);
 
 const site = resolve(arg("site", "out/web"));
@@ -34,7 +38,7 @@ const run = new RunProcesses(label);
 const errors = [], lines = [];
 try {
     const port = await freePort();
-    run.spawn("python3", [join(W, "tools/serve.py"), String(port), site]);
+    run.spawn(PYTHON, [join(W, "tools/serve.py"), String(port), site]);
     await waitFor(`http://127.0.0.1:${port}/wgrender-host.js`, "serve.py");
     const { debugBase, browser } = await launchBrowser(run, findBrowser(process.env.WEBCHECK_BROWSER),
                                                        { display: "headless", backend: "webgl2" });

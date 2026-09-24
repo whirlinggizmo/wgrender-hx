@@ -46,11 +46,11 @@ def version(cmd):
 
 def measure_all():
     env = dict(measure.WEB_VARS, WGRENDER_DIR=str(WGRENDER))
-    measure.run(['python3', EXAMPLES / 'build.py', 'web', 'simple', 'stress'], cwd=EXAMPLES, env=env)
-    measure.run(['python3', 'build.py', 'web'], cwd=EXAMPLES / 'simple-hxcpp', env=env)
+    measure.run([sys.executable, EXAMPLES / 'build.py', 'web', 'simple', 'stress'], cwd=EXAMPLES, env=env)
+    measure.run([sys.executable, 'build.py', 'web'], cwd=EXAMPLES / 'simple-hxcpp', env=env)
     # the stress scene all-in-one through hxcpp: the Haxe GC inside the wasm, which
     # gcbench cannot trace but a late frame shows
-    measure.run(['python3', ROOT / 'tools/hxcppweb.py', 'stress'], cwd=ROOT, env=env)
+    measure.run([sys.executable, ROOT / 'tools/hxcppweb.py', 'stress'], cwd=ROOT, env=env)
 
     haxe = f'Haxe {version(["haxe", "--version"])}'
     hxcpp = version(['haxelib', 'list', 'hxcpp']).split('[')[0].replace(':', '').strip()

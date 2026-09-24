@@ -93,7 +93,7 @@ def main():
     shell.write_text((WGRENDER / 'examples/web/index.html').read_text()
                      .replace('params.get("ex") || "hello"', f'params.get("ex") || "{name}"')
                      .replace('<title>wgrender examples</title>', f'<title>{name} (wgrender, Haxe via hxcpp)</title>'))
-    run(['python3', WGRENDER / 'tools/webdeploy.py', site, shell])
+    run([sys.executable, WGRENDER / 'tools/webdeploy.py', site, shell])
     print(f'built {site}')
 
 
