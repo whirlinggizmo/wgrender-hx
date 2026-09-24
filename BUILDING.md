@@ -76,6 +76,7 @@ examples/build.py all            build each one, web and native
 examples/build.py web simple     only the web build, only simple
 examples/build.py serve          serve every web build (http://localhost:8000/)
 examples/build.py drive          run each web build in a headless browser
+examples/build.py site           every web build and the assets, one site for any static host
 examples/build.py compare        sizes against wgrender's own C build of each
 ```
 

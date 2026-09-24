@@ -243,12 +243,17 @@ guest. The same sources build native through hxcpp.</p>
 
 
 def site(chosen=()):
-    """Every built example under one directory, with a page that lists them.
+    """Every built example under one directory, with a page that lists them: a
+    self-contained site for any static host, at a domain root or under a path (the
+    Pages workflow publishes it).
 
     Each example already generates a working page into its own out/web, so this
     copies those in side by side rather than building anything new. They cannot share
     a directory: every example has its own wgrender-host.wasm, exporting exactly the
-    calls that guest makes, and they all have that name.
+    calls that guest makes, and they all have that name. The assets they load are
+    wgrender's examples/assets, copied in once beside them (the benchmarks' models
+    left out), and each page says so: <meta name="wgr-asset-base" content="../assets">,
+    which wgr.Assets reads.
     """
     import shutil
     out = HERE / 'out/www'
@@ -261,11 +266,18 @@ def site(chosen=()):
             print(f'{name}: not built, skipping (./build.py all)', file=sys.stderr)
             continue
         shutil.copytree(src, out / name)
+        page = out / name / 'index.html'
+        html = page.read_text().replace(
+            '<meta charset="utf-8">', '<meta charset="utf-8">\n<meta name="wgr-asset-base" content="../assets">', 1)
+        if 'wgr-asset-base' not in html:
+            sys.exit(f'{page}: no <meta charset="utf-8"> to put the asset base after')
+        page.write_text(html)
         built.append(name)
         size = sum(f.stat().st_size for f in (out / name).rglob('*') if f.is_file())
         options.append(f'    <option value="{name}">{name} &mdash; {size:,} bytes</option>')
     if not built:
         sys.exit('nothing built: examples/build.py all')
+    shutil.copytree(WGRENDER / 'examples/assets', out / 'assets', ignore=shutil.ignore_patterns('bench'))
     (out / 'index.html').write_text(SITE_INDEX.format(
         options='\n'.join(options),
         what=json.dumps({n: WHAT.get(n, '') for n in built}),

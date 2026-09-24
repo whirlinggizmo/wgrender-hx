@@ -7,6 +7,11 @@ targets from one API:
 - **js** — wgrender is a wasm *host* and your game is a guest module, so the Haxe
   runtime never enters the binary
 
+**The examples run in a browser: https://whirlinggizmo.github.io/wgrender-hx/** —
+every one as a JS guest, published from `main` by `.github/workflows/pages.yml`, with
+each one's size against wgrender's own C build of it. No threads (GitHub Pages can't
+send the headers a threaded page needs), WebGL2.
+
 ```haxe
 import wgr.*;
 
@@ -276,9 +281,9 @@ carry it.
 ```sh
 examples/build.py all      build each one, web and native
 examples/build.py drive    run each web build in a headless browser
-examples/build.py site     collect them under one page
+examples/build.py site     collect them under one page, with wgrender's assets: any static host
 examples/build.py compare  sizes against wgrender's own C build of each
-test/check.py              the binding's 317 assertions
+test/check.py              the binding's 362 assertions
 ```
 
 Each example is what you would write yourself: `src/`, a `build.web.hxml` and a

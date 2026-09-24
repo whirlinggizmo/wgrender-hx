@@ -16,9 +16,12 @@ class Assets {
 	public static inline final BESIDE = "assets";
 
 	/**
-		On the web — either web build — the served origin: wgrender's tools/serve.py
-		mounts the asset tree at `/assets`, and a host is expected to serve it at the
-		same path.
+		On the web — either web build — `assets` beside the page, relative, as wgrender's
+		own web examples have it, so a site works at a domain root or under a path
+		(GitHub Pages serves a project at /<repo>/). wgrender's tools/serve.py mounts
+		the asset tree at `/assets`, which is beside a page served at the root. A page
+		elsewhere says where with `<meta name="wgr-asset-base" content="../assets">`
+		(examples/build.py site gives each example's page one, beside the shared tree).
 
 		Natively, in order:
 
@@ -32,8 +35,11 @@ class Assets {
 		// same way. Asking `sys` here instead would drag sys.FileSystem and
 		// Sys.programPath into the wasm to answer a question with one answer (+50 KB,
 		// measured).
-		#if (js || emscripten)
-		return "/assets";
+		#if js
+		final meta:String = js.Syntax.code("(document.querySelector('meta[name=\"wgr-asset-base\"]') || {}).content");
+		return meta != null && meta != "" ? meta : "assets";
+		#elseif emscripten
+		return "assets";
 		#elseif sys
 		final fromEnv = Sys.getEnv(OVERRIDE);
 		if (fromEnv != null && fromEnv != "")

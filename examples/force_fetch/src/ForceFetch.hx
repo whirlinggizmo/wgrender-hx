@@ -7,9 +7,10 @@
 // music plays is the proof the override was honoured, and it is cached under the
 // bogus key afterwards.
 //
-// The URL is relative to the page on purpose. "/assets/..." would be the server root,
-// which is wrong anywhere the site is not at one -- GitHub Pages serves a project
-// under /<repo>/. An absolute https://cdn.example/... URL passes through the same way.
+// The URL is the asset base's (wgr.Assets), not the server root's: "/assets/..." would
+// be wrong anywhere the site is not at one -- GitHub Pages serves a project under
+// /<repo>/, and the examples' site keeps the assets beside the pages, not under them.
+// An absolute https://cdn.example/... URL passes through the same way.
 //
 // This is the example that widened the guest ABI. `wgr_guest_asset_load` took a path
 // and an id, which is everything the earlier examples need and nothing this one does,
@@ -27,7 +28,8 @@ class ForceFetch {
 	static inline final MUSIC_PATH = "music/ethernight_club.mp3";
 	/** Deliberately wrong: nothing is served at host + this, so only the override works. **/
 	static inline final INVALID_MUSIC_PATH = "music/ethernight_club_invalid.mp3";
-	static inline final MUSIC_FETCH_URL = "assets/music/ethernight_club.mp3";
+	/** Where the bytes really are, under the asset base. **/
+	static inline final MUSIC_FETCH_PATH = "music/ethernight_club.mp3";
 
 	static inline final ASSET_MUSIC = 1;
 
@@ -52,8 +54,9 @@ class ForceFetch {
 
 		if (Wgr.getPlatform() == "web") {
 			// The key cannot resolve, so the bytes can only have come from the URL.
-			GuestAbi.loadAsset(INVALID_MUSIC_PATH, ASSET_MUSIC, MUSIC_FETCH_URL, ForceFetch);
-			Log.info('force_fetch: $INVALID_MUSIC_PATH from $MUSIC_FETCH_URL');
+			final url = '${Assets.defaultBase()}/$MUSIC_FETCH_PATH';
+			GuestAbi.loadAsset(INVALID_MUSIC_PATH, ASSET_MUSIC, url, ForceFetch);
+			Log.info('force_fetch: $INVALID_MUSIC_PATH from $url');
 		} else {
 			// Desktop has no fetcher by default, so both overrides are no-ops there;
 			// load the real file from the local asset directory and still play.
