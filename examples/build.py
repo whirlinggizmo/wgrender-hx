@@ -57,19 +57,6 @@ WGRENDER = find(argv=[])
 C_BUILD = WGRENDER / 'build/web-webgl2-nothreads'
 
 
-def web_tools():
-    """How to run wgrender's benchmark harness, still JS: on Emscripten's own Node,
-    which every web build here already needs, told which wgrender and Python to use."""
-    sys.path.insert(0, str(WGRENDER / 'tools'))
-    try:
-        import emsdk
-    except ImportError:
-        sys.exit(f'{WGRENDER} predates tools/emsdk.py; update the submodule')
-    node = emsdk.node()
-    if node is None:
-        sys.exit('the browser checks need Emscripten (emsdk): set EMSDK, or put emcc on PATH')
-    return node, dict(os.environ, LIBWGR_ROOT=str(WGRENDER), WGR_PYTHON=sys.executable)
-
 # simple-hxcpp is the other architecture -- Haxe through hxcpp into one wasm, rather
 # than a JS guest on a wgrender host -- so it has its own commands and is not driven
 # or benched with the guests.
@@ -185,12 +172,11 @@ def bench(chosen=()):
         sys.exit(f'no C builds at {C_BUILD}\n'
                  f'  cd {WGRENDER} && cmake --preset web-webgl2-nothreads && '
                  'cmake --build --preset web-webgl2-nothreads')
-    node, env = web_tools()
     for name in wanted(GUESTS, chosen):
         for args in ([f'--site={C_BUILD}', f'--url=/?ex={name}', '--probe=examples.json',
                       f'--label={name}-c'],
                      [f'--site={HERE / name / "out/web"}', f'--label={name}-haxe']):
-            subprocess.run([node, str(WGRENDER / 'tools/bench/bench.mjs'), *args], check=True, env=env)
+            subprocess.run([sys.executable, str(WGRENDER / 'tools/bench/pagebench.py'), 'frame', *args], check=True)
 
 
 SITE_INDEX = """<!doctype html>
