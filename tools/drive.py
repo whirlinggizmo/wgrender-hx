@@ -2,15 +2,16 @@
 """Load a web build in a headless browser, run it, and fail on anything the console
 calls an error. examples/build.py drive runs it for every example:
 
-    tools/drive.py --site=out/web [--label=NAME] [--settle=MS] [--click] [--min-colours=N]
+    tools/drive.py --site=out/web/<variant> [--label=NAME] [--settle=MS] [--click] [--min-colours=N]
                    [--ready=FILE] [--shot=PATH]
 
 It serves the site with wgrender's tools/serve.py (assets at /assets), waits --settle
 ms (default 6000), moves the mouse over the middle of the canvas, a little low (over
 whatever the example puts there, which exercises picking and the hover state a scene
-keeps), with --click clicks there, and takes a screenshot (--shot, default check.png
-beside the site). --ready is the file whose serving means the server is up (default
-wgrender-host.js, a guest's host).
+keeps), with --click clicks there, and takes a screenshot (--shot, default the
+example's build/web/<variant>/check.png: the example's work, not its site). --ready is
+the file whose serving means the server is up (default wgrender-host.js, a guest's
+host).
 
 The screenshot is saved because three bugs in this port were visible there and
 invisible to every assertion: a canvas with no CSS size, a model drawn off screen, and
@@ -33,7 +34,7 @@ from wgrweb import W, weblib  # noqa: E402
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument('--site', default='out/web')
+    ap.add_argument('--site', required=True)
     ap.add_argument('--label', default='guest')
     ap.add_argument('--settle', type=int, default=6000)
     ap.add_argument('--click', action='store_true')
@@ -42,7 +43,8 @@ def main():
     ap.add_argument('--shot')
     args = ap.parse_args()
     site = Path(args.site).resolve()
-    shot_path = Path(args.shot).resolve() if args.shot else site.parent / 'check.png'
+    # <example>/out/web/<variant> -> <example>/build/web/<variant>/check.png
+    shot_path = Path(args.shot).resolve() if args.shot else site.parents[2] / 'build/web' / site.name / 'check.png'
 
     run = weblib.RunProcesses(args.label)
     run.install_handlers()

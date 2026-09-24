@@ -39,7 +39,9 @@ using StringTools;
 	Options, as defines:
 	- `-D wgr-host=full` exports the whole binding and skips the listing compile. A
 	  fallback, and the way to rule this out when something misbehaves.
-	- `-D wgr-build-dir=<dir>` where the linked host is cached (default `build/webhost`).
+	- `-D wgr-build-dir=<dir>` where the linked host is cached (default
+	  `build/web/js-<variant>/webhost`, e.g. `build/web/js-webgl2-nothreads/webhost`: the
+	  wg* family layout, whirlinggizmo/.github CONVENTIONS.md).
 	- `-D wgr-title=<text>` and `-D wgr-background=<css colour>` for the generated page.
 
 	- `-D WGRENDER_DIR=<path>` builds against that wgrender instead of the submodule this
@@ -91,9 +93,9 @@ class WebHost {
 		final name = Path.withoutExtension(Path.withoutDirectory(js));
 		final binding = bindingRoot();
 		final wgrender = findWgrender(binding);
-		final state = define("wgr-build-dir", "build/webhost");
-
 		final web = webSettings();
+		final state = define("wgr-build-dir", 'build/web/js-${webVariant(web)}/webhost');
+
 		run(python(), [Path.join([wgrender, "tools/buildweb.py"])].concat([for (k => v in web) '$k=$v']));
 		final flags = webFlags(wgrender, web);
 
@@ -244,19 +246,24 @@ class WebHost {
 		return ["BACKEND" => env("BACKEND", "webgl2"), "WEB_THREADS" => env("WEB_THREADS", "0"),
 			"WEB_DEBUG" => env("WEB_DEBUG", "0")];
 
+	/** wgrender's name for a web build: webgl2-nothreads, webgpu, webgl2-nothreads-debug, ... **/
+	static function webVariant(web:Map<String, String>):String
+		return web["BACKEND"] + (web["WEB_THREADS"] == "1" ? "" : "-nothreads") + (web["WEB_DEBUG"] == "1" ? "-debug" : "");
+
 	/**
 		The library and the flags a program compiles and links against it with, from
 		wgrender's build.json: its build as data.
 	**/
 	static function webFlags(wgrender:String, web:Map<String, String>):{lib:String, cflags:Array<String>, ldflags:Array<String>} {
-		final dir = web["BACKEND"] + (web["WEB_THREADS"] == "1" ? "" : "-nothreads") + (web["WEB_DEBUG"] == "1" ? "-debug" : "");
+		final dir = webVariant(web);
 		final manifest = Path.join([wgrender, "build.json"]);
 		if (!FileSystem.exists(manifest))
 			fail('WebHost: no $manifest. This wgrender predates it; update the submodule (haxelib run wgrender-hx setup).');
 		final target:Dynamic = Reflect.field(Reflect.field(haxe.Json.parse(File.getContent(manifest)), "web"), dir);
 		if (target == null)
 			fail('WebHost: $manifest has no web target $dir');
-		return {lib: 'build/$dir/libwgrender.a', cflags: target.program_cflags, ldflags: target.ldflags};
+		// what buildweb.py (and the web preset of the same name) makes: out/web/<dir>/
+		return {lib: 'out/web/$dir/libwgrender.a', cflags: target.program_cflags, ldflags: target.ldflags};
 	}
 
 	/**

@@ -11,14 +11,14 @@ Naming examples limits the command to those; naming none means all of them.
     guest      (the same as web: the host is linked by the guest's build now)
     host       (likewise)
     drive      run each web build in a headless browser and fail on a console error
-    site       collect every web build into out/www with a page that lists them
+    site       collect every web build into out/web/<variant>/ with a page that lists them
     serve      build that site and serve it: one server, each example a subdirectory;
                name examples to serve just those (--tls cert key for https on 8443)
     sizes      what each web build weighs
     compare    those sizes against wgrender's own C build of the same example
     bench      frame cost, Haxe against C
     list       the examples, and what each one is
-    clean      remove out/ and build/
+    clean      remove out/ (what the builds made) and build/ (their work)
 
 So `examples/build.py desktop` builds every example's native binary, and
 `examples/build.py all simple` builds one example every way.
@@ -52,9 +52,9 @@ if not (LIB / 'tools/wgrpath.py').exists():
     LIB = pathlib.Path(_found)
 sys.path.insert(0, str(LIB / 'tools'))
 from wgrpath import find  # noqa: E402
-from guestbuild import Project  # noqa: E402
+from guestbuild import Project, web_variant  # noqa: E402
 WGRENDER = find(argv=[])
-C_BUILD = WGRENDER / 'build/web/webgl2-nothreads'
+C_BUILD = WGRENDER / 'out/web/webgl2-nothreads'  # wgrender's own C build of each example
 
 
 # simple-hxcpp is the other architecture -- Haxe through hxcpp into one wasm, rather
@@ -158,13 +158,13 @@ DRIVE_FLAGS = {'particles': ['--click']}
 def drive(chosen=()):
     env = dict(os.environ, WGRENDER_DIR=str(WGRENDER))  # drive.py drives the wgrender this builds with
     for name in wanted(GUESTS, chosen):
-        run([sys.executable, LIB / 'tools/drive.py', f'--site={HERE / name / "out/web"}', f'--label={name}',
+        run([sys.executable, LIB / 'tools/drive.py', f'--site={HERE / name / "out/web" / web_variant()}', f'--label={name}',
              *DRIVE_FLAGS.get(name, [])], HERE / name, env=env)
     if 'simple-hxcpp' in wanted(OTHERS, chosen):
         # all-in-one through hxcpp: wgrender's own page shell, so no guest host to wait for
         site = HERE / 'simple-hxcpp'
-        run([sys.executable, LIB / 'tools/drive.py', f'--site={site / "out/web"}', '--label=haxe-simple',
-             '--ready=examples.json', '--settle=8000', f'--shot={site / "build/web-check.png"}'], site, env=env)
+        run([sys.executable, LIB / 'tools/drive.py', f'--site={site / "out/web/webgl2-nothreads"}', '--label=haxe-simple',
+             '--ready=examples.json', '--settle=8000', f'--shot={site / "build/web/webgl2-nothreads/check.png"}'], site, env=env)
 
 
 def bench(chosen=()):
@@ -175,7 +175,7 @@ def bench(chosen=()):
     for name in wanted(GUESTS, chosen):
         for args in ([f'--site={C_BUILD}', f'--url=/?ex={name}', '--probe=examples.json',
                       f'--label={name}-c'],
-                     [f'--site={HERE / name / "out/web"}', f'--label={name}-haxe']):
+                     [f'--site={HERE / name / "out/web" / web_variant()}', f'--label={name}-haxe']):
             subprocess.run([sys.executable, str(WGRENDER / 'tools/bench/pagebench.py'), 'frame', *args], check=True)
 
 
@@ -247,7 +247,11 @@ def site(chosen=()):
     self-contained site for any static host, at a domain root or under a path (the
     Pages workflow publishes it).
 
-    Each example already generates a working page into its own out/web, so this
+    It is a web build like any other, so it goes where one goes: out/web/<variant>/
+    here, the variant being the examples' (js-webgl2-nothreads unless the web settings
+    say otherwise), with each example in a directory of its own.
+
+    Each example already generates a working page into its own out/web/<variant>/, so this
     copies those in side by side rather than building anything new. They cannot share
     a directory: every example has its own wgrender-host.wasm, exporting exactly the
     calls that guest makes, and they all have that name. The assets they load are
@@ -256,12 +260,12 @@ def site(chosen=()):
     which wgr.Assets reads.
     """
     import shutil
-    out = HERE / 'out/www'
+    out = HERE / 'out/web' / web_variant()
     shutil.rmtree(out, ignore_errors=True)
     out.mkdir(parents=True)
     options, built = [], []
     for name in wanted(GUESTS, chosen):
-        src = HERE / name / 'out/web'
+        src = HERE / name / 'out/web' / web_variant()
         if not (src / 'index.html').exists():
             print(f'{name}: not built, skipping (./build.py all)', file=sys.stderr)
             continue
@@ -293,7 +297,7 @@ def size_table(names):
         return ''
     rows = []
     for name in names:
-        site_dir = HERE / 'out/www' / name
+        site_dir = HERE / 'out/web' / web_variant() / name
         hx = [site_dir / 'wgrender-host.wasm', site_dir / 'wgrender-host.js', site_dir / f'{name}.js']
         c = [C_BUILD / f'{name}.wasm', C_BUILD / f'{name}.js']
         if not all(p.exists() for p in hx + c):

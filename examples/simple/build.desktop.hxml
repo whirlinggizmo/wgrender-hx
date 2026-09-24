@@ -3,7 +3,9 @@
 -cp src
 -lib wgrender-hx
 --main Guest
---cpp build/cpp/desktop
+--cpp build/cpp
+# the C++ goes to build/<os>/<variant>/cpp (build/linux/release/cpp, ...)
+--macro wgr.macros.NativeOut.build()
 
 -D HAXE_OUTPUT_FILE=simple-guest
 # 64-bit on every OS: hxcpp builds 32-bit on Windows unless told otherwise

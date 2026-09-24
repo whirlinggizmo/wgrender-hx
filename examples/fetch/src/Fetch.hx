@@ -47,7 +47,9 @@ class Fetch {
 	static inline final SCREEN_HEIGHT = 640;
 	static inline final TEXTURE_PATH = "sprites/logo/wg-logo-white-alpha.png";
 	static inline final ASSET_TEXTURE = 1;
-	static inline final CACHE_DIR = "build/asset-cache";
+	// the build's work directory, build/<os>/<variant> (wgr.macros.NativeOut); on the
+	// web the browser caches
+	static final CACHE_DIR = (haxe.macro.Compiler.getDefine("wgr-work-dir") ?? "build") + "/asset-cache";
 	static inline final DEFAULT_HOST =
 		"https://raw.githubusercontent.com/whirlinggizmo/wgrender-c/main/examples/assets";
 

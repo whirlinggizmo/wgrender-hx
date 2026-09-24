@@ -14,22 +14,24 @@ Haxe, and what does Haxe cost in wasm.
 ## Build
 
 ```sh
-./build.py desktop     # out/<os>/simple
-./build.py web         # out/web/ (simple.js + simple.wasm + wgrender's page shell)
+./build.py desktop     # out/linux/release/simple (out/windows/mingw/ on Windows)
+./build.py web         # out/web/webgl2-nothreads/ (simple.js + simple.wasm + wgrender's page shell)
 ./build.py all
 ./build.py serve       # http://localhost:8000/
 ./build.py check       # compile the whole binding surface, not just what Simple.hx uses
 ./build.py compare     # this port's wasm next to the C, Nim and Beef ones
 ./build.py clean
-../build.py drive simple-hxcpp   # headless-browser smoke test of out/web; writes build/web-check.png
+../build.py drive simple-hxcpp   # headless-browser smoke test of the web build; writes build/web/webgl2-nothreads/check.png
 ```
 
-`./build.py` builds wgrender first, then writes `build/<target>.hxml` and
-`build/<target>.xml` — where wgrender is on this machine and how to compile and link
-against it — and calls `haxe build.hxml` / `haxe web.hxml`. After that, running those
-hxml files directly works too; they just won't rebuild wgrender.
+`./build.py` builds wgrender first, then writes `build.hxml` and `wgrender.xml` into
+the build's work directory, `build/<platform>/<variant>/` (`build/linux/release`,
+`build/web/webgl2-nothreads`): `build.hxml` or `web.hxml` from here, where wgrender is
+on this machine and how to compile and link against it, and the C++ output beside
+them. After that, `haxe build/linux/release/build.hxml` (say) works on its own; it just
+won't rebuild wgrender.
 
-Web options are wgrender's own make variables, read from the environment
+Web options are wgrender's own web build settings, read from the environment
 (`BACKEND=webgl2|webgpu`, `WEB_DEBUG=0|1`). `WGRENDER_DIR` overrides where wgrender
 is. Web builds are always `WEB_THREADS=0`: hxcpp's emscripten target is
 single-threaded, so its objects carry no atomics and can't link into shared memory.
@@ -323,7 +325,7 @@ exceptions the legacy exception glue references those symbols natively.
 ## Layout
 
 ```
-build.hxml  web.hxml  check.hxml   haxe invocations (build.py writes build/*.hxml first)
+build.hxml  web.hxml               haxe invocations (build.py wraps them in build/<platform>/<variant>/)
 build.py                           builds wgrender, then haxe; serve / compare / clean
 src/Simple.hx                      the example
 src/Defines.hx                     reads a -D name=value define's value (needs a macro)

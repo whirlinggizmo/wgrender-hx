@@ -2,7 +2,7 @@
 """An example built all-in-one through hxcpp for the web: the Haxe program and
 wgrender in one wasm, the way examples/simple-hxcpp is, but for any example here.
 
-    tools/hxcppweb.py <example>        examples/<example>/out/hxcpp-web/<name>.js/.wasm
+    tools/hxcppweb.py <example>        examples/<example>/out/web/hxcpp-webgl2-nothreads/<name>.js/.wasm
 
 The examples are guests: on the web they normally run as JS against a wasm host. This
 builds the same source the other way, through hxcpp, which is what a desktop build
@@ -75,7 +75,10 @@ def main():
     lib, cflags, ldflags = wgrbuild.web(WGRENDER)
     cflags = [*cflags, f'-I{LIB}/host', '-DWGR_GUEST_NO_MAIN']
     ldflags = ['-sEXPORTED_FUNCTIONS=_main,_emscripten_stack_get_current,__emscripten_stack_restore', *ldflags]
-    build = example / 'build/hxcpp-web'
+    # the web has two toolchains here (a JS guest, and this), so the variant names it
+    debug = (os.environ.get('WEB_DEBUG') or '0') == '1'
+    variant = f"hxcpp-{os.environ.get('BACKEND') or 'webgl2'}-nothreads" + ('-debug' if debug else '')
+    build = example / 'build/web' / variant
     build.mkdir(parents=True, exist_ok=True)
     build_xml(build / 'web.xml', cflags, [f for f in ldflags if not f.startswith('-l')],
               [str(lib), *[f for f in ldflags if f.startswith('-l')]])
@@ -85,7 +88,7 @@ def main():
          '-D', f'WGR_BUILD_XML={build / "web.xml"}', '-dce', 'full', '-D', 'analyzer-optimize'],
         cwd=example)
 
-    site = example / 'out/hxcpp-web'
+    site = example / 'out/web' / variant
     site.mkdir(parents=True, exist_ok=True)
     for f in (f'{name}.js', f'{name}.wasm'):
         shutil.copy2(build / 'cpp' / f, site / f)

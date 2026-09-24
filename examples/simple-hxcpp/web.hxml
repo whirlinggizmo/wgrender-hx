@@ -1,15 +1,13 @@
 # Web (Emscripten) build of the wgrender simple example: simple.js + simple.wasm.
 #
-# Run `./build.py web`: it builds wgrender's web library, writes build/web.hxml
-# (wgrender's own emcc compile and link flags, so this build always matches how the
-# library was built) and then calls haxe with this file.
-build/web.hxml
+# Run `./build.py web`: it builds wgrender's web library, then writes
+# build/web/<variant>/build.hxml (build/web/webgl2-nothreads/, ...): this file,
+# wgrender's own emcc compile and link flags (so this build always matches how the
+# library was built), and the target, --cpp build/web/<variant>/cpp.
 
 -cp src
 -lib wgrender-hx
 --main Simple
---cpp build/cpp/web
-
 # hxcpp's emscripten toolchain: emcc for everything, wasm out, single-threaded
 # (which also lets its GC take some shortcuts).
 -D emscripten

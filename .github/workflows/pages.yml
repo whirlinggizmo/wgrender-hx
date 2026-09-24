@@ -58,7 +58,7 @@ jobs:
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: examples/out/www
+          path: examples/out/web/js-webgl2-nothreads
 
   deploy:
     name: deploy

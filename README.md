@@ -237,7 +237,7 @@ calls the guest makes. One line in the section that builds your guest does that:
 ```
 -lib wgrender-hx
 --main Game
---js out/web/game.js
+--js out/web/js-webgl2-nothreads/game.js
 --macro wgr.macros.WebHost.build()
 ```
 
@@ -261,7 +261,8 @@ are all unchanged.
 - `-D wgr-host=full` exports the whole binding and skips the child compile. Good for
   development, since the host then only relinks when wgrender changes, and the way to
   rule the listing out if something misbehaves.
-- `-D wgr-build-dir=<dir>` is where linked hosts are cached; `build/webhost` by default.
+- `-D wgr-build-dir=<dir>` is where linked hosts are cached; by default
+  `build/web/js-<variant>/webhost` (`build/web/js-webgl2-nothreads/webhost`, ...).
 - `-D wgr-title=<text>` and `-D wgr-background=<css colour>` shape the first `index.html`.
 - `-D WGRENDER_DIR=<path>` builds against that wgrender instead of the pinned submodule,
   exactly as it does for a native build — so the web host and the desktop binary always
@@ -288,7 +289,7 @@ test/check.py              the binding's 362 assertions
 
 Each example is what you would write yourself: `src/`, a `build.web.hxml` and a
 `build.desktop.hxml`. Those files *are* the build — `haxe build.web.hxml` in an
-example's directory gives you its `out/web`, host and page included — so copying an
+example's directory gives you its `out/web/js-webgl2-nothreads`, host and page included — so copying an
 example is how to start a project. There is nothing else in an example to copy or to
 ignore: `examples/build.py` does the suite's chores for each one by name — it checks the
 binding is the one you are working on and current, points the build at this

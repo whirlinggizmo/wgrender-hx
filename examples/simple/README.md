@@ -80,7 +80,7 @@ plus 18 KB of JS for the game, instead of a megabyte of runtime compiled in.
 No `index.html` in any row — wgrender's page shell is ~8.6 KB and common to the other
 ports, while this one's page is a 600-byte hand-rolled file, so counting HTML would
 flatter this port for the wrong reason. The Nim row is its `WEB_THREADS=0` build; its
-checked-out `out/web` is the threaded default (726,858 wasm) and doesn't compare.
+checked-out `out/web/webgl2` is the threaded default (726,858 wasm) and doesn't compare.
 
 ### Startup
 
@@ -233,7 +233,7 @@ goes with it. Whatever carries the build config has to be something the build ke
 ## Build
 
 ```sh
-haxe build.web.hxml                 # out/web: the guest, its host (.js + .wasm), the page
+haxe build.web.hxml                 # out/web/js-webgl2-nothreads: the guest, its host (.js + .wasm), the page
 examples/build.py web simple        # the same, with the suite's checks first
 examples/build.py sizes simple
 examples/build.py drive simple      # headless browser smoke test; writes out/check.png

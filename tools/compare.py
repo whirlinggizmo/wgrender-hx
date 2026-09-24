@@ -27,7 +27,8 @@ LIB = pathlib.Path(__file__).resolve().parent.parent
 # argv here is example directories, so wgrender comes from the environment or
 # the usual places -- not from a positional that means something else.
 WGRENDER = find(argv=[])
-C_BUILD = WGRENDER / 'build/web/webgl2-nothreads'
+GUEST = 'js-webgl2-nothreads'  # the guest builds compared: tools/guestbuild.py's default
+C_BUILD = WGRENDER / 'out/web/webgl2-nothreads'
 
 
 def measure(*paths):
@@ -45,7 +46,7 @@ def main():
     dirs = [pathlib.Path(a).resolve() for a in sys.argv[1:]]
     if not dirs:
         dirs = sorted(d for d in (LIB / 'examples').iterdir()
-                      if (d / 'build.py').exists() and (d / 'out/web').exists())
+                      if (d / 'build.py').exists() and (d / 'out/web' / GUEST).exists())
     if not C_BUILD.exists():
         sys.exit(f'no C builds to compare against at {C_BUILD}\n'
                  f'  cd {WGRENDER} && cmake --preset web-webgl2-nothreads && '
@@ -53,7 +54,7 @@ def main():
     rows = []
     for d in dirs:
         name = d.name
-        site = d / 'out/web'
+        site = d / 'out/web' / GUEST
         hx = measure(site / 'wgrender-host.wasm', site / 'wgrender-host.js', site / f'{name}.js')
         c = measure(C_BUILD / f'{name}.wasm', C_BUILD / f'{name}.js')
         if hx is None:

@@ -36,12 +36,36 @@ from wgrpath import find, host_os  # noqa: E402
 
 LIB = pathlib.Path(__file__).resolve().parent.parent
 
+# The examples' own builds follow the wg* layout (whirlinggizmo/.github CONVENTIONS.md,
+# "Build directories"): what they make in out/<platform>/<variant>/, their work in
+# build/. The web has two toolchains here, a JS guest (this) and hxcpp
+# (tools/hxcppweb.py), so a guest's variant names it: js-webgl2-nothreads, the default
+# every build.web.hxml names, or what BACKEND, WEB_THREADS and WEB_DEBUG choose.
+DEFAULT_WEB = 'js-webgl2-nothreads'
+
+
+def web_variant():
+    """The guest web build's variant, from the settings WebHost builds the host with."""
+    backend = os.environ.get('BACKEND') or 'webgl2'
+    threads = (os.environ.get('WEB_THREADS') or '0') == '1'
+    debug = (os.environ.get('WEB_DEBUG') or '0') == '1'
+    return f'js-{backend}' + ('' if threads else '-nothreads') + ('-debug' if debug else '')
+
+
+def desktop_variant():
+    """hxcpp's native build: release, or on Windows the toolchain it used (MSVC by
+    default, MinGW with HXCPP_MINGW or -D mingw)."""
+    if host_os() != 'windows':
+        return 'release'
+    return 'mingw' if os.environ.get('HXCPP_MINGW') else 'msvc'
+
 
 class Project:
     def __init__(self, root, name):
         self.root = pathlib.Path(root).resolve()
         self.name = name
-        self.site = self.root / 'out/web'
+        self.variant = web_variant()
+        self.site = self.root / 'out/web' / self.variant
         self.wgrender = find(argv=[])
         self.haxe = os.environ.get('HAXE', 'haxe')
 
@@ -96,26 +120,38 @@ class Project:
 
     def build_web(self):
         self.check_binding()
-        print(f'web -> out/web ({self.name}.js and the host it calls)')
-        self.haxe_build('build.web.hxml')
+        print(f'web -> out/web/{self.variant} ({self.name}.js and the host it calls)')
+        hxml = (self.root / 'build.web.hxml').read_text()
+        if self.variant != DEFAULT_WEB:
+            # the committed hxml names the default variant; the web settings chose another
+            hxml = hxml.replace(f'out/web/{DEFAULT_WEB}/', f'out/web/{self.variant}/')
+            if f'out/web/{self.variant}/' not in hxml:
+                sys.exit(f'{self.root}/build.web.hxml: no --js out/web/{DEFAULT_WEB}/ to redirect')
+            variant_hxml = self.root / 'build/web' / self.variant / 'build.web.hxml'
+            variant_hxml.parent.mkdir(parents=True, exist_ok=True)
+            variant_hxml.write_text(hxml)
+            self.haxe_build(variant_hxml.relative_to(self.root))
+        else:
+            self.haxe_build('build.web.hxml')
         self.sizes()
 
     def build_desktop(self):
         self.check_binding()
-        print(f'desktop -> out/{host_os()}/{self.name}-guest')
+        print(f'desktop -> out/{host_os()}/{desktop_variant()}/{self.name}-guest')
         self.haxe_build('build.desktop.hxml')
         self.install_desktop()
 
     def install_desktop(self):
-        # out/ names the OS, the way wgrender's build/linux and build/windows do and
-        # for the same reason: what lands here is one platform's binary. The *command*
-        # stays `desktop`, which means native-not-web whichever OS it is, and so does
-        # build/cpp/desktop -- that is hxcpp's scratch, and the committed hxml that
-        # names it cannot know the host.
-        build = self.root / 'build'
-        out = self.root / f'out/{host_os()}'
+        # out/<platform>/<variant>/, as wgrender's own builds are (the wg* layout). The
+        # *command* stays `desktop`, which means native-not-web whichever OS it is.
+        # hxcpp's work is in build/<platform>/<variant>/cpp, where wgr.macros.NativeOut
+        # puts it: the committed hxml cannot know the host.
+        variant = desktop_variant()
+        cpp = self.root / 'build' / host_os() / variant / 'cpp'
+        out = self.root / 'out' / host_os() / variant
         out.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(build / f'cpp/desktop/{self.name}-guest', out / f'{self.name}-guest')
+        exe = f'{self.name}-guest' + ('.exe' if host_os() == 'windows' else '')
+        shutil.copy2(cpp / exe, out / exe)
         # wgr.Assets looks for `assets` beside the executable, so a development build
         # gets one pointing at wgrender's tree -- the same lookup a shipped program
         # uses, rather than a path baked in at compile time.

@@ -44,9 +44,14 @@ Native, from an hxml like `examples/hello/build.desktop.hxml`:
 -cp src
 -lib wgrender-hx
 --main Hello
---cpp build/cpp/desktop
+--cpp build/cpp
+--macro wgr.macros.NativeOut.build()
 -D HXCPP_M64
 ```
+
+The `--macro` line is optional: it moves the C++ to `build/<os>/<variant>/cpp`
+(`build/linux/release/cpp`, `build/windows/msvc/cpp`, ...), which an hxml shared
+between OSes can't name itself.
 
 For the web, from one like `examples/hello/build.web.hxml`: the guest compiled to JS,
 and one line that makes its host (`wgrender-host.js` and `.wasm`), `boot.js` and an
@@ -56,7 +61,7 @@ and one line that makes its host (`wgrender-host.js` and `.wasm`), `boot.js` and
 -cp src
 -lib wgrender-hx
 --main Hello
---js out/web/hello.js
+--js out/web/js-webgl2-nothreads/hello.js
 --macro wgr.macros.WebHost.build()
 ```
 
@@ -82,15 +87,26 @@ examples/build.py compare        sizes against wgrender's own C build of each
 
 `examples/build.py` builds against this checkout's wgrender (a `../wgrender-c` beside
 this repository, else the submodule; `WGRENDER_DIR` overrides) and puts wgrender's
-sample assets beside each desktop binary. `compare` needs wgrender's C web examples
+sample assets beside each desktop binary.
+
+Builds follow the wg* layout (whirlinggizmo/.github CONVENTIONS.md, "Build
+directories"): what they make in `out/<platform>/<variant>/`, their work in
+`build/<platform>/<variant>/` (hxcpp's C++ and objects in `build/linux/release/cpp/`,
+WebHost's host cache in `build/web/js-webgl2-nothreads/webhost/`, the drive's
+screenshot beside it). An example's guest web build is `out/web/js-webgl2-nothreads/`
+(`js-` because the web has two toolchains here; the web settings pick another variant,
+such as `js-webgl2` with `WEB_THREADS=1`), its desktop binary `out/linux/release/`
+(`out/windows/msvc/`, ...), and `site` gathers every guest into
+`examples/out/web/js-webgl2-nothreads/`. `compare` needs wgrender's C web examples
 built: `cmake --preset web-webgl2-nothreads && cmake --build --preset
 web-webgl2-nothreads` in wgrender-c.
 
 `examples/simple-hxcpp` is `simple` built all-in-one through hxcpp, for the web too:
-`./build.py desktop` or `./build.py web`. It links wgrender's libraries rather than
-compiling it in: the desktop one from wgrender's `desktop` CMake preset, the web one
+`./build.py desktop` or `./build.py web` (`out/linux/release/`, `out/web/webgl2-nothreads/`). It links wgrender's libraries rather than
+compiling it in: the desktop one from wgrender's `<os>-release` CMake preset, the web one
 from its `tools/buildweb.py` (`tools/wgrbuild.py` does both). `tools/hxcppweb.py
-<example>` builds any example that way for the web, for the benchmarks.
+<example>` builds any example that way for the web (`out/web/hxcpp-webgl2-nothreads/`),
+for the benchmarks.
 
 ## Checks
 

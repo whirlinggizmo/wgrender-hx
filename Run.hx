@@ -94,7 +94,7 @@ class Run {
 		final have = sys.FileSystem.exists(haxe.io.Path.join([dir, "include/wgr.h"]));
 		Sys.println('wgrender:  $dir');
 		Sys.println('  sources  ${have ? "present" : "MISSING -- run setup"}');
-		final web = haxe.io.Path.join([dir, "build/web/webgl2-nothreads/libwgrender.a"]);
+		final web = haxe.io.Path.join([dir, "out/web/webgl2-nothreads/libwgrender.a"]);
 		Sys.println('  web lib  ${sys.FileSystem.exists(web) ? "built" : "not built (setup web)"}');
 	}
 
