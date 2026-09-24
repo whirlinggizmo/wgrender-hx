@@ -11,7 +11,7 @@ Haxe runtime and its garbage collector inside the wasm on the same scene the JS 
 runs; it is not how an example is meant to ship to the web.
 
 It is examples/simple-hxcpp/build.py's web build, generalised: wgrender's own compile
-and link flags (`make print-web-flags`), the guest glue compiled in without its main
+and link flags (from its build.json: tools/wgrbuild.py), the guest glue compiled in without its main
 (hxcpp brings one), and single-threaded (hxcpp's emscripten target has no threads, so
 its objects can't link into shared memory). The entry class is the example's own,
 read from its build.desktop.hxml.
@@ -26,6 +26,7 @@ import sys
 LIB = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(LIB / 'tools'))
 from wgrpath import find  # noqa: E402
+import wgrbuild  # noqa: E402
 
 WGRENDER = find(argv=[])
 HAXE = os.environ.get('HAXE', 'haxe')
@@ -34,21 +35,6 @@ HAXE = os.environ.get('HAXE', 'haxe')
 def run(cmd, **kw):
     print('+', ' '.join(str(c) for c in cmd), flush=True)
     subprocess.run([str(c) for c in cmd], check=True, **kw)
-
-
-def web_flags():
-    """wgrender's web library and its compile/link flags, without threads."""
-    make = ['make', '--no-print-directory', '-s', '-C', str(WGRENDER)]
-    web_vars = [f'{v}={os.environ[v]}' for v in ('BACKEND', 'WEB_DEBUG') if v in os.environ]
-    run(make + ['web', 'WEB_THREADS=0'] + web_vars)
-    out = subprocess.run(make + ['print-web-flags', 'WEB_THREADS=0'] + web_vars,
-                         check=True, capture_output=True, text=True).stdout
-    flags = dict(line.split(':', 1) for line in out.splitlines() if ':' in line)
-    flags = {k.strip(): v.strip() for k, v in flags.items()}
-    if 'lib' not in flags:
-        sys.exit(f'could not read wgrender web flags:\n{out}')
-    cflags = flags.get('cflags', '').replace('-Iinclude', f'-I{WGRENDER}/include').split()
-    return WGRENDER / flags['lib'], cflags, flags.get('ldflags', '').split()
 
 
 def build_xml(path, cflags, ldflags, libs):
@@ -86,7 +72,7 @@ def main():
     if not entry:
         sys.exit(f'{example}/build.desktop.hxml names no --main')
 
-    lib, cflags, ldflags = web_flags()
+    lib, cflags, ldflags = wgrbuild.web(WGRENDER)
     cflags = [*cflags, f'-I{LIB}/host', '-DWGR_GUEST_NO_MAIN']
     ldflags = ['-sEXPORTED_FUNCTIONS=_main,_emscripten_stack_get_current,__emscripten_stack_restore', *ldflags]
     build = example / 'build/hxcpp-web'

@@ -4,7 +4,7 @@
     test/check.py [WGRENDER_DIR]
     test/check.py --lists      only the WebHost list guards: pure Python, for CI
 
-Headless is wgrender's own test target (`make HEADLESS=1`): no window, GPU or audio,
+Headless is wgrender's own test build (its `headless` CMake preset): no window, GPU or audio,
 and WGR_HEADLESS_FRAMES runs a fixed number of frames and returns, so the checks can
 assert values rather than only compile.
 
@@ -35,7 +35,8 @@ import subprocess
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / 'tools'))
-from wgrpath import find, host_os  # noqa: E402
+from wgrpath import find  # noqa: E402
+import wgrbuild  # noqa: E402
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 WGRENDER = find()
 HAXE = os.environ.get('HAXE', 'haxe')
@@ -53,7 +54,7 @@ def main():
         run([ROOT / 'tools' / tool, '--check', WGRENDER])
 
     print('wgrender (headless)')
-    run(['make', '--no-print-directory', '-s', '-C', WGRENDER, 'all', 'HEADLESS=1'])
+    lib, libs = wgrbuild.desktop(WGRENDER, headless=True)
 
     BUILD.mkdir(parents=True, exist_ok=True)
     (BUILD / 'check.xml').write_text(f"""<xml>
@@ -75,10 +76,8 @@ def main():
   </files>
   <target id="haxe">
     <files id="wgrguest" />
-    <lib name="{WGRENDER}/build/{host_os()}-headless/libwgrender.a" />
-    <lib name="-ldl" />
-    <lib name="-lm" />
-    <lib name="-lpthread" />
+    <lib name="{lib}" />
+{chr(10).join(f'    <lib name="{l}" />' for l in libs)}
   </target>
 </xml>
 """)

@@ -246,11 +246,11 @@ class WebHost {
 
 	/**
 		The library and the flags a program compiles and links against it with, from
-		wgrender's mk/build.json: its build as data, so no make is needed to ask.
+		wgrender's build.json: its build as data.
 	**/
 	static function webFlags(wgrender:String, web:Map<String, String>):{lib:String, cflags:Array<String>, ldflags:Array<String>} {
 		final dir = web["BACKEND"] + (web["WEB_THREADS"] == "1" ? "" : "-nothreads") + (web["WEB_DEBUG"] == "1" ? "-debug" : "");
-		final manifest = Path.join([wgrender, "mk/build.json"]);
+		final manifest = Path.join([wgrender, "build.json"]);
 		if (!FileSystem.exists(manifest))
 			fail('WebHost: no $manifest. This wgrender predates it; update the submodule (haxelib run wgrender-hx setup).');
 		final target:Dynamic = Reflect.field(Reflect.field(haxe.Json.parse(File.getContent(manifest)), "web"), dir);

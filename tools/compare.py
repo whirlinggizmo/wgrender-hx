@@ -7,7 +7,7 @@ Like against like: both sides are the same wgrender, the same backend and the sa
 threading (WEB_THREADS=0), so the only difference is the language the game is written
 in. Build the C side first:
 
-    make -C wgrender-c wasm-all WEB_THREADS=0
+    cmake --preset web-webgl2-nothreads && cmake --build --preset web-webgl2-nothreads   (in wgrender-c)
 
 What a visitor downloads is what is measured -- wasm plus JS, and the gzipped total,
 since that is what crosses the wire. The Haxe side has a third file: the host wasm is
@@ -27,7 +27,7 @@ LIB = pathlib.Path(__file__).resolve().parent.parent
 # argv here is example directories, so wgrender comes from the environment or
 # the usual places -- not from a positional that means something else.
 WGRENDER = find(argv=[])
-C_BUILD = WGRENDER / 'examples/build/webgl2-nothreads'
+C_BUILD = WGRENDER / 'build/web-webgl2-nothreads'
 
 
 def measure(*paths):
@@ -48,7 +48,8 @@ def main():
                       if (d / 'build.py').exists() and (d / 'out/web').exists())
     if not C_BUILD.exists():
         sys.exit(f'no C builds to compare against at {C_BUILD}\n'
-                 f'  make -C {WGRENDER} wasm-all WEB_THREADS=0')
+                 f'  cd {WGRENDER} && cmake --preset web-webgl2-nothreads && '
+                 'cmake --build --preset web-webgl2-nothreads')
     rows = []
     for d in dirs:
         name = d.name

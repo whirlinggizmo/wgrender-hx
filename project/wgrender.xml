@@ -27,7 +27,7 @@
              fired, which is how /D_USE_MATH_DEFINES went missing while looking present.
 
              sokol's backend: GLCORE everywhere wgrender builds natively, which is
-             what its own Makefile picks for both Linux and Windows.
+             what its own desktop builds pick for Linux, Windows and macOS.
 
              M_PI was here too, as -D_USE_MATH_DEFINES, until wgrender d61ae61 gave
              wgr_math_internal.h its own fallback. Keeping a flag that is no longer

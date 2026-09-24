@@ -54,7 +54,7 @@ sys.path.insert(0, str(LIB / 'tools'))
 from wgrpath import find  # noqa: E402
 from guestbuild import Project  # noqa: E402
 WGRENDER = find(argv=[])
-C_BUILD = WGRENDER / 'examples/build/webgl2-nothreads'
+C_BUILD = WGRENDER / 'build/web-webgl2-nothreads'
 
 # simple-hxcpp is the other architecture -- Haxe through hxcpp into one wasm, rather
 # than a JS guest on a wgrender host -- so it has its own commands and is not driven
@@ -165,7 +165,8 @@ def drive(chosen=()):
 def bench(chosen=()):
     if not C_BUILD.exists():
         sys.exit(f'no C builds at {C_BUILD}\n'
-                 f'  make -C {WGRENDER} wasm-all WEB_THREADS=0')
+                 f'  cd {WGRENDER} && cmake --preset web-webgl2-nothreads && '
+                 'cmake --build --preset web-webgl2-nothreads')
     for name in wanted(GUESTS, chosen):
         for args in ([f'--site={C_BUILD}', f'--url=/?ex={name}', '--probe=examples.json',
                       f'--label={name}-c'],

@@ -9,7 +9,7 @@
 #
 # wgrender itself comes from the pinned submodule, so the binding is audited against
 # the wgrender it vendors rather than whatever wgrender's main happens to be -- and
-# its tools/deps.sh is what installs the system headers, for the same reason.
+# its tools/deps.py is what installs the system headers, for the same reason.
 name: ci
 
 on:
@@ -39,7 +39,7 @@ jobs:
       - name: System headers the C includes
         run: |
           sudo apt-get update
-          project/lib/wgrender-c/tools/deps.sh install
+          python3 project/lib/wgrender-c/tools/deps.py install
 
       - uses: actions/cache@v6
         with:

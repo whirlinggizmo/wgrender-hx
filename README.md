@@ -175,6 +175,8 @@ link it to wherever wgrender is checked out.
 
 ## Using it
 
+What to install on each OS, and every build, example and check: [BUILDING.md](BUILDING.md).
+
 ```sh
 haxelib git wgrender-hx https://github.com/whirlinggizmo/wgrender-hx
 ```
@@ -262,7 +264,7 @@ are all unchanged.
 
 It needs Emscripten's `emcc` on the path, and nothing else: wgrender's web library is
 built by its own `tools/buildweb.py`, on the Python emsdk brings, from its
-`mk/build.json`, so there is no make or shell to install, on Windows either. A call into wgrender made only
+`build.json`, so there is no build tool or shell to install, on Windows either. A call into wgrender made only
 through reflection is invisible to dead-code elimination and will not be listed; mark
 its caller `@:keep`. On a native target the line does nothing, so a shared hxml can
 carry it.

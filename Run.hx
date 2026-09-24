@@ -9,8 +9,8 @@
 	without running setup at all.
 
 	The web target is different. There wgrender is a wasm *host* the page loads and
-	the game is a JS guest on top of it, so the host is an emcc link that wgrender's
-	own Makefile does.
+	the game is a JS guest on top of it, so the host is an emcc link of wgrender's web
+	library, which its tools/buildweb.py builds with emcc and Python alone.
 
 	    haxelib run wgrender-hx setup          fetch or update the wgrender submodule
 	    haxelib run wgrender-hx setup web      also build the Emscripten host library
@@ -81,15 +81,10 @@ class Run {
 		if (web) {
 			// The web target is the exception. There the game is a JS guest on a
 			// wgrender wasm *host*, and that host is an emcc link rather than
-			// anything hxcpp does, so it is wgrender's own Makefile that builds it.
-			if (Sys.systemName() == "Windows") {
-				Sys.println('\nThe web library needs `make` and Emscripten, and wgrender\'s\n'
-					+ "build is a Unix Makefile. Build it under MSYS2 or WSL:\n"
-					+ '  make -C "$dir" web WEB_THREADS=0');
-				Sys.exit(1);
-			}
+			// anything hxcpp does, so wgrender's own tools/buildweb.py builds its
+			// library: emcc and Python, which emsdk brings, on any OS.
 			Sys.println("\nbuilding wgrender (web, no threads)");
-			shell("make", ["-C", dir, "web", "WEB_THREADS=0"], root);
+			shell(python(), [haxe.io.Path.join([dir, "tools/buildweb.py"]), "WEB_THREADS=0"], dir);
 		}
 		where();
 	}
@@ -101,6 +96,24 @@ class Run {
 		Sys.println('  sources  ${have ? "present" : "MISSING -- run setup"}');
 		final web = haxe.io.Path.join([dir, "build/webgl2-nothreads/libwgrender.a"]);
 		Sys.println('  web lib  ${sys.FileSystem.exists(web) ? "built" : "not built (setup web)"}');
+	}
+
+	/** emsdk's Python when it says so (EMSDK_PYTHON, set on Windows), else python3 or python. **/
+	static function python():String {
+		final emsdk = Sys.getEnv("EMSDK_PYTHON");
+		if (emsdk != null && emsdk != "" && sys.FileSystem.exists(emsdk))
+			return emsdk;
+		for (name in ["python3", "python"])
+			try {
+				final p = new sys.io.Process(name, ["--version"]);
+				final ok = p.exitCode() == 0;
+				p.close();
+				if (ok)
+					return name;
+			} catch (_:Dynamic) {}
+		Sys.println("no Python on the path (emsdk brings one: activate emsdk, or set EMSDK_PYTHON)");
+		Sys.exit(1);
+		return null;
 	}
 
 	static function shell(command:String, args:Array<String>, cwd:String):Void {

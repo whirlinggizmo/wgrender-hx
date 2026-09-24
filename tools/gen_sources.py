@@ -4,12 +4,11 @@
     tools/gen_sources.py [WGRENDER_DIR]         write it
     tools/gen_sources.py --check [WGRENDER_DIR]  fail if it has drifted
 
-An installed wgrender-hx compiles wgrender from source rather than linking a library
-its Makefile built, which is what librl-hx does for librl and what makes Windows work
-at all: hxcpp uses MSVC there by default, wgrender's Makefile only cross-compiles
-Windows with MinGW, and the two cannot be mixed. Compiling from source means both
-halves come from whatever toolchain hxcpp chose, on every platform, and `setup` needs
-no `make` -- which is the other thing that stopped Windows dead.
+An installed wgrender-hx compiles wgrender from source rather than linking a prebuilt
+library, which is what librl-hx does for librl: hxcpp uses MSVC on Windows by default,
+MinGW objects and MSVC's linker cannot be mixed, and compiling from source means both
+halves come from whatever toolchain hxcpp chose, on every platform, with nothing to
+build first.
 
 That is only possible because wgrender asks for nothing at build time: its three
 shader headers are committed, its dependencies are vendored, and Python is needed to
@@ -17,7 +16,10 @@ shader headers are committed, its dependencies are vendored, and Python is neede
 
 The list is generated for the usual reason: hand-listing 47 files is a second build
 to keep in step with the first, and --check fails when wgrender gains or loses one.
+It comes from wgrender's build.json, its build as data: the sources, and the vendored
+single-header libraries' directories.
 """
+import json
 import os
 import pathlib
 import re
@@ -30,14 +32,11 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 WGRENDER = find()
 OUT = ROOT / 'project/wgrender.xml'
 
-# The vendored single-header libraries. wgrender's Makefile reaches them with
-# -isystem to keep their warnings out of its -Wall -Wextra; hxcpp passes neither, so
-# a plain include path is equivalent here and works in both flag syntaxes. Read from
-# the Makefile rather than listed, so a new one comes along on its own.
-def vendored(makefile):
-    text = makefile.read_text()
-    seen = dict.fromkeys(re.findall(r'-isystem\s+deps/(\w+)', text))  # ordered, deduped
-    return list(seen)
+# The vendored single-header libraries (build.json's system_include). wgrender reaches
+# them with -isystem to keep their warnings out of its -Wall -Wextra; hxcpp passes
+# neither, so a plain include path is equivalent here and works in both flag syntaxes.
+def vendored(manifest):
+    return [d.split('/', 1)[1] for d in manifest['system_include'] if d.startswith('deps/')]
 
 
 def build(sources, deps):
@@ -67,7 +66,7 @@ def build(sources, deps):
              fired, which is how /D_USE_MATH_DEFINES went missing while looking present.
 
              sokol's backend: GLCORE everywhere wgrender builds natively, which is
-             what its own Makefile picks for both Linux and Windows.
+             what its own desktop builds pick for Linux, Windows and macOS.
 
              M_PI was here too, as -D_USE_MATH_DEFINES, until wgrender d61ae61 gave
              wgr_math_internal.h its own fallback. Keeping a flag that is no longer
@@ -92,11 +91,12 @@ def build(sources, deps):
 
 
 def main():
-    src = WGRENDER / 'src'
-    if not src.is_dir():
-        sys.exit(f'no wgrender sources under {src}')
-    sources = sorted(p.name for p in src.glob('*.c'))
-    deps = vendored(WGRENDER / 'Makefile')
+    path = WGRENDER / 'build.json'
+    if not path.exists():
+        sys.exit(f'no {path}: this wgrender predates it; update the submodule')
+    manifest = json.loads(path.read_text())
+    sources = sorted(s.split('/', 1)[1] for s in manifest['sources'])
+    deps = vendored(manifest)
     text = build(sources, deps)
     if '--check' in sys.argv:
         current = OUT.read_text() if OUT.exists() else ''

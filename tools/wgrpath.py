@@ -48,12 +48,11 @@ def find(explicit=None, argv=None):
 
 
 def host_os():
-    """wgrender's name for this OS in its build directories.
+    """This OS's name in build output directories: linux, macos, windows.
 
-    Mirrors wgrender's mk/host.mk: `build/linux`, `build/macos`, alongside the
-    `build/windows` and `build/webgl2` that were already named that way. Keep the two
-    in step -- a wrong answer here is a link error naming a directory that was never
-    built, which reads like a missing build rather than a stale name.
+    The examples' out/<os>/ directories use it; wgrender's own builds are named for
+    their CMake presets now (build/desktop, build/headless), which tools/wgrbuild.py
+    knows.
 
     "desktop" still means native-not-web everywhere it is prose or a define; it is
     only the directories that name the OS.

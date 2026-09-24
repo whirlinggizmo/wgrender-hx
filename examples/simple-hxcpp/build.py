@@ -23,7 +23,7 @@ on this machine, and the compile/link flags to use it. build/<target>.xml is hxc
 build-tool XML, pulled in by the @:buildXml on wgr.Wgr. Afterwards `haxe build.hxml`
 and `haxe web.hxml` work on their own.
 
-Web options are wgrender's make variables, read from the environment:
+Web options are wgrender's web build settings, read from the environment:
   BACKEND=webgl2|webgpu   WEB_DEBUG=0|1   (e.g. BACKEND=webgpu ./build.py web)
 Web builds are always WEB_THREADS=0: hxcpp's emscripten target is single-threaded, so
 its objects are built without atomics and can't link into shared memory.
@@ -47,38 +47,14 @@ if not (LIB / 'tools/wgrpath.py').exists():
     LIB = pathlib.Path(_found)
 sys.path.insert(0, str(LIB / 'tools'))
 from wgrpath import find, host_os  # noqa: E402  # examples/simple-hxcpp -> the library
+import wgrbuild  # noqa: E402
 WGRENDER = find(argv=[])
 HAXE = os.environ.get('HAXE', 'haxe')
 # The wgr binding, its generator and its host glue are the wgrender-hx haxelib.
 
-# Desktop link libraries, as in wgrender's examples/Makefile.
-DESKTOP_LIBS = ['-lGL', '-lX11', '-lXi', '-lXcursor', '-lXrandr', '-lasound', '-ldl', '-lm', '-lpthread']
-
-
 def run(cmd, **kwargs):
     print('+', ' '.join(str(c) for c in cmd), flush=True)
     subprocess.run([str(c) for c in cmd], check=True, **kwargs)
-
-
-def make(*args):
-    """A wgrender make call, with the web variables from the environment."""
-    web_vars = [f'{v}={os.environ[v]}' for v in ('BACKEND', 'WEB_DEBUG') if v in os.environ]
-    return ['make', '--no-print-directory', '-s', '-C', WGRENDER, *args, *web_vars]
-
-
-def web_flags():
-    """wgrender's web compile/link flags, so this build matches how the library was built."""
-    output = subprocess.run([str(c) for c in make('print-web-flags', 'WEB_THREADS=0')],
-                            check=True, capture_output=True, text=True).stdout
-    flags = {}
-    for line in output.splitlines():
-        key, _, value = line.partition(':')
-        flags[key.strip()] = value.strip()
-    if 'lib' not in flags:
-        sys.exit(f'could not read wgrender web flags:\n{output}')
-    return (WGRENDER / flags['lib'],
-            flags.get('cflags', '').replace('-Iinclude', f'-I{WGRENDER}/include').split(),
-            flags.get('ldflags', '').split())
 
 
 def write_config(target, cflags, ldflags, libs, defines=()):
@@ -124,11 +100,11 @@ def write_config(target, cflags, ldflags, libs, defines=()):
 
 def build_desktop():
     print('wgrender (desktop)')
-    run(make('all'))
+    lib, libs = wgrbuild.desktop(WGRENDER)
     write_config('desktop',
                  cflags=[f'-I{WGRENDER}/include', f'-I{LIB}/host'],
                  ldflags=[],
-                 libs=[str(WGRENDER / f'build/{host_os()}/libwgrender.a'), *DESKTOP_LIBS])
+                 libs=[str(lib), *libs])
     print(f'simple (desktop) -> out/{host_os()}/simple')
     run([HAXE, 'build.hxml'])
     out = ROOT / f'out/{host_os()}'
@@ -145,8 +121,7 @@ def build_desktop():
 
 def build_web():
     print('wgrender (web)')
-    run(make('web', 'WEB_THREADS=0'))
-    lib, cflags, ldflags = web_flags()
+    lib, cflags, ldflags = wgrbuild.web(WGRENDER)
     # The guest glue, as on desktop -- plus WGR_GUEST_NO_MAIN, because this build has
     # hxcpp's main() and the glue would otherwise define a second one.
     cflags = [*cflags, f'-I{LIB}/host', '-DWGR_GUEST_NO_MAIN']
