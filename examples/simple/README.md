@@ -85,8 +85,8 @@ checked-out `out/web` is the threaded default (726,858 wasm) and doesn't compare
 ### Startup
 
 Size doesn't decide this, and the first attempt was *slower* despite shipping less.
-`tools/webstart.mjs --site=DIR` (wgrender's own `tools/webstart.mjs` resolves its site
-from `examples/build/` and needs an `examples.json`), median of 3, ms to
+`tools/webstart.py --site=DIR` at the library root (wgrender's own `tools/webstart.py` takes
+a web preset's site, with its `examples.json`), median of 3, ms to
 `wgr:first-frame`:
 
 | visit | net | simple-js | ../simple |
@@ -101,7 +101,7 @@ from `examples/build/` and needs an `examples.json`), median of 3, ms to
 instead of two and more of the time goes on wiring rather than bytes.
 
 Before the page carried `<link rel=modulepreload/preload>` hints, cold 4G was
-**1,040 ms** — worse than `../simple-hxcpp`. `tools/waterfall.mjs` found why: the module
+**1,040 ms** — worse than `../simple-hxcpp`. `tools/waterfall.py` found why: the module
 graph was `html → boot.js → wgrender-host.js → wasm`, so the wasm request didn't start
 until 533 ms, against 241 ms for `../simple-hxcpp` (wgrender's shell kicks off
 `fetch(wasmUrl)` early, in parallel with its JS). With the hints the wasm starts at

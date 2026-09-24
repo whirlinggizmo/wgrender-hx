@@ -58,8 +58,8 @@ C_BUILD = WGRENDER / 'build/web-webgl2-nothreads'
 
 
 def web_tools():
-    """How to run wgrender's web tools: on Emscripten's own Node, which every web build
-    here already needs, told which wgrender and which Python to use."""
+    """How to run wgrender's benchmark harness, still JS: on Emscripten's own Node,
+    which every web build here already needs, told which wgrender and Python to use."""
     sys.path.insert(0, str(WGRENDER / 'tools'))
     try:
         import emsdk
@@ -162,19 +162,22 @@ def each(command, names=None, chosen=()):
 
 
 # What an example's drive does beyond loading the page and checking it drew. Each
-# example used to carry this in a tools/drive.mjs stub of its own; particles was the
+# example used to carry this in a drive stub of its own; particles was the
 # only one that said anything, and without it the confetti path would go unexercised
 # while the drive still passed.
 DRIVE_FLAGS = {'particles': ['--click']}
 
 
 def drive(chosen=()):
-    node, env = web_tools()
+    env = dict(os.environ, WGRENDER_DIR=str(WGRENDER))  # drive.py drives the wgrender this builds with
     for name in wanted(GUESTS, chosen):
-        run([node, LIB / 'tools/drive.mjs', f'--site={HERE / name / "out/web"}', f'--label={name}',
+        run([sys.executable, LIB / 'tools/drive.py', f'--site={HERE / name / "out/web"}', f'--label={name}',
              *DRIVE_FLAGS.get(name, [])], HERE / name, env=env)
     if 'simple-hxcpp' in wanted(OTHERS, chosen):
-        run([node, 'check_web.mjs'], HERE / 'simple-hxcpp', env=env)
+        # all-in-one through hxcpp: wgrender's own page shell, so no guest host to wait for
+        site = HERE / 'simple-hxcpp'
+        run([sys.executable, LIB / 'tools/drive.py', f'--site={site / "out/web"}', '--label=haxe-simple',
+             '--ready=examples.json', '--settle=8000', f'--shot={site / "build/web-check.png"}'], site, env=env)
 
 
 def bench(chosen=()):

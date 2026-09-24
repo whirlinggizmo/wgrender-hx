@@ -49,7 +49,9 @@ tools/guestbuild.py   the examples' suite runner: checks, desktop assets, sizes,
 tools/compare.py      each example's size against wgrender's own C build of it
 tools/benchmarks.py   size, frame cost, GC and call cost against the C -> docs/benchmarks.md
 tools/hxcppweb.py     an example all-in-one through hxcpp for the web, for the benchmarks
-tools/drive.mjs       run a built example and fail on anything the console calls an error
+tools/drive.py        run a built example and fail on anything the console calls an error
+tools/webstart.py     startup timing of any web build (--site=DIR); tools/waterfall.py, its requests
+tools/wgrweb.py       wgrender's browser tooling (its tools/weblib.py), for the checks here
 ```
 
 Every operation is a static named after the C call it makes, taking the handle first:

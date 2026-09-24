@@ -21,7 +21,7 @@ Haxe, and what does Haxe cost in wasm.
 ./build.py check       # compile the whole binding surface, not just what Simple.hx uses
 ./build.py compare     # this port's wasm next to the C, Nim and Beef ones
 ./build.py clean
-node check_web.mjs     # headless-browser smoke test of out/web; writes build/web-check.png
+../build.py drive simple-hxcpp   # headless-browser smoke test of out/web; writes build/web-check.png
 ```
 
 `./build.py` builds wgrender first, then writes `build/<target>.hxml` and
@@ -325,7 +325,6 @@ exceptions the legacy exception glue references those symbols natively.
 ```
 build.hxml  web.hxml  check.hxml   haxe invocations (build.py writes build/*.hxml first)
 build.py                           builds wgrender, then haxe; serve / compare / clean
-check_web.mjs                      headless-browser smoke test of out/web
 src/Simple.hx                      the example
 src/Defines.hx                     reads a -D name=value define's value (needs a macro)
 src/wgr/Wgr.hx                     the binding

@@ -18,8 +18,8 @@ build is `haxe <file>.hxml`, on Windows, Linux or macOS.
 - on Linux, the system's GL, X11 and ALSA dev packages, which sokol links:
   `python3 project/lib/wgrender-c/tools/deps.py install` (apt, dnf or pacman)
 - Python 3 for the tools here (`examples/build.py`, `test/check.py`, the generators)
-- a Chromium-based browser (Brave, Chrome, Chromium or Edge) for `examples/build.py drive`,
-  which runs on Emscripten's own Node: there is no Node to install
+- a Chromium-based browser (Brave, Chrome, Chromium or Edge) for `examples/build.py drive`
+  (`tools/drive.py`, Python like the rest: there is no Node to install)
 
 ## Install
 
