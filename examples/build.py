@@ -230,14 +230,77 @@ guest. The same sources build native through hxcpp.</p>
 SITE_BAR_STYLE = """<style>
   #bar { position: fixed; inset: 0 0 auto 0; height: 38px; z-index: 10; display: flex;
     align-items: center; gap: 12px; padding: 0 12px; background: #1e2128;
-    border-bottom: 1px solid #2c313c; color: #cdd3de; font: 14px/1.4 system-ui, sans-serif; }
+    border-bottom: 1px solid #2c313c; color: #cdd3de; font: 14px/1.4 system-ui, sans-serif;
+    white-space: nowrap; overflow: hidden; }
+  /* a phone's bar has no room for the label: the picker says what it is */
+  @media (max-width: 520px) { #exlabel { display: none; } }
   #bar a { color: #7ea2ff; text-decoration: none; }
   #bar a:hover { text-decoration: underline; }
   #bar b a { color: #7ea2ff; }
   #bar select { background: #0f1115; color: #cdd3de; border: 1px solid #3a4150;
     border-radius: 6px; padding: 4px 8px; font: inherit; }
   #canvas { inset: 38px 0 0 0; height: calc(100vh - 38px); }
+  /* A console on the page, because a phone has no easy one: what the program logs,
+     and anything the browser refuses to do. As wgrender's own page has it. */
+  #log { position: fixed; inset: auto 0 0 0; max-height: 45vh; z-index: 11; display: none;
+    overflow-y: auto; padding: 6px 10px; margin: 0; background: #0b0d11ee; color: #cdd3de;
+    border-top: 1px solid #2c313c; font: 12px/1.45 ui-monospace, monospace;
+    white-space: pre-wrap; overscroll-behavior: contain; }
+  #log.on { display: block; }
+  #log .warn { color: #ffcc66; }
+  #log .err  { color: #ff8080; }
+  #logbtn { margin-left: auto; background: #0f1115; color: #cdd3de; border: 1px solid #3a4150;
+    border-radius: 6px; padding: 4px 8px; font: inherit; cursor: pointer; }
+  #logbtn.alert { border-color: #ff8080; color: #ff8080; }
 </style>
+"""
+# The console's script, from wgrender's page: everything the program prints goes to the
+# panel as well as the browser's console, and the panel opens itself on the first error.
+# boot.js sends all of wgrender's output to console.log, so a line's level comes from
+# the line itself ("[WARN ] wgr_model.c:12: ..."). It runs before the page's module
+# scripts, so it sees the first line.
+SITE_CONSOLE = """<pre id="log"></pre>
+<script>
+  (() => {
+    const logEl = document.getElementById("log");
+    const logBtn = document.getElementById("logbtn");
+    const MAX_LINES = 400;
+    const LEVEL = /^\\[(TRACE|DEBUG|INFO|WARN|ERROR|FATAL)\\s*\\]/;
+    function levelKind(text) {
+      const m = LEVEL.exec(text);
+      if (!m) return null;
+      return (m[1] === "ERROR" || m[1] === "FATAL") ? "err" : m[1] === "WARN" ? "warn" : "";
+    }
+    function addLine(text, kind) {
+      const line = document.createElement("span");
+      line.className = kind || "";
+      line.textContent = text + "\\n";
+      logEl.appendChild(line);
+      while (logEl.childNodes.length > MAX_LINES) logEl.removeChild(logEl.firstChild);
+      logEl.scrollTop = logEl.scrollHeight;
+      if (kind) logBtn.classList.add("alert");
+      if (kind === "err" && !logEl.classList.contains("on")) logEl.classList.add("on");
+    }
+    logBtn.addEventListener("click", () => {
+      logEl.classList.toggle("on");
+      if (logEl.classList.contains("on")) logBtn.classList.remove("alert");
+    });
+    for (const [name, kind] of [["log", ""], ["info", ""], ["warn", "warn"], ["error", "err"]]) {
+      const original = console[name].bind(console);
+      console[name] = (...a) => {
+        original(...a);
+        const text = a.map(v => (typeof v === "string" ? v : String(v))).join(" ");
+        addLine(text, kind || levelKind(text) || "");
+      };
+    }
+    addEventListener("error", e => addLine("error: " + (e.message || e.type), "err"));
+    addEventListener("unhandledrejection", e => addLine("unhandled: " + e.reason, "err"));
+    // The page can start with it open: ?console=1, or #console
+    if (new URLSearchParams(location.search).get("console") === "1" || location.hash === "#console") {
+      logEl.classList.add("on");
+    }
+  })();
+</script>
 """
 SOURCE = 'https://github.com/whirlinggizmo/wgrender-hx/blob/main/examples/{name}/src/{main}.hx'
 
@@ -255,10 +318,12 @@ def main_class(name):
 def site_bar(name, names):
     options = ''.join(f'<option{" selected" if n == name else ""}>{n}</option>' for n in names)
     return (f'<div id="bar"><b><a href="../">wgrender-hx</a></b>'
-            f'<label>example <select onchange="location.href = \'../\' + this.value + \'/\'">'
+            f'<label><span id="exlabel">example </span><select aria-label="example" '
+            f'onchange="location.href = \'../\' + this.value + \'/\'">'
             f'{options}</select></label>'
             f'<a href="{SOURCE.format(name=name, main=main_class(name))}" target="_blank" '
-            f'rel="noopener">source</a></div>')
+            f'rel="noopener">source</a><button id="logbtn" type="button">console</button></div>\n'
+            + SITE_CONSOLE)
 
 
 def site(chosen=()):
@@ -277,7 +342,7 @@ def site(chosen=()):
     wgrender's examples/assets, copied in once beside them (the benchmarks' models
     left out), and each page says so: <meta name="wgr-asset-base" content="../assets">,
     which wgr.Assets reads. Each page also gets the site's bar (SITE_BAR_STYLE, site_bar):
-    the way back to the list, a picker, and the example's source.
+    the way back to the list, a picker, the example's source, and a console (SITE_CONSOLE).
     """
     import shutil
     out = HERE / 'out/web' / web_variant()
@@ -299,7 +364,8 @@ def site(chosen=()):
         page = out / name / 'index.html'
         html = page.read_text(encoding='utf-8')
         for old, new in (
-                ('<meta charset="utf-8">', '<meta charset="utf-8">\n<meta name="wgr-asset-base" content="../assets">'),
+                ('<meta charset="utf-8">', '<meta charset="utf-8">\n<meta name="wgr-asset-base" content="../assets">\n'
+                 '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">'),
                 ('</head>', SITE_BAR_STYLE + '</head>'),
                 ('<body>', '<body>\n' + site_bar(name, built))):
             if old not in html:
