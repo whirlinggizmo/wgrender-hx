@@ -21,7 +21,7 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 WEB_HXML = '''# {name}, for the web: the Haxe guest compiled to JS, and a wasm host linked to
 # exactly the wgrender calls it makes. `haxe build.web.hxml`, then serve
 # out/web/js-webgl2-nothreads; the page loads its assets from assets/ beside it (which
-# wgrender's tools/serve.py provides).
+# tools/serve.py provides).
 -cp src
 -lib wgrender-hx
 --main {entry}

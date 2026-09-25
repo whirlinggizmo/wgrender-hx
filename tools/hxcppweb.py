@@ -38,6 +38,23 @@ def run(cmd, **kw):
     subprocess.run([str(c) for c in cmd], check=True, **kw)
 
 
+def finish_site(site, work, name, source):
+    """The page for an all-in-one build in SITE: web/index.html opening NAME, its source
+    link to SOURCE (a path in this repository), finished by tools/webdeploy.py with
+    the versioned file names and examples.json. The page is written in WORK first."""
+    page = (LIB / 'web/index.html').read_text(encoding='utf-8')
+    for mark in ('/*wgr:first*/"simple-hxcpp"', '/*wgr:source*/"'):
+        if mark not in page:
+            sys.exit(f'{LIB}/web/index.html: no {mark} to fill in')
+    page = page.replace('/*wgr:first*/"simple-hxcpp"', f'/*wgr:first*/"{name}"')
+    page = re.sub(r'/\*wgr:source\*/"[^"]*"',
+                  f'/*wgr:source*/"https://github.com/whirlinggizmo/wgrender-hx/blob/main/{source}"', page)
+    shell = work / 'index.html'
+    shell.write_text(page, encoding='utf-8')
+    run([sys.executable, LIB / 'tools/webdeploy.py', site, shell])
+    shell.unlink()
+
+
 def main():
     if len(sys.argv) != 2:
         sys.exit(__doc__)
@@ -67,11 +84,7 @@ def main():
     site.mkdir(parents=True, exist_ok=True)
     for f in (f'{name}.js', f'{name}.wasm'):
         shutil.copy2(build / 'cpp' / f, site / f)
-    shell = build / 'index.html'
-    shell.write_text((WGRENDER / 'examples/web/index.html').read_text(encoding='utf-8')
-                     .replace('params.get("ex") || "hello"', f'params.get("ex") || "{name}"')
-                     .replace('<title>wgrender examples</title>', f'<title>{name} (wgrender, Haxe via hxcpp)</title>'), encoding='utf-8')
-    run([sys.executable, WGRENDER / 'tools/webdeploy.py', site, shell])
+    finish_site(site, build, name, f'examples/{name}/src/{entry.group(1).replace(".", "/")}.hx')
     print(f'built {site}')
 
 

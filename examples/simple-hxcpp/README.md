@@ -15,7 +15,7 @@ Haxe, and what does Haxe cost in wasm.
 
 ```sh
 ./build.py desktop     # out/linux/release/simple (out/windows/mingw/ on Windows)
-./build.py web         # out/web/webgl2-nothreads/ (simple.js + simple.wasm + wgrender's page shell)
+./build.py web         # out/web/webgl2-nothreads/ (simple.js + simple.wasm + the library's page)
 ./build.py all
 ./build.py serve       # http://localhost:8000/
 ./build.py check       # compile the whole binding surface, not just what Simple.hx uses

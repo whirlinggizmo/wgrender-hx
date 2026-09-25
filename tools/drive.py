@@ -5,7 +5,7 @@ calls an error. examples/build.py drive runs it for every example:
     tools/drive.py --site=out/web/<variant> [--label=NAME] [--settle=MS] [--click] [--min-colours=N]
                    [--ready=FILE] [--shot=PATH]
 
-It serves the site with wgrender's tools/serve.py (assets at /assets), waits --settle
+It serves the site with tools/serve.py (wgrender's assets at /assets), waits --settle
 ms (default 6000), moves the mouse over the middle of the canvas, a little low (over
 whatever the example puts there, which exercises picking and the hover state a scene
 keeps), with --click clicks there, and takes a screenshot (--shot, default the
@@ -29,7 +29,7 @@ import urllib.parse
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))  # an embedded Python (Windows) doesn't add it
-from wgrweb import W, weblib  # noqa: E402
+from wgrweb import serve_command, weblib  # noqa: E402
 
 
 def main():
@@ -51,7 +51,7 @@ def main():
     errors, lines = [], []
     try:
         port = weblib.free_port()
-        run.spawn([weblib.PYTHON, W / 'tools' / 'serve.py', port, site])
+        run.spawn(serve_command(port, site))
         weblib.wait_for(f'http://127.0.0.1:{port}/{args.ready}', 'serve.py')
         debug_base, browser = weblib.launch_browser(run, weblib.find_browser(), 'headless')
         target = browser.send('Target.createTarget', {'url': 'about:blank'})['targetId']

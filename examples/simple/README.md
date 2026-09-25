@@ -77,7 +77,7 @@ all-in-one build. This port's JS breaks down as:
 So Haxe costs about 4% over writing this in C: 11,308 bytes of wasm for the guest ABI
 plus 18 KB of JS for the game, instead of a megabyte of runtime compiled in.
 
-No `index.html` in any row — wgrender's page shell is ~8.6 KB and common to the other
+No `index.html` in any row — the page shell is ~8.6 KB and common to the other
 ports, while this one's page is a 600-byte hand-rolled file, so counting HTML would
 flatter this port for the wrong reason. The Nim row is its `WEB_THREADS=0` build; its
 checked-out `out/web/webgl2` is the threaded default (726,858 wasm) and doesn't compare.

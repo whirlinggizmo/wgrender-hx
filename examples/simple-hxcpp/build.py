@@ -2,11 +2,11 @@
 """Build the wgrender simple example in Haxe (Haxe -> hxcpp -> C++ -> native/wasm).
 
     ./build.py desktop     out/<os>/<variant>/simple (builds wgrender's native lib first)
-    ./build.py web         out/web/webgl2-nothreads/: simple.js/.wasm + wgrender's page shell
+    ./build.py web         out/web/webgl2-nothreads/: simple.js/.wasm + the library's page (web/index.html)
     ./build.py all         both
 
-    ./build.py serve       serve the web build on http://localhost:8000 (wgrender's tools/serve.py:
-                           COOP/COEP headers for threads, examples/assets at /assets,
+    ./build.py serve       serve the web build on http://localhost:8000 (the library's tools/serve.py:
+                           COOP/COEP headers for threads, wgrender's examples/assets at /assets,
                            gzip-compressed responses)
     ./build.py sizes       wasm/JS sizes of the web build, raw and gzipped
     ./build.py compare     the same, next to wgrender's C example and the Nim and Beef ports
@@ -50,6 +50,7 @@ if not (LIB / 'tools/wgrpath.py').exists():
 sys.path.insert(0, str(LIB / 'tools'))
 from wgrpath import find, host_os  # noqa: E402  # examples/simple-hxcpp -> the library
 from guestbuild import check_library, desktop_variant as guest_desktop_variant  # noqa: E402
+from hxcppweb import finish_site  # noqa: E402
 WGRENDER = find(argv=[])
 HAXE = os.environ.get('HAXE', 'haxe')
 # The wgr binding, its generator and its host glue are the wgrender-hx haxelib.
@@ -117,14 +118,8 @@ def build_web():
     site.mkdir(parents=True, exist_ok=True)
     for name in ('simple.js', 'simple.wasm'):
         shutil.copy2(work / 'cpp' / name, site / name)
-    # wgrender's page shell, opening this example by default (its default is "hello"),
-    # finished by wgrender's deploy script: versioned file names and examples.json.
-    shell = work / 'index.html'
-    shell.write_text((WGRENDER / 'examples/web/index.html').read_text(encoding='utf-8')
-                     .replace('params.get("ex") || "hello"', 'params.get("ex") || "simple"')
-                     .replace('<title>wgrender examples</title>', '<title>simple (wgrender, Haxe)</title>'), encoding='utf-8')
-    run([sys.executable, WGRENDER / 'tools/webdeploy.py', site, shell])
-    shell.unlink()
+    # the library's page (web/index.html), opening this example, with its source link
+    finish_site(site, work, 'simple', 'examples/simple-hxcpp/src/Simple.hx')
     sizes()
     print(f'built {site.relative_to(ROOT)} — ./build.py serve, then open http://localhost:8000/')
 
@@ -171,7 +166,7 @@ def compare():
 
 
 def serve(port='8000'):
-    run([sys.executable, WGRENDER / 'tools/serve.py', port, web_out(), '--gzip'])
+    run([sys.executable, LIB / 'tools/serve.py', port, web_out(), '--assets', WGRENDER / 'examples/assets', '--gzip'])
 
 
 def clean():

@@ -18,8 +18,8 @@ class Assets {
 	/**
 		On the web — either web build — `assets` beside the page, relative, as wgrender's
 		own web examples have it, so a site works at a domain root or under a path
-		(GitHub Pages serves a project at /<repo>/). wgrender's tools/serve.py mounts
-		the asset tree at `/assets`, which is beside a page served at the root. A page
+		(GitHub Pages serves a project at /<repo>/). tools/serve.py mounts wgrender's
+		asset tree at `/assets`, which is beside a page served at the root. A page
 		elsewhere says where with `<meta name="wgr-asset-base" content="../assets">`
 		(examples/build.py site gives each example's page one, beside the shared tree).
 

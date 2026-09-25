@@ -56,7 +56,10 @@ tools/benchmarks.py   size, frame cost, GC and call cost against the C -> docs/b
 tools/hxcppweb.py     an example all-in-one through hxcpp for the web, for the benchmarks
 tools/drive.py        run a built example and fail on anything the console calls an error
 tools/webstart.py     startup timing of any web build (--site=DIR); tools/waterfall.py, its requests
-tools/wgrweb.py       wgrender's browser tooling (its tools/weblib.py), for the checks here
+tools/wgrweb.py       what the browser checks share: weblib, the wgrender they run against, serving
+tools/serve.py        the dev server (wgrender's assets at /assets); weblib.py, webwatch.py and
+                      webdeploy.py beside it: taken from wgrender's tools, this library's own now
+web/index.html        the page for the all-in-one hxcpp builds (the JS guests' pages are WebHost's)
 ```
 
 Every operation is a static named after the C call it makes, taking the handle first:

@@ -15,7 +15,7 @@ import urllib.parse
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))  # an embedded Python (Windows) doesn't add it
-from wgrweb import W, weblib  # noqa: E402
+from wgrweb import serve_command, weblib  # noqa: E402
 
 RESOURCES = r"""JSON.stringify(performance.getEntriesByType("resource")
     .filter(r => !/\/wgr\//.test(r.name))
@@ -33,7 +33,7 @@ def main():
     run.install_handlers()
     try:
         port = weblib.free_port()
-        run.spawn([weblib.PYTHON, W / 'tools' / 'serve.py', port, site, '--cache', '--gzip'])
+        run.spawn(serve_command(port, site, '--cache', '--gzip'))
         weblib.wait_for(f'http://127.0.0.1:{port}/index.html', 'serve.py')
         debug_base, browser = weblib.launch_browser(run, weblib.find_browser(), 'headless')
         target = browser.send('Target.createTarget', {'url': 'about:blank'})['targetId']

@@ -161,7 +161,7 @@ def drive(chosen=()):
         run([sys.executable, LIB / 'tools/drive.py', f'--site={HERE / name / "out/web" / web_variant()}', f'--label={name}',
              *DRIVE_FLAGS.get(name, [])], HERE / name, env=env)
     if 'simple-hxcpp' in wanted(OTHERS, chosen):
-        # all-in-one through hxcpp: wgrender's own page shell, so no guest host to wait for
+        # all-in-one through hxcpp: the library's own page (web/index.html), so no guest host to wait for
         site = HERE / 'simple-hxcpp'
         run([sys.executable, LIB / 'tools/drive.py', f'--site={site / "out/web/webgl2-nothreads"}', '--label=haxe-simple',
              '--ready=examples.json', '--settle=8000', f'--shot={site / "build/web/webgl2-nothreads/check.png"}'], site, env=env)
@@ -367,7 +367,7 @@ def serve(args, chosen=()):
         sys.exit('TLS needs both a certificate and a key')
 
     out = site(chosen)
-    cmd = [sys.executable, str(WGRENDER / 'tools/serve.py'), port, str(out)]
+    cmd = [sys.executable, str(LIB / 'tools/serve.py'), port, str(out), '--assets', str(WGRENDER / 'examples/assets')]
     if cert:
         cmd += ['--tls', cert, key]
     scheme = 'https' if cert else 'http'
