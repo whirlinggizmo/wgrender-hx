@@ -56,12 +56,10 @@ class Gamepad {
 		Shape2D.drawCircle(new Vec2(x, y), r, buttonColor(pad, button));
 	}
 
-	static function drawStick(pad:Int, xAxis:GamepadAxis, click:GamepadButton, cx:Float, cy:Float):Void {
+	static function drawStick(pad:Int, xAxis:GamepadAxis, yAxis:GamepadAxis, click:GamepadButton, cx:Float, cy:Float):Void {
 		Shape2D.drawCircleLines(new Vec2(cx, cy), REACH, outline);
 		if (Input.getGamepadButton(pad, click) != Up)
 			Shape2D.drawCircle(new Vec2(cx, cy), REACH, idle);
-		// the y axis is always the one after the x axis, for either stick
-		final yAxis:GamepadAxis = cast((xAxis : Int) + 1);
 		Shape2D.drawCircle(new Vec2(cx + Input.getGamepadAxis(pad, xAxis) * REACH,
 			cy + Input.getGamepadAxis(pad, yAxis) * REACH), 9.0, Color.SKYBLUE);
 	}
@@ -87,8 +85,8 @@ class Gamepad {
 		Shape2D.drawRectangle(x + 206.0, y + 60.0, 60.0, 14.0, buttonColor(pad, RightBumper));
 
 		// sticks, d-pad, face buttons, middle buttons
-		drawStick(pad, LeftX, LeftStick, x + 70.0, y + 130.0);
-		drawStick(pad, RightX, RightStick, x + 190.0, y + 210.0);
+		drawStick(pad, LeftX, LeftY, LeftStick, x + 70.0, y + 130.0);
+		drawStick(pad, RightX, RightY, RightStick, x + 190.0, y + 210.0);
 		Shape2D.drawRectangle(x + 102.0, y + 180.0, 18.0, 18.0, buttonColor(pad, DpadUp));
 		Shape2D.drawRectangle(x + 102.0, y + 220.0, 18.0, 18.0, buttonColor(pad, DpadDown));
 		Shape2D.drawRectangle(x + 82.0, y + 200.0, 18.0, 18.0, buttonColor(pad, DpadLeft));
