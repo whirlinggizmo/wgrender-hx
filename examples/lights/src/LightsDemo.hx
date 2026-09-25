@@ -10,7 +10,9 @@
 //   a white spotlight      sweeping across from above, a cone in radians
 //
 // Behind them stand billboards with a built-in material, which is what makes them take
-// the scene's lights the way the models do -- a Sprite3D without one is drawn flat.
+// the scene's lights the way the models do -- a Sprite3D without one is drawn flat. Each
+// shows one cell of the tilemap example's sprite sheet, and the sheet's normal map gives
+// it relief: the normal map is sampled through the same region.
 //
 // A scene starts with no lights and no ambient. Everything here is explicit, and
 // turning all three off leaves the ambient alone, which is the point of trying it.
@@ -25,7 +27,7 @@ class LightsDemo {
 	static inline final SCREEN_HEIGHT = 600;
 	static inline final MODEL_PATH = "models/gumshoe/gumshoe.glb";
 	static inline final SPRITE_PATH = "textures/tiles.png";
-	static inline final NORMAL_PATH = "textures/tiles_normal.png";
+	static inline final NORMAL_PATH = "textures/tiles_sheet_normal.png"; // wgrender's tools/gen_tiles.py
 
 	static inline final ASSET_MESH = 1;
 	static inline final ASSET_SPRITE = 2;
@@ -33,6 +35,15 @@ class LightsDemo {
 
 	static inline final MODEL_COUNT = 5;
 	static inline final SPRITE_COUNT = 4;
+
+	// the sprites' cells in the sheet (pixels, from wgrender's tools/gen_tiles.py) and
+	// their world height; all 1.6 wide
+	static final SPRITE_CELLS = [
+		[62.0, 2, 16, 16, 1.6], // stone
+		[2.0, 22, 16, 32, 3.2], // tree
+		[42.0, 22, 16, 16, 1.6], // coin
+		[62.0, 22, 16, 16, 1.6], // rock
+	];
 
 	static var background:Color;
 	static var gridColor:Color;
@@ -128,10 +139,15 @@ class LightsDemo {
 		spriteMaterial = Material.create(Pbr);
 		Material.setMetallic(spriteMaterial, 0.0);
 		Material.setRoughness(spriteMaterial, 0.55);
+		// cells sit side by side in the sheet: clamp, so none reaches into the next
+		Material.setTextureSampling(spriteMaterial, "normal_texture", Clamp, Clamp, Linear);
 		for (i in 0...SPRITE_COUNT) {
+			final cell = SPRITE_CELLS[i];
 			final sprite = Sprite3D.create(Handle.NONE);
-			Sprite3D.setPosition(sprite, new Vec3(-3.0 + 2.0 * i, 1.0, -2.5));
-			Sprite3D.setSize(sprite, 1.6);
+			Sprite3D.setPosition(sprite, new Vec3(-3.0 + 2.0 * i, 0.2, -2.5));
+			Sprite3D.setSource(sprite, cell[0], cell[1], cell[2], cell[3]);
+			Sprite3D.setExtent(sprite, 1.6, cell[4]);
+			Sprite3D.setPivot(sprite, 0.5, 1.0); // standing on their bottom edge
 			Sprite3D.setAlphaMode(sprite, Mask, 0.5);
 			Sprite3D.setMaterial(sprite, spriteMaterial);
 			Scene.add(scene, sprite);
@@ -154,6 +170,7 @@ class LightsDemo {
 
 			case ASSET_SPRITE:
 				final texture = Texture.create(path);
+				Texture.setSampling(texture, Clamp, Clamp, Nearest);
 				for (sprite in sprites)
 					Sprite3D.setTexture(sprite, texture);
 				Texture.release(texture);

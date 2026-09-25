@@ -36,15 +36,16 @@ class Tilemap {
 	static inline final ZOOM_MIN = 4.0;
 	static inline final ZOOM_MAX = 32.0;
 
-	// cells of the sheet, in texture pixels: x, y, width, height
-	static final GRASS = [0.0, 0, 16, 16];
-	static final SAND = [16.0, 0, 16, 16];
-	static final WATER = [32.0, 0, 16, 16];
-	static final STONE = [48.0, 0, 16, 16];
-	static final TREE = [0.0, 16, 16, 32];
-	static final FLAG = [16.0, 16, 16, 32];
-	static final COIN = [32.0, 16, 16, 16];
-	static final ROCK = [48.0, 16, 16, 16];
+	// cells of the sheet, in texture pixels: x, y, width, height (wgrender's tools/gen_tiles.py;
+	// each cell has a gutter around it that repeats its edge, so sampling never reaches a neighbour)
+	static final GRASS = [2.0, 2, 16, 16];
+	static final SAND = [22.0, 2, 16, 16];
+	static final WATER = [42.0, 2, 16, 16];
+	static final STONE = [62.0, 2, 16, 16];
+	static final TREE = [2.0, 22, 16, 32];
+	static final FLAG = [22.0, 22, 16, 32];
+	static final COIN = [42.0, 22, 16, 16];
+	static final ROCK = [62.0, 22, 16, 16];
 
 	static var background:Color;
 	static var shade:Color;
