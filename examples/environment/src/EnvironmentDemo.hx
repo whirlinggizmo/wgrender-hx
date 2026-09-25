@@ -1,7 +1,7 @@
 // wgrender's environment example, as a Haxe guest: image-based lighting.
 //
 // A port of examples/environment.c. The material spheres (red plastic and gold,
-// roughness 0 to 1 left to right), a normal-mapped sphere and the woman, lit *only*
+// roughness 0 to 1 left to right), a normal-mapped sphere and the character, lit *only*
 // by an environment map — no lights and no ambient anywhere in this file. Metals
 // reflect the map; rough surfaces blur it.
 //
@@ -25,7 +25,7 @@ class EnvironmentDemo {
 	static inline final SCREEN_WIDTH = 1000;
 	static inline final SCREEN_HEIGHT = 640;
 	static inline final SPHERE_PATH = "models/sphere/sphere.glb";
-	static inline final WOMAN_CASUAL_PATH = "models/woman_casual/woman_casual.glb";
+	static inline final CHARACTER_PATH = "models/woman_casual/woman_casual.glb";
 	static inline final NORMAL_MAP_PATH = "textures/tiles_normal.png";
 
 	static final ENVIRONMENT_PATHS = ["environments/venice_sunset_1k.hdr", "environments/studio_small_09_1k.hdr"];
@@ -37,7 +37,7 @@ class EnvironmentDemo {
 
 	// ids: 1..2 the environments, then the three scene assets
 	static inline final ASSET_SPHERE = 3;
-	static inline final ASSET_WOMAN_CASUAL = 4;
+	static inline final ASSET_CHARACTER = 4;
 	static inline final ASSET_NORMAL_MAP = 5;
 
 	static inline final COLUMNS = 5;
@@ -50,7 +50,7 @@ class EnvironmentDemo {
 	static var target:Vec3;
 	static var environments:Array<Environment> = [Handle.NONE, Handle.NONE];
 	static var spheres:Array<Model> = [];
-	static var womanCasual:Model;
+	static var character:Model;
 	static var tiles:Material;
 
 	static var environmentIndex = 0; // ENVIRONMENT_PATHS.length means "none"
@@ -83,16 +83,16 @@ class EnvironmentDemo {
 
 		addSpheres();
 
-		womanCasual = Model.create(Handle.NONE);
-		Model.setTransform(womanCasual, new Vec3(1.3, -1.3, 0), new Vec3(0, 0.4, 0), new Vec3(0.3, 0.3, 0.3));
-		Model.setAnimation(womanCasual, 3);
-		Scene.add(scene, womanCasual);
+		character = Model.create(Handle.NONE);
+		Model.setTransform(character, new Vec3(1.3, -1.3, 0), new Vec3(0, 0.4, 0), new Vec3(0.3, 0.3, 0.3));
+		Model.setAnimation(character, 3);
+		Scene.add(scene, character);
 
 		applyEnvironment();
 		for (i in 0...ENVIRONMENT_PATHS.length)
 			load(ENVIRONMENT_PATHS[i], i + 1);
 		load(SPHERE_PATH, ASSET_SPHERE);
-		load(WOMAN_CASUAL_PATH, ASSET_WOMAN_CASUAL);
+		load(CHARACTER_PATH, ASSET_CHARACTER);
 		load(NORMAL_MAP_PATH, ASSET_NORMAL_MAP);
 	}
 
@@ -147,9 +147,9 @@ class EnvironmentDemo {
 					Model.setMesh(model, mesh);
 				Mesh.release(mesh);
 
-			case ASSET_WOMAN_CASUAL:
+			case ASSET_CHARACTER:
 				final mesh = Mesh.create(path);
-				Model.setMesh(womanCasual, mesh);
+				Model.setMesh(character, mesh);
 				Mesh.release(mesh);
 
 			case ASSET_NORMAL_MAP:
@@ -206,7 +206,7 @@ class EnvironmentDemo {
 
 		elapsed += dt;
 		Camera3D.setView(camera, new Vec3(Math.sin(elapsed * 0.15) * 7.5, 1.2, Math.cos(elapsed * 0.15) * 7.5), target);
-		Model.animate(womanCasual, dt);
+		Model.animate(character, dt);
 
 		Render.beginFrame();
 		Render.clearBackground(background);

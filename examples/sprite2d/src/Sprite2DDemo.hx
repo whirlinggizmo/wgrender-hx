@@ -28,7 +28,7 @@ class Sprite2DDemo {
 
 	static inline final LOGO_PATH = "sprites/logo/wg-logo-bw-alpha.png";
 	static inline final WHITE_LOGO_PATH = "sprites/logo/wg-logo-white-alpha.png";
-	static inline final MODEL_PATH = "models/woman_casual/woman_casual.glb";
+	static inline final CHARACTER_PATH = "models/woman_casual/woman_casual.glb";
 
 	static inline final ASSET_LOGO = 1;
 	static inline final ASSET_WHITE_LOGO = 2;
@@ -109,7 +109,7 @@ class Sprite2DDemo {
 
 		load(LOGO_PATH, ASSET_LOGO);
 		load(WHITE_LOGO_PATH, ASSET_WHITE_LOGO);
-		load(MODEL_PATH, ASSET_MESH);
+		load(CHARACTER_PATH, ASSET_MESH);
 	}
 
 	static function load(path:String, id:Int):Void {

@@ -9,7 +9,7 @@ import wgr.*;
 class Simple {
 	static inline final DEBUG_FONT_PATH = "fonts/JetBrainsMono/JetBrainsMono-Regular.ttf";
 	static inline final KOMIKA_FONT_PATH = "fonts/Komika/KOMIKAH_.ttf";
-	static inline final MODEL_PATH = "models/woman_casual/woman_casual.glb";
+	static inline final CHARACTER_PATH = "models/woman_casual/woman_casual.glb";
 	static inline final SPRITE_PATH = "sprites/logo/wg-logo-bw-alpha.png";
 	static inline final BGM_PATH = "music/ethernight_club.mp3";
 
@@ -53,7 +53,7 @@ class Simple {
 			Sound.play(bgm);
 		});
 
-		load(MODEL_PATH, path -> {
+		load(CHARACTER_PATH, path -> {
 			final mesh = Mesh.create(path);
 			model = Model.create(mesh);
 			Mesh.release(mesh); // the model holds its own reference

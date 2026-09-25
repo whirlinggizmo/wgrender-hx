@@ -19,7 +19,7 @@ import wgr.*;
 class ModelDemo {
 	static inline final SCREEN_WIDTH = 900;
 	static inline final SCREEN_HEIGHT = 700;
-	static inline final MODEL_PATH = "models/woman_casual/woman_casual.glb";
+	static inline final CHARACTER_PATH = "models/woman_casual/woman_casual.glb";
 	static inline final ASSET_MESH = 1;
 
 	static inline final ORBIT_SPEED = 0.4;
@@ -72,8 +72,8 @@ class ModelDemo {
 		Model.setAnimationLoop(model, true);
 		Scene.add(scene, model);
 
-		if (!GuestAbi.loadAsset(MODEL_PATH, ASSET_MESH))
-			Log.error('failed to queue asset: $MODEL_PATH');
+		if (!GuestAbi.loadAsset(CHARACTER_PATH, ASSET_MESH))
+			Log.error('failed to queue asset: $CHARACTER_PATH');
 	}
 
 	static function onAsset(id:Int, path:String, ok:Bool):Void {
@@ -109,7 +109,7 @@ class ModelDemo {
 		Scene.draw(scene);
 
 		Text.draw("wgrender + sokol — model (glTF/cgltf)", 12, 36, 22, Color.RAYWHITE);
-		Text.draw(loaded ? "woman_casual.glb — skeletal animation (glTF skin)" : "loading model...", 12, 68, 16,
+		Text.draw(loaded ? CHARACTER_PATH + " — skeletal animation (glTF skin)" : "loading model...", 12, 68, 16,
 			Color.LIGHTGRAY);
 		Render.endFrame();
 

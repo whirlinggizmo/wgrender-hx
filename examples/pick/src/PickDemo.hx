@@ -20,7 +20,7 @@ class PickDemo {
 	static inline final SCREEN_WIDTH = 900;
 	static inline final SCREEN_HEIGHT = 700;
 	static inline final LOGO_PATH = "sprites/logo/wg-logo-bw-alpha.png";
-	static inline final MODEL_PATH = "models/woman_casual/woman_casual.glb";
+	static inline final CHARACTER_PATH = "models/woman_casual/woman_casual.glb";
 	static inline final ASSET_LOGO = 1;
 	static inline final ASSET_MODEL = 2;
 
@@ -74,7 +74,7 @@ class PickDemo {
 		Scene.add(scene, sphere);
 
 		load(LOGO_PATH, ASSET_LOGO);
-		load(MODEL_PATH, ASSET_MODEL);
+		load(CHARACTER_PATH, ASSET_MODEL);
 		Debug.enableFps(12, 10, 16);
 	}
 

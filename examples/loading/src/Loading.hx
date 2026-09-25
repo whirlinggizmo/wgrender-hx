@@ -44,7 +44,7 @@ class Loading {
 
 	static var scene:Scene;
 	static var camera:Camera3D;
-	static var womanCasual:Model;
+	static var character:Model;
 	static var sphere:Model;
 	static var material:Material;
 
@@ -93,10 +93,10 @@ class Loading {
 		scene = Scene.create();
 		Scene.setActiveCamera(scene, camera);
 
-		womanCasual = Model.create(Handle.NONE);
-		Model.setTransform(womanCasual, new Vec3(-1.2, 0, 0), new Vec3(0, 0.4, 0), new Vec3(0.5, 0.5, 0.5));
-		Model.setAnimation(womanCasual, 3);
-		Scene.add(scene, womanCasual);
+		character = Model.create(Handle.NONE);
+		Model.setTransform(character, new Vec3(-1.2, 0, 0), new Vec3(0, 0.4, 0), new Vec3(0.5, 0.5, 0.5));
+		Model.setAnimation(character, 3);
+		Scene.add(scene, character);
 
 		sphere = Model.create(Handle.NONE);
 		Model.setTransform(sphere, new Vec3(1.2, 0.8, 0), Vec3.ZERO, new Vec3(0.8, 0.8, 0.8));
@@ -113,7 +113,7 @@ class Loading {
 	static function releaseAll():Void {
 		Scene.setEnvironment(scene, Handle.NONE, 1.0, 0.0);
 		Scene.setBackground(scene, Handle.NONE, 0.0);
-		Model.setMesh(womanCasual, Handle.NONE);
+		Model.setMesh(character, Handle.NONE);
 		Model.setMesh(sphere, Handle.NONE);
 		Material.setNormalTexture(material, Handle.NONE);
 		for (e in environments)
@@ -147,7 +147,7 @@ class Loading {
 
 		Scene.setEnvironment(scene, environments[0], 1.0, 0.0);
 		Scene.setBackground(scene, environments[0], 0.3);
-		Model.setMesh(womanCasual, meshes[0]);
+		Model.setMesh(character, meshes[0]);
 		Model.setMesh(sphere, meshes[1]);
 		Material.setNormalTexture(material, textures[0]);
 		loaded = true;
@@ -225,7 +225,7 @@ class Loading {
 			releaseAll();
 
 		elapsed += dt;
-		Model.animate(womanCasual, dt);
+		Model.animate(character, dt);
 
 		Render.beginFrame();
 		Render.clearBackground(background);

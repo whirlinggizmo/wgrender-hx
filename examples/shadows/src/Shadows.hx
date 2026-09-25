@@ -2,7 +2,7 @@
 //
 // A port of examples/shadows.c. The sun casts, so once a frame everything that casts
 // is drawn into a depth map and the lit shading darkens what is behind something. The
-// scene is a floor, a wall, some generated shapes and an animated woman, so the
+// scene is a floor, a wall, some generated shapes and an animated character, so the
 // shadows fall across each other and across themselves.
 //
 //   1        the sun's casting on and off -- the difference the whole feature makes
@@ -26,8 +26,8 @@ import wgr.*;
 class Shadows {
 	static inline final SCREEN_WIDTH = 1000;
 	static inline final SCREEN_HEIGHT = 600;
-	static inline final WOMAN_CASUAL_PATH = "models/woman_casual/woman_casual.glb";
-	static inline final ASSET_WOMAN_CASUAL = 1;
+	static inline final CHARACTER_PATH = "models/woman_casual/woman_casual.glb";
+	static inline final ASSET_CHARACTER = 1;
 
 	static final MAP_SIZES = [512, 1024, 2048, 4096];
 	/**
@@ -47,7 +47,7 @@ class Shadows {
 	static var sun:Light;
 	static var spot:Light;
 	static var spotMarker:Shape3D;
-	static var womanCasual:Model;
+	static var character:Model;
 
 	static var shadows = true;
 	static var spotShadows = true;
@@ -83,11 +83,11 @@ class Shadows {
 		addLights();
 		addScenery();
 
-		womanCasual = Model.create(Handle.NONE);
-		Model.setPosition(womanCasual, new Vec3(0, 0, 0));
-		Scene.add(scene, womanCasual);
-		if (!GuestAbi.loadAsset(WOMAN_CASUAL_PATH, ASSET_WOMAN_CASUAL))
-			Log.error('failed to queue asset: $WOMAN_CASUAL_PATH');
+		character = Model.create(Handle.NONE);
+		Model.setPosition(character, new Vec3(0, 0, 0));
+		Scene.add(scene, character);
+		if (!GuestAbi.loadAsset(CHARACTER_PATH, ASSET_CHARACTER))
+			Log.error('failed to queue asset: $CHARACTER_PATH');
 		Debug.enableFps(12, 10, 16);
 	}
 
@@ -154,13 +154,13 @@ class Shadows {
 			Log.error('load failed: $path');
 			return;
 		}
-		if (id != ASSET_WOMAN_CASUAL)
+		if (id != ASSET_CHARACTER)
 			return;
 		final mesh = Mesh.create(path);
-		Model.setMesh(womanCasual, mesh);
+		Model.setMesh(character, mesh);
 		Mesh.release(mesh);
-		Model.setAnimation(womanCasual, 3);
-		Model.setAnimationLoop(womanCasual, true);
+		Model.setAnimation(character, 3);
+		Model.setAnimationLoop(character, true);
 	}
 
 	static function handleKeys(dt:Float):Void {
@@ -205,7 +205,7 @@ class Shadows {
 		handleKeys(dt);
 
 		elapsed += dt;
-		Model.animate(womanCasual, dt);
+		Model.animate(character, dt);
 		// the spot circles overhead, always aimed at the middle of the scene
 		final sx = 7.0 * Math.sin(elapsed * 0.35);
 		final sz = 7.0 * Math.cos(elapsed * 0.35);

@@ -11,7 +11,7 @@ import wgr.*;
 class Guest {
 	static inline final DEBUG_FONT_PATH = "fonts/JetBrainsMono/JetBrainsMono-Regular.ttf";
 	static inline final KOMIKA_FONT_PATH = "fonts/Komika/KOMIKAH_.ttf";
-	static inline final MODEL_PATH = "models/woman_casual/woman_casual.glb";
+	static inline final CHARACTER_PATH = "models/woman_casual/woman_casual.glb";
 	static inline final SPRITE_PATH = "sprites/logo/wg-logo-bw-alpha.png";
 	static inline final BGM_PATH = "music/ethernight_club.mp3";
 
@@ -98,7 +98,7 @@ class Guest {
 		greyAlpha = Color.rgba(0, 0, 0, 128);
 
 		load(BGM_PATH, ASSET_BGM);
-		load(MODEL_PATH, ASSET_MODEL);
+		load(CHARACTER_PATH, ASSET_MODEL);
 		load(SPRITE_PATH, ASSET_SPRITE);
 		load(DEBUG_FONT_PATH, ASSET_DEBUG_FONT);
 		load(KOMIKA_FONT_PATH, ASSET_KOMIKA_FONT);

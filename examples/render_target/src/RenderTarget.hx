@@ -19,11 +19,11 @@ import wgr.*;
 class RenderTarget {
 	static inline final SCREEN_WIDTH = 1024;
 	static inline final SCREEN_HEIGHT = 700;
-	static inline final WOMAN_CASUAL_PATH = "models/woman_casual/woman_casual.glb";
+	static inline final CHARACTER_PATH = "models/woman_casual/woman_casual.glb";
 	static inline final SPHERE_PATH = "models/sphere/sphere.glb";
 	static inline final FONT_PATH = "fonts/Komika/KOMIKAH_.ttf";
 
-	static inline final ASSET_WOMAN_CASUAL = 1;
+	static inline final ASSET_CHARACTER = 1;
 	static inline final ASSET_SPHERE = 2;
 	static inline final ASSET_FONT = 3;
 
@@ -46,7 +46,7 @@ class RenderTarget {
 	static var minimap:Texture;
 	static var label:Texture;
 	static var font:Font;
-	static var womanCasual:Model;
+	static var character:Model;
 	static var globe:Model;
 	static var ground:Model;
 	static var elapsed = 0.0;
@@ -90,7 +90,7 @@ class RenderTarget {
 		Scene.setAmbient(scene, Color.WHITE, 0.25);
 
 		addModels();
-		load(WOMAN_CASUAL_PATH, ASSET_WOMAN_CASUAL);
+		load(CHARACTER_PATH, ASSET_CHARACTER);
 		load(SPHERE_PATH, ASSET_SPHERE);
 		load(FONT_PATH, ASSET_FONT);
 	}
@@ -118,9 +118,9 @@ class RenderTarget {
 		Material.setMetallic(groundMaterial, 0.0);
 		ground = model(new Vec3(0, -0.05, 0), 0.1, 8.0, groundMaterial);
 
-		womanCasual = Model.create(Handle.NONE);
-		Model.setAnimation(womanCasual, 3);
-		Scene.add(scene, womanCasual);
+		character = Model.create(Handle.NONE);
+		Model.setAnimation(character, 3);
+		Scene.add(scene, character);
 
 		// The globe wears the label: a target texture used like any other texture.
 		final globeMaterial = Material.create(Unlit);
@@ -135,9 +135,9 @@ class RenderTarget {
 			return;
 		}
 		switch id {
-			case ASSET_WOMAN_CASUAL:
+			case ASSET_CHARACTER:
 				final mesh = Mesh.create(path);
-				Model.setMesh(womanCasual, mesh);
+				Model.setMesh(character, mesh);
 				Mesh.release(mesh);
 
 			case ASSET_SPHERE:
@@ -165,9 +165,9 @@ class RenderTarget {
 		elapsed += dt;
 		final gx = Math.cos(elapsed * 0.6) * 2.5;
 		final gz = Math.sin(elapsed * 0.6) * 2.5;
-		Model.setTransform(womanCasual, new Vec3(gx, 0, gz), new Vec3(0, -elapsed * 0.6, 0),
+		Model.setTransform(character, new Vec3(gx, 0, gz), new Vec3(0, -elapsed * 0.6, 0),
 			new Vec3(0.6, 0.6, 0.6)); // walks in a circle
-		Model.animate(womanCasual, dt);
+		Model.animate(character, dt);
 		Model.setTransform(globe, new Vec3(-2.2, 1.2, 0), new Vec3(0, elapsed * 0.8, 0), new Vec3(1.6, 1.6, 1.6));
 
 		Render.beginFrame();
