@@ -437,3 +437,11 @@ the binding — Emscripten cannot strip what is exported, and exporting everythi
 75 KB. The `hello3d` example exports 25 and its host wasm is 242 KB against `simple`'s
 689 KB, because it links no model, glTF, audio or particle code at all. The guest fault policy
 defaults to log-and-continue.
+
+## License
+
+MIT; see [LICENSE](LICENSE). wgrender, in `project/lib/wgrender-c`, is MIT too, and the
+libraries it vendors (sokol, clay, cgltf, stb and others) keep their own licenses, listed
+in [its README](https://github.com/whirlinggizmo/wgrender-c#license). The example assets
+come from wgrender as well; their credits and licenses are in its
+[examples/assets/CREDITS.md](https://github.com/whirlinggizmo/wgrender-c/blob/main/examples/assets/CREDITS.md).
