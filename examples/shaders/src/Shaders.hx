@@ -3,7 +3,7 @@
 // A port of examples/shaders.c. Four shaders, each showing a different thing a custom
 // one can reach:
 //
-//   toon        lights in flat bands with a rim light, on the *animated* gumshoe --
+//   toon        lights in flat bands with a rim light, on the *animated* woman --
 //               a custom shader works on a skinned model like any other
 //   dissolve    a sphere eaten away and coming back through a noise texture, with a
 //               glowing edge: time, a texture of its own, and discard
@@ -27,7 +27,7 @@ class Shaders {
 	static inline final SCREEN_WIDTH = 960;
 	static inline final SCREEN_HEIGHT = 540;
 
-	static inline final GUMSHOE_PATH = "models/gumshoe/gumshoe.glb";
+	static inline final WOMAN_CASUAL_PATH = "models/woman_casual/woman_casual.glb";
 	static inline final NOISE_PATH = "textures/noise.png";
 	static inline final LOGO_PATH = "sprites/logo/wg-logo-white-alpha.png";
 	static inline final ENVIRONMENT_PATH = "environments/venice_sunset_1k.hdr";
@@ -43,18 +43,18 @@ class Shaders {
 	static inline final ASSET_SPRITE_FX = 4;
 	static inline final ASSET_LOGO = 5;
 	static inline final ASSET_ENVIRONMENT = 6;
-	static inline final ASSET_GUMSHOE = 7;
+	static inline final ASSET_WOMAN_CASUAL = 7;
 	static inline final ASSET_NOISE = 8;
 
 	static inline final FLOOR_Y = -0.3;
 	static inline final SPHERE_Y = FLOOR_Y + 0.5; // spheres 1 m across, resting on the floor
-	/** Slot 1 is the gumshoe's body; slot 0 is his blob shadow, left alone. **/
-	static inline final GUMSHOE_BODY_SLOT = 1;
+	/** Slot 1 is the woman's body; slot 0 is her blob shadow, left alone. **/
+	static inline final WOMAN_CASUAL_BODY_SLOT = 1;
 
 	static var background:Color;
 	static var scene:Scene;
 	static var camera:Camera3D;
-	static var gumshoe:Model;
+	static var womanCasual:Model;
 	static var dissolving:Model;
 	static var rippling:Model;
 	static var dissolve:Material; // borrowed: the model holds the reference
@@ -94,7 +94,7 @@ class Shaders {
 			load(SHADER_PATHS[i], i + 1);
 		load(LOGO_PATH, ASSET_LOGO);
 		load(ENVIRONMENT_PATH, ASSET_ENVIRONMENT);
-		load(GUMSHOE_PATH, ASSET_GUMSHOE);
+		load(WOMAN_CASUAL_PATH, ASSET_WOMAN_CASUAL);
 	}
 
 	static function load(path:String, id:Int):Void {
@@ -138,11 +138,11 @@ class Shaders {
 		Material.release(ground);
 		Scene.add(scene, floor);
 
-		gumshoe = Model.create(Handle.NONE); // the mesh attaches when it loads
-		Model.setTransform(gumshoe, new Vec3(-1.9, FLOOR_Y, 0), new Vec3(0, 0.4, 0),
+		womanCasual = Model.create(Handle.NONE); // the mesh attaches when it loads
+		Model.setTransform(womanCasual, new Vec3(-1.9, FLOOR_Y, 0), new Vec3(0, 0.4, 0),
 			new Vec3(0.5, 0.5, 0.5)); // feet at its origin
-		Model.setAnimation(gumshoe, 3);
-		Scene.add(scene, gumshoe);
+		Model.setAnimation(womanCasual, 3);
+		Scene.add(scene, womanCasual);
 
 		dissolving = Model.create(sphere);
 		Model.setPosition(dissolving, new Vec3(0, SPHERE_Y, 0));
@@ -184,7 +184,7 @@ class Shaders {
 				Material.setColor(material, "color", Color.rgba(255, 196, 120, 255));
 				Material.setFloat(material, "bands", 3.0);
 				Material.setFloat(material, "rim", 0.35);
-				Model.setMaterial(gumshoe, GUMSHOE_BODY_SLOT, material);
+				Model.setMaterial(womanCasual, WOMAN_CASUAL_BODY_SLOT, material);
 
 			case ASSET_DISSOLVE:
 				Material.setVec4(material, "color", 0.55, 0.6, 0.7, 1.0); // the shader's own colour, linear
@@ -237,9 +237,9 @@ class Shaders {
 				Scene.setEnvironment(scene, environment, 1.0, 0.0);
 				Environment.release(environment); // the scene holds its own reference
 
-			case ASSET_GUMSHOE:
+			case ASSET_WOMAN_CASUAL:
 				final mesh = Mesh.create(path);
-				Model.setMesh(gumshoe, mesh);
+				Model.setMesh(womanCasual, mesh);
 				Mesh.release(mesh);
 
 			case ASSET_NOISE:
@@ -268,7 +268,7 @@ class Shaders {
 		Shape3D.setPosition(lampMarker, new Vec3(lx, ly, lz));
 		Shape3D.setVisible(lampMarker, Light.isEnabled(lamp));
 		Model.setTransform(dissolving, new Vec3(0, SPHERE_Y, 0), new Vec3(0, elapsed * 0.4, 0), Vec3.ONE);
-		Model.animate(gumshoe, dt);
+		Model.animate(womanCasual, dt);
 
 		Render.beginFrame();
 		Render.clearBackground(background);

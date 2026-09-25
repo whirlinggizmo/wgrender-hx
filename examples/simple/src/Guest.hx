@@ -11,7 +11,7 @@ import wgr.*;
 class Guest {
 	static inline final DEBUG_FONT_PATH = "fonts/JetBrainsMono/JetBrainsMono-Regular.ttf";
 	static inline final KOMIKA_FONT_PATH = "fonts/Komika/KOMIKAH_.ttf";
-	static inline final MODEL_PATH = "models/gumshoe/gumshoe.glb";
+	static inline final MODEL_PATH = "models/woman_casual/woman_casual.glb";
 	static inline final SPRITE_PATH = "sprites/logo/wg-logo-bw-alpha.png";
 	static inline final BGM_PATH = "music/ethernight_club.mp3";
 

@@ -25,7 +25,7 @@ import wgr.*;
 class LightsDemo {
 	static inline final SCREEN_WIDTH = 1000;
 	static inline final SCREEN_HEIGHT = 600;
-	static inline final MODEL_PATH = "models/gumshoe/gumshoe.glb";
+	static inline final MODEL_PATH = "models/woman_casual/woman_casual.glb";
 	static inline final SPRITE_PATH = "textures/tiles.png";
 	static inline final NORMAL_PATH = "textures/tiles_sheet_normal.png"; // wgrender's tools/gen_tiles.py
 

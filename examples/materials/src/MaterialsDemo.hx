@@ -4,8 +4,8 @@
 //
 //   top row      dielectric spheres (metallic 0), roughness 0 to 1 left to right
 //   middle row   metal spheres (metallic 1), the same roughness steps
-//   bottom row   unlit, emissive, normal mapped, alpha blended, and the gumshoe with
-//                his body material replaced by gold -- on this model only
+//   bottom row   unlit, emissive, normal mapped, alpha blended, and the woman with
+//                her body material replaced by gold -- on this model only
 //
 // Two things in here are the actual subject. One sphere mesh backs every sphere and
 // each model overrides the mesh's material, so the material belongs to the instance
@@ -22,24 +22,24 @@ class MaterialsDemo {
 	static inline final SCREEN_WIDTH = 1000;
 	static inline final SCREEN_HEIGHT = 700;
 	static inline final SPHERE_PATH = "models/sphere/sphere.glb";
-	static inline final GUMSHOE_PATH = "models/gumshoe/gumshoe.glb";
+	static inline final WOMAN_CASUAL_PATH = "models/woman_casual/woman_casual.glb";
 	static inline final NORMAL_MAP_PATH = "textures/tiles_normal.png";
 
 	static inline final ASSET_SPHERE = 1;
-	static inline final ASSET_GUMSHOE = 2;
+	static inline final ASSET_WOMAN_CASUAL = 2;
 	static inline final ASSET_NORMAL_MAP = 3;
 
 	static inline final COLUMNS = 5;
 	static inline final SPACING = 1.35;
-	/** Slot 1 is the gumshoe's body; slot 0 is his blob shadow, which is left alone. **/
-	static inline final GUMSHOE_BODY_SLOT = 1;
+	/** Slot 1 is the woman's body; slot 0 is her blob shadow, which is left alone. **/
+	static inline final WOMAN_CASUAL_BODY_SLOT = 1;
 
 	static var background:Color;
 	static var scene:Scene;
 	static var camera:Camera3D;
 	static var spheres:Array<Model> = [];
 	static var bottomRow:Array<Model> = [];
-	static var gumshoe:Model;
+	static var womanCasual:Model;
 	static var tiles:Material; // the normal-mapped one; its texture arrives later
 	static var sun:Light;
 	static var lamp:Light;
@@ -70,10 +70,10 @@ class MaterialsDemo {
 		addLights();
 		addRoughnessRows();
 		addBottomRow();
-		addGumshoe();
+		addWomanCasual();
 
 		load(SPHERE_PATH, ASSET_SPHERE);
-		load(GUMSHOE_PATH, ASSET_GUMSHOE);
+		load(WOMAN_CASUAL_PATH, ASSET_WOMAN_CASUAL);
 		load(NORMAL_MAP_PATH, ASSET_NORMAL_MAP);
 	}
 
@@ -154,14 +154,14 @@ class MaterialsDemo {
 		bottomRow.push(sphere(SPACING, 0.0, glass));
 	}
 
-	static function addGumshoe():Void {
-		gumshoe = Model.create(Handle.NONE);
-		Model.setTransform(gumshoe, new Vec3(2 * SPACING, -0.55, 0), new Vec3(0, -0.6, 0), new Vec3(0.3, 0.3, 0.3));
-		Model.setAnimation(gumshoe, 3);
+	static function addWomanCasual():Void {
+		womanCasual = Model.create(Handle.NONE);
+		Model.setTransform(womanCasual, new Vec3(2 * SPACING, -0.55, 0), new Vec3(0, -0.6, 0), new Vec3(0.3, 0.3, 0.3));
+		Model.setAnimation(womanCasual, 3);
 		final gold = pbr(1.0, 0.77, 0.34, 1.0, 0.3);
-		Model.setMaterial(gumshoe, GUMSHOE_BODY_SLOT, gold);
+		Model.setMaterial(womanCasual, WOMAN_CASUAL_BODY_SLOT, gold);
 		Material.release(gold);
-		Scene.add(scene, gumshoe);
+		Scene.add(scene, womanCasual);
 	}
 
 	static function onAsset(id:Int, path:String, ok:Bool):Void {
@@ -176,9 +176,9 @@ class MaterialsDemo {
 					Model.setMesh(model, mesh);
 				Mesh.release(mesh); // the models hold their own references
 
-			case ASSET_GUMSHOE:
+			case ASSET_WOMAN_CASUAL:
 				final mesh = Mesh.create(path);
-				Model.setMesh(gumshoe, mesh);
+				Model.setMesh(womanCasual, mesh);
 				Mesh.release(mesh);
 
 			case ASSET_NORMAL_MAP:
@@ -208,7 +208,7 @@ class MaterialsDemo {
 		// turn the bottom row, so the normal map has something to catch
 		for (i in 0...bottomRow.length)
 			Model.setTransform(bottomRow[i], new Vec3((i - 2.0) * SPACING, 0.0, 0), new Vec3(0, elapsed * 0.5, 0), Vec3.ONE);
-		Model.animate(gumshoe, dt);
+		Model.animate(womanCasual, dt);
 
 		Render.beginFrame();
 		Render.clearBackground(background);

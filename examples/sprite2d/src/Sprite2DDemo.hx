@@ -28,7 +28,7 @@ class Sprite2DDemo {
 
 	static inline final LOGO_PATH = "sprites/logo/wg-logo-bw-alpha.png";
 	static inline final WHITE_LOGO_PATH = "sprites/logo/wg-logo-white-alpha.png";
-	static inline final MODEL_PATH = "models/gumshoe/gumshoe.glb";
+	static inline final MODEL_PATH = "models/woman_casual/woman_casual.glb";
 
 	static inline final ASSET_LOGO = 1;
 	static inline final ASSET_WHITE_LOGO = 2;

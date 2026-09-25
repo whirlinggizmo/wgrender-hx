@@ -3,7 +3,7 @@
 // A port of examples/instancing.c, and the thing to notice is that nothing here asks
 // for instancing. It is what wgrender does when models agree on everything but where
 // they stand: a field of 400 cubes shares one mesh and one material and differs only
-// in transform and tint, so it goes up as one draw. Six gumshoes share one skinned
+// in transform and tint, so it goes up as one draw. Six women share one skinned
 // mesh and animate out of step, so their joints are per instance. A few cubes are
 // see-through and keep their back-to-front order. The sun casts, so the same batching
 // happens again into its shadow map.
@@ -16,7 +16,7 @@ import wgr.*;
 class Instancing {
 	static inline final SCREEN_WIDTH = 1024;
 	static inline final SCREEN_HEIGHT = 720;
-	static inline final MODEL_PATH = "models/gumshoe/gumshoe.glb";
+	static inline final MODEL_PATH = "models/woman_casual/woman_casual.glb";
 
 	static inline final FIELD_SIDE = 20;
 	static inline final FIELD_COUNT = FIELD_SIDE * FIELD_SIDE;

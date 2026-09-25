@@ -13,7 +13,7 @@
 //   - the note under the bar is wrapped text (`Text2D.maxWidth`)
 //   - the list at the bottom is clipped to the panel (`Scene.setClip`): the mouse wheel
 //     scrolls it, and rows scrolled out of the box can't be hovered or clicked
-//   - the gumshoe (a 3D member) lights up on hover; clicking it starts or stops its
+//   - the woman (a 3D member) lights up on hover; clicking it starts or stops its
 //     animation
 //   - dragging anywhere else orbits the camera; a drag that starts on a button doesn't
 //     (`Input.isPointerCaptured()`)
@@ -31,9 +31,9 @@ import wgr.*;
 class UiDemo {
 	static inline final SCREEN_WIDTH = 960;
 	static inline final SCREEN_HEIGHT = 600;
-	static inline final GUMSHOE_PATH = "models/gumshoe/gumshoe.glb";
+	static inline final WOMAN_CASUAL_PATH = "models/woman_casual/woman_casual.glb";
 	static inline final PANEL_PATH = "textures/ui_panel.png";
-	static inline final GUMSHOE_ID = 1;
+	static inline final WOMAN_CASUAL_ID = 1;
 	static inline final PANEL_ID = 2;
 
 	// Layers, bottom to top. Each widget puts its labels on the layer above the one
@@ -56,7 +56,7 @@ class UiDemo {
 
 	static final LABELS = ["Count", "Enable / Disable", "Count too"];
 	static final ROW_NAMES = [
-		"Sponza", "Flight helmet", "Gumshoe", "Damaged helmet", "Water bottle", "Lantern", "Sphere grid", "Boom box"
+		"Sponza", "Flight helmet", "Woman", "Damaged helmet", "Water bottle", "Lantern", "Sphere grid", "Boom box"
 	];
 
 	static var scene:Scene;
@@ -73,7 +73,7 @@ class UiDemo {
 	static var buttons:Array<UiButton> = [];
 	static var bar:UiBar;
 	static var list:UiList;
-	static var gumshoe:Model;
+	static var womanCasual:Model;
 	static var panelTexture:Texture;
 	static var clicks = 0;
 	static var animating = false;
@@ -112,9 +112,9 @@ class UiDemo {
 		Light.setDirection(sun, new Vec3(-0.4, -1.0, -0.6));
 		Scene.add(scene, sun, 0);
 
-		gumshoe = Model.create(Handle.NONE);
-		Model.setAnimation(gumshoe, 3);
-		Scene.add(scene, gumshoe, 0);
+		womanCasual = Model.create(Handle.NONE);
+		Model.setAnimation(womanCasual, 3);
+		Scene.add(scene, womanCasual, 0);
 
 		// the panel: one 48x48 texture with 16 px borders, stretched to any size
 		panel = Sprite2D.create(Handle.NONE);
@@ -148,7 +148,7 @@ class UiDemo {
 		// the list clips its rows and their labels to its box (LAYER_ROW, LAYER_ROW + 1)
 		list = new UiList(scene, LAYER_ROW, ROW_NAMES, LIST_X, LIST_Y, LIST_WIDTH, LIST_HEIGHT, ROW_HEIGHT, 15);
 
-		GuestAbi.loadAsset(GUMSHOE_PATH, GUMSHOE_ID);
+		GuestAbi.loadAsset(WOMAN_CASUAL_PATH, WOMAN_CASUAL_ID);
 		GuestAbi.loadAsset(PANEL_PATH, PANEL_ID);
 	}
 
@@ -158,9 +158,9 @@ class UiDemo {
 			return;
 		}
 		switch (id) {
-			case GUMSHOE_ID:
+			case WOMAN_CASUAL_ID:
 				final mesh = Mesh.create(path);
-				Model.setMesh(gumshoe, mesh);
+				Model.setMesh(womanCasual, mesh);
 				Mesh.release(mesh);
 			case PANEL_ID:
 				panelTexture = Texture.create(path); // kept: the header draws it too
@@ -190,12 +190,12 @@ class UiDemo {
 		final selected = list.update(scene, theme, mouse.wheel);
 
 		// the 3D model
-		final hover = Scene.getHover(scene, gumshoe);
-		Model.setTint(gumshoe, Ui.isActive(hover) ? highlight : Color.WHITE);
-		if (Scene.isClicked(scene, gumshoe))
+		final hover = Scene.getHover(scene, womanCasual);
+		Model.setTint(womanCasual, Ui.isActive(hover) ? highlight : Color.WHITE);
+		if (Scene.isClicked(scene, womanCasual))
 			animating = !animating;
 		if (animating)
-			Model.animate(gumshoe, dt);
+			Model.animate(womanCasual, dt);
 
 		// orbit, unless the press started on UI
 		if (mouse.left == ButtonState.Down && !Input.isPointerCaptured()) {
@@ -212,7 +212,7 @@ class UiDemo {
 		Shape2D.drawRoundedRectangle(18, 40, 624, 22, 11, pill);
 		Shape2D.drawBorder(18, 40, 624, 22, 1, 1, 1, 1, 11, 11, 11, 11, pillEdge);
 		Text.draw("wgrender ui: hover, press and click 2D and 3D members", 22, 15, 20, theme.text);
-		final what = SceneMember.isNone(hovered) ? "nothing" : same(hovered, gumshoe) ? "gumshoe" : same(hovered,
+		final what = SceneMember.isNone(hovered) ? "nothing" : same(hovered, womanCasual) ? "the woman" : same(hovered,
 			panel) ? "the panel" : "UI";
 		Text.draw('clicks: $clicks   selected: ${selected < 0 ? "nothing" : ROW_NAMES[selected]}   '
 			+ 'hovered: $what   pointer captured: ${Input.isPointerCaptured() ? "yes" : "no"}', 28, 43, 15,

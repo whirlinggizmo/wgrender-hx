@@ -25,11 +25,11 @@ import wgr.*;
 class Postprocess {
 	static inline final SCREEN_WIDTH = 1000;
 	static inline final SCREEN_HEIGHT = 640;
-	static inline final GUMSHOE_PATH = "models/gumshoe/gumshoe.glb";
+	static inline final WOMAN_CASUAL_PATH = "models/woman_casual/woman_casual.glb";
 	static inline final VIGNETTE_PATH = "shaders/vignette.wgrshader";
 	static inline final SCANLINES_PATH = "shaders/scanlines.wgrshader";
 
-	static inline final ASSET_GUMSHOE = 1;
+	static inline final ASSET_WOMAN_CASUAL = 1;
 	static inline final ASSET_VIGNETTE = 2;
 	static inline final ASSET_SCANLINES = 3;
 
@@ -38,7 +38,7 @@ class Postprocess {
 	static var target:Vec3;
 	static var lamp:Light;
 	static var lampMarker:Shape3D;
-	static var gumshoe:Model;
+	static var womanCasual:Model;
 	static var torus:Model;
 	static var vignette:Material;
 	static var scanlines:Material;
@@ -88,11 +88,11 @@ class Postprocess {
 
 		addScenery();
 
-		gumshoe = Model.create(Handle.NONE);
-		Model.setPosition(gumshoe, new Vec3(0, 0, 0));
-		Scene.add(scene, gumshoe);
+		womanCasual = Model.create(Handle.NONE);
+		Model.setPosition(womanCasual, new Vec3(0, 0, 0));
+		Scene.add(scene, womanCasual);
 
-		load(GUMSHOE_PATH, ASSET_GUMSHOE);
+		load(WOMAN_CASUAL_PATH, ASSET_WOMAN_CASUAL);
 		load(VIGNETTE_PATH, ASSET_VIGNETTE);
 		load(SCANLINES_PATH, ASSET_SCANLINES);
 		Debug.enableFps(12, 10, 16);
@@ -141,12 +141,12 @@ class Postprocess {
 			return;
 		}
 		switch id {
-			case ASSET_GUMSHOE:
+			case ASSET_WOMAN_CASUAL:
 				final mesh = Mesh.create(path);
-				Model.setMesh(gumshoe, mesh);
+				Model.setMesh(womanCasual, mesh);
 				Mesh.release(mesh);
-				Model.setAnimation(gumshoe, 3);
-				Model.setAnimationLoop(gumshoe, true);
+				Model.setAnimation(womanCasual, 3);
+				Model.setAnimationLoop(womanCasual, true);
 
 			case ASSET_VIGNETTE:
 				final shader = Shader.create(path);
@@ -203,7 +203,7 @@ class Postprocess {
 		handleKeys(dt);
 
 		elapsed += dt;
-		Model.animate(gumshoe, dt);
+		Model.animate(womanCasual, dt);
 		if (orbit)
 			angle += dt * 0.25;
 		Camera3D.setView(camera, new Vec3(9.0 * Math.sin(angle), 3.2, 9.0 * Math.cos(angle)), target);
