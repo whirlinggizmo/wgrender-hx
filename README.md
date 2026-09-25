@@ -312,8 +312,9 @@ with a line each. One more, [`stress`](examples/stress), ports wgrender's benchm
   loads nothing at all, which makes it the size floor
 - [`simple`](examples/simple) — a model, a sprite, text, audio and picking, and the one
   the size and frame-cost tables are measured on
-- [`2d`](examples/2d) — a 2D world with no Camera2D, which is the point: sprite3d in
-  the XY plane under an orthographic camera keeps the 3D scene, layers and picking
+- [`tilemap`](examples/tilemap) — a scrolling 2D tile map with no Camera2D, which is the
+  point: sprite3d in the XY plane under an orthographic camera keeps the 3D scene,
+  layers and picking
 - [`fetch`](examples/fetch) — the one place the two targets genuinely differ rather
   than differing at the edges, since `Asset.setFetcher` is hxcpp-only and the web has
   the browser

@@ -1,6 +1,6 @@
-// wgrender's 2d example, as a Haxe guest: a 2D world on an orthographic camera.
+// wgrender's tilemap example, as a Haxe guest: a scrolling 2D tile map on an orthographic camera.
 //
-// A port of examples/2d.c, and the example that explains an absence: wgrender has no
+// A port of examples/tilemap.c, and the example that explains an absence: wgrender has no
 // Camera2D. A scrolling, zooming 2D world is `Sprite3D`s in the XY plane with `Free`
 // facing under an orthographic `Camera3D`, which keeps the same scenes, layers, depth
 // order and ray picking the 3D path has.
@@ -21,7 +21,7 @@
 import wgr.*;
 
 @:expose("WgrGuest")
-class World2D {
+class Tilemap {
 	static inline final SCREEN_WIDTH = 960;
 	static inline final SCREEN_HEIGHT = 600;
 	static inline final TILES_PATH = "textures/tiles.png";
@@ -71,7 +71,7 @@ class World2D {
 		GuestAbi.register(onInit, (dt, _) -> onFrame(dt), onAsset);
 		// No MSAA: the tiles are quads meeting edge to edge, and multisampled edges
 		// let the background through as a hairline seam between them.
-		return GuestAbi.start(SCREEN_WIDTH, SCREEN_HEIGHT, "2d (wgrender host, Haxe guest)", Resizable);
+		return GuestAbi.start(SCREEN_WIDTH, SCREEN_HEIGHT, "tilemap (wgrender host, Haxe guest)", Resizable);
 	}
 
 	static function onInit():Void {
@@ -225,7 +225,7 @@ class World2D {
 		Scene.draw(scene);
 		Render.beginMode2D(); // back to screen space for the HUD
 		Shape2D.drawRectangle(0, 0, screen.x, 88, shade);
-		Text.draw("wgrender 2d: an orthographic camera over sprite3d tiles", 20, 20, 20, textColor);
+		Text.draw("wgrender tilemap: an orthographic camera over sprite3d tiles", 20, 20, 20, textColor);
 		Text.draw('coins: $collected of $COIN_COUNT   zoom: ${fixed(zoom, 1)} units   '
 			+ 'center: ${fixed(centreX, 1)}, ${fixed(centreY, 1)}${loaded ? "" : "   (loading)"}', 20, 46, 15, dim);
 		Text.draw("drag or arrows to scroll, wheel to zoom, click the coins", 20, 68, 15, dim);

@@ -62,7 +62,7 @@ C_BUILD = WGRENDER / 'out/web/webgl2-nothreads'  # wgrender's own C build of eac
 # or benched with the guests.
 GUESTS = ['hello', 'hello3d', 'particles', 'simple', 'stress', 'tick',
           'quit', 'window', 'font', 'audio', 'force_fetch',
-          'fetch', 'sprite2d', 'sprite3d', 'text3d', '2d',
+          'fetch', 'sprite2d', 'sprite3d', 'text3d', 'tilemap',
           'model', 'meshes', 'textures', 'materials', 'lights',
           'instancing', 'shadows', 'render_target', 'postprocess', 'environment',
           'shaders', 'gamepad', 'scene3d', 'pick', 'loading', 'touch', 'ui']
@@ -87,8 +87,8 @@ WHAT = {
                 'flip, picking',
     'sprite3d': 'the resource rule at its shortest: load, Texture.create, new Sprite3D',
     'text3d': 'text in the world, 3D shapes, and what a pick query costs',
-    '2d': 'a 2D world with no Camera2D: sprite3d in the XY plane under an '
-          'orthographic camera',
+    'tilemap': 'a scrolling 2D tile map with no Camera2D: sprite3d in the XY plane '
+               'under an orthographic camera',
     'model': 'a glTF model created empty and filled in when its mesh arrives',
     'meshes': 'the seven generated shapes, sharing one normal-mapped material so '
               'their UVs and tangents have to agree',
