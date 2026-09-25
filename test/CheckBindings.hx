@@ -105,6 +105,7 @@ class CheckBindings {
 
 		final mouse = Input.getMouseState();
 		eq(mouse.buttons.length, 3, "mouse buttons array");
+		check(mouse.left == ButtonState.Up && mouse.buttons[2] == ButtonState.Up, "no button held in headless, as a ButtonState");
 		check(mouse.x == 0 && mouse.y == 0, "no pointer in headless, so the mouse is at the origin");
 
 		// nothing in the scene yet, so a pick must miss rather than report garbage

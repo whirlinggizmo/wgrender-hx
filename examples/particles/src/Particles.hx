@@ -217,7 +217,7 @@ class Particles {
 				3.5 * Math.sin(elapsed * 1.3)));
 
 		final mouse = Input.getMouseState();
-		if (mouse.left == (Pressed : ButtonState) && !Emitter2D.isNone(confetti))
+		if (mouse.left == ButtonState.Pressed && !Emitter2D.isNone(confetti))
 			burst(new Vec2(mouse.x, mouse.y));
 		if (Input.isKeyPressed(Space) && !Emitter3D.isNone(fountain))
 			setPaused(!paused);

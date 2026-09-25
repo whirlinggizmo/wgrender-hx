@@ -11,14 +11,17 @@ class MouseState {
 	public final wheel:Float;
 
 	public final wheelX:Float;
-	public final left:Int;
-	public final right:Int;
-	public final middle:Int;
-	public final buttons:Array<Int>;
+	public final left:ButtonState;
+	public final right:ButtonState;
+	public final middle:ButtonState;
+
+	/** Left, right and middle, by index. **/
+	public final buttons:Array<ButtonState>;
 	public final dx:Int;
 	public final dy:Int;
 
-	public function new(x, y, wheel, wheelX, left, right, middle, buttons, dx, dy) {
+	public function new(x:Int, y:Int, wheel:Float, wheelX:Float, left:ButtonState, right:ButtonState,
+			middle:ButtonState, buttons:Array<ButtonState>, dx:Int, dy:Int) {
 		this.x = x;
 		this.y = y;
 		this.wheel = wheel;
