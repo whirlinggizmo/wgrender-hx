@@ -8,7 +8,7 @@
     "emcc": "5.0.7"
   },
   "wgrender": {
-    "commit": "399ede3",
+    "commit": "7399bc8",
     "dirty": false,
     "source": "sibling checkout"
   },
@@ -38,9 +38,9 @@
           {
             "name": "simple.js",
             "kind": "js",
-            "raw": 22063,
-            "gzip": 5491,
-            "brotli": 4833
+            "raw": 22213,
+            "gzip": 5564,
+            "brotli": 4893
           },
           {
             "name": "index.html",
@@ -58,33 +58,33 @@
           }
         ],
         "total": {
-          "raw": 785727,
-          "gzip": 321849,
-          "brotli": 264070
+          "raw": 785877,
+          "gzip": 321922,
+          "brotli": 264130
         }
       },
       "frame": {
         "label": "haxe-js",
-        "frames": 479,
+        "frames": 480,
         "median": 16.66,
         "p95": 16.67,
         "overCap": 0.0,
-        "scriptMs": 0.524,
-        "taskMs": 0.827,
+        "scriptMs": 0.523,
+        "taskMs": 0.817,
         "scriptRuns": [
-          0.46,
-          0.524,
-          0.529
+          0.516,
+          0.523,
+          0.544
         ]
       },
       "gc": {
         "label": "haxe-js",
-        "frames": 605,
+        "frames": 604,
         "uncapped": false,
-        "allocBytesPerFrame": 4652,
-        "allocMBPerMinute": 16.0,
-        "collections": 5,
-        "freedMB": 2.35,
+        "allocBytesPerFrame": 3699,
+        "allocMBPerMinute": 12.7,
+        "collections": 3,
+        "freedMB": 1.82,
         "heapStartMB": 8.9,
         "heapEndMB": 9.3,
         "frameMs": {
@@ -103,13 +103,13 @@
           "pct": 0.0
         },
         "gc": {
-          "totalMs": 1.6,
+          "totalMs": 1.9,
           "pctOfWall": 0.02,
           "minor": {
             "count": 1,
-            "medianMs": 1.57,
-            "maxMs": 1.57,
-            "totalMs": 1.6
+            "medianMs": 1.95,
+            "maxMs": 1.95,
+            "totalMs": 1.9
           },
           "major": {
             "count": 0,
@@ -148,24 +148,24 @@
             "median": 16.66,
             "p95": 16.67,
             "overCap": 0.0,
-            "scriptMs": 0.458,
-            "taskMs": 0.551,
+            "scriptMs": 0.46,
+            "taskMs": 0.555,
             "scriptRuns": [
-              0.42,
-              0.458,
-              0.466
+              0.443,
+              0.46,
+              0.505
             ]
           },
           "gc": {
             "label": "haxe-js-1000",
             "frames": 606,
             "uncapped": false,
-            "allocBytesPerFrame": 19592,
+            "allocBytesPerFrame": 19596,
             "allocMBPerMinute": 67.3,
-            "collections": 7,
-            "freedMB": 10.05,
-            "heapStartMB": 2.4,
-            "heapEndMB": 3.7,
+            "collections": 8,
+            "freedMB": 11.61,
+            "heapStartMB": 3.2,
+            "heapEndMB": 2.9,
             "frameMs": {
               "median": 16.66,
               "p99": 16.67,
@@ -182,13 +182,13 @@
               "pct": 0.0
             },
             "gc": {
-              "totalMs": 1.9,
+              "totalMs": 2.1,
               "pctOfWall": 0.02,
               "minor": {
-                "count": 7,
+                "count": 8,
                 "medianMs": 0.26,
-                "maxMs": 0.36,
-                "totalMs": 1.9
+                "maxMs": 0.35,
+                "totalMs": 2.1
               },
               "major": {
                 "count": 0,
@@ -204,28 +204,28 @@
           "n": 5000,
           "frame": {
             "label": "haxe-js-5000",
-            "frames": 479,
+            "frames": 478,
             "median": 16.66,
             "p95": 16.67,
-            "overCap": 0.0,
-            "scriptMs": 1.554,
-            "taskMs": 1.644,
+            "overCap": 0.2,
+            "scriptMs": 1.564,
+            "taskMs": 1.66,
             "scriptRuns": [
-              1.437,
-              1.554,
-              1.587
+              1.492,
+              1.564,
+              1.715
             ]
           },
           "gc": {
             "label": "haxe-js-5000",
             "frames": 606,
             "uncapped": false,
-            "allocBytesPerFrame": 22942,
-            "allocMBPerMinute": 78.8,
+            "allocBytesPerFrame": 22931,
+            "allocMBPerMinute": 78.7,
             "collections": 6,
-            "freedMB": 10.78,
-            "heapStartMB": 3.4,
-            "heapEndMB": 5.9,
+            "freedMB": 10.87,
+            "heapStartMB": 4.2,
+            "heapEndMB": 6.5,
             "frameMs": {
               "median": 16.66,
               "p99": 16.67,
@@ -242,13 +242,13 @@
               "pct": 0.0
             },
             "gc": {
-              "totalMs": 2.8,
+              "totalMs": 2.6,
               "pctOfWall": 0.03,
               "minor": {
                 "count": 6,
-                "medianMs": 0.5,
-                "maxMs": 0.58,
-                "totalMs": 2.8
+                "medianMs": 0.46,
+                "maxMs": 0.57,
+                "totalMs": 2.6
               },
               "major": {
                 "count": 0,
@@ -268,47 +268,47 @@
             "median": 16.66,
             "p95": 16.67,
             "overCap": 0.0,
-            "scriptMs": 2.852,
-            "taskMs": 2.944,
+            "scriptMs": 2.906,
+            "taskMs": 2.999,
             "scriptRuns": [
-              2.804,
-              2.852,
-              2.901
+              2.851,
+              2.906,
+              2.935
             ]
           },
           "gc": {
             "label": "haxe-js-10000",
-            "frames": 606,
+            "frames": 605,
             "uncapped": false,
-            "allocBytesPerFrame": 27477,
-            "allocMBPerMinute": 94.3,
+            "allocBytesPerFrame": 27447,
+            "allocMBPerMinute": 94.2,
             "collections": 5,
-            "freedMB": 12.83,
-            "heapStartMB": 5.0,
-            "heapEndMB": 8.1,
+            "freedMB": 13.04,
+            "heapStartMB": 6.0,
+            "heapEndMB": 8.8,
             "frameMs": {
               "median": 16.66,
               "p99": 16.67,
-              "max": 16.67
+              "max": 33.33
             },
             "gcFrameMs": {
-              "median": 16.66,
+              "median": 16.67,
               "max": 16.67
             },
             "loadMs": 8,
             "lateFrames": {
-              "over20": 0,
-              "over33": 0,
-              "pct": 0.0
+              "over20": 1,
+              "over33": 1,
+              "pct": 0.17
             },
             "gc": {
-              "totalMs": 2.9,
+              "totalMs": 3.4,
               "pctOfWall": 0.03,
               "minor": {
                 "count": 5,
-                "medianMs": 0.56,
-                "maxMs": 0.68,
-                "totalMs": 2.9
+                "medianMs": 0.6,
+                "maxMs": 1.01,
+                "totalMs": 3.4
               },
               "major": {
                 "count": 0,
@@ -333,23 +333,23 @@
           {
             "name": "simple.wasm",
             "kind": "wasm",
-            "raw": 1705202,
-            "gzip": 465906,
-            "brotli": 361111
+            "raw": 1706364,
+            "gzip": 469575,
+            "brotli": 361032
           },
           {
             "name": "simple.js",
             "kind": "js",
             "raw": 70894,
-            "gzip": 25306,
-            "brotli": 22591
+            "gzip": 25307,
+            "brotli": 22561
           },
           {
             "name": "index.html",
             "kind": "page",
             "raw": 8636,
-            "gzip": 3600,
-            "brotli": 2926
+            "gzip": 3602,
+            "brotli": 2923
           },
           {
             "name": "examples.json",
@@ -360,9 +360,9 @@
           }
         ],
         "total": {
-          "raw": 1784743,
-          "gzip": 494843,
-          "brotli": 386643
+          "raw": 1785905,
+          "gzip": 498515,
+          "brotli": 386531
         }
       },
       "frame": {
@@ -371,22 +371,22 @@
         "median": 16.66,
         "p95": 16.67,
         "overCap": 0.0,
-        "scriptMs": 0.539,
-        "taskMs": 0.837,
+        "scriptMs": 0.522,
+        "taskMs": 0.801,
         "scriptRuns": [
-          0.533,
-          0.539,
-          0.54
+          0.502,
+          0.522,
+          0.553
         ]
       },
       "gc": {
         "label": "haxe-hxcpp",
-        "frames": 606,
+        "frames": 605,
         "uncapped": false,
-        "allocBytesPerFrame": 2595,
-        "allocMBPerMinute": 8.9,
-        "collections": 3,
-        "freedMB": 1.31,
+        "allocBytesPerFrame": 320,
+        "allocMBPerMinute": 1.1,
+        "collections": 0,
+        "freedMB": 0.0,
         "heapStartMB": 8.7,
         "heapEndMB": 8.9,
         "frameMs": {
@@ -394,10 +394,7 @@
           "p99": 16.67,
           "max": 16.67
         },
-        "gcFrameMs": {
-          "median": 16.66,
-          "max": 16.67
-        },
+        "gcFrameMs": null,
         "loadMs": 0,
         "lateFrames": {
           "over20": 0,
@@ -431,12 +428,12 @@
             "median": 16.66,
             "p95": 16.67,
             "overCap": 0.0,
-            "scriptMs": 0.525,
-            "taskMs": 0.613,
+            "scriptMs": 0.503,
+            "taskMs": 0.586,
             "scriptRuns": [
-              0.498,
-              0.525,
-              0.617
+              0.502,
+              0.503,
+              0.511
             ]
           },
           "gc": {
@@ -462,13 +459,13 @@
               "pct": 0.0
             },
             "gc": {
-              "totalMs": 0.4,
-              "pctOfWall": 0.0,
+              "totalMs": 0.5,
+              "pctOfWall": 0.01,
               "minor": {
                 "count": 1,
-                "medianMs": 0.41,
-                "maxMs": 0.41,
-                "totalMs": 0.4
+                "medianMs": 0.55,
+                "maxMs": 0.55,
+                "totalMs": 0.5
               },
               "major": {
                 "count": 0,
@@ -488,19 +485,19 @@
             "median": 16.66,
             "p95": 16.67,
             "overCap": 0.0,
-            "scriptMs": 1.665,
-            "taskMs": 1.752,
+            "scriptMs": 1.614,
+            "taskMs": 1.701,
             "scriptRuns": [
-              1.576,
-              1.665,
-              1.703
+              1.547,
+              1.614,
+              1.729
             ]
           },
           "gc": {
             "label": "haxe-hxcpp-5000",
-            "frames": 606,
+            "frames": 607,
             "uncapped": false,
-            "allocBytesPerFrame": 425,
+            "allocBytesPerFrame": 423,
             "allocMBPerMinute": 1.5,
             "collections": 0,
             "freedMB": 0.0,
@@ -519,13 +516,13 @@
               "pct": 0.0
             },
             "gc": {
-              "totalMs": 0.4,
-              "pctOfWall": 0.0,
+              "totalMs": 0.6,
+              "pctOfWall": 0.01,
               "minor": {
                 "count": 1,
-                "medianMs": 0.45,
-                "maxMs": 0.45,
-                "totalMs": 0.4
+                "medianMs": 0.56,
+                "maxMs": 0.56,
+                "totalMs": 0.6
               },
               "major": {
                 "count": 0,
@@ -545,17 +542,17 @@
             "median": 16.66,
             "p95": 16.67,
             "overCap": 0.0,
-            "scriptMs": 2.935,
-            "taskMs": 3.024,
+            "scriptMs": 2.981,
+            "taskMs": 3.071,
             "scriptRuns": [
-              2.854,
-              2.935,
-              3.027
+              2.953,
+              2.981,
+              3.005
             ]
           },
           "gc": {
             "label": "haxe-hxcpp-10000",
-            "frames": 605,
+            "frames": 606,
             "uncapped": false,
             "allocBytesPerFrame": 422,
             "allocMBPerMinute": 1.4,
@@ -580,8 +577,8 @@
               "pctOfWall": 0.0,
               "minor": {
                 "count": 1,
-                "medianMs": 0.4,
-                "maxMs": 0.4,
+                "medianMs": 0.44,
+                "maxMs": 0.44,
                 "totalMs": 0.4
               },
               "major": {
