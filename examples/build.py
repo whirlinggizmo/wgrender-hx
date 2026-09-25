@@ -190,17 +190,16 @@ SITE_INDEX = """<!doctype html>
   main {{ max-width: 46rem; margin: 0 auto; }}
   h1 {{ font-size: 1.3rem; font-weight: 600; margin: 0 0 .3rem; }}
   p.lede {{ color: #9a9aad; margin: 0 0 2rem; }}
-  form {{ display: flex; gap: .6rem; align-items: center; margin: 0 0 .6rem; }}
-  select {{ flex: 1; padding: .6rem .7rem; background: #1c1c26; color: #e8e8ef;
-           border: 1px solid #2a2a36; border-radius: 6px; font: inherit; }}
+  select {{ width: 100%; margin: 0 0 2.5rem; padding: .6rem .7rem; background: #1c1c26;
+           color: #e8e8ef; border: 1px solid #2a2a36; border-radius: 6px; font: inherit; }}
   select:hover {{ border-color: #3a3a4a; }}
-  button {{ padding: .6rem 1.1rem; background: #66bfff; color: #14141a; border: 0;
-           border-radius: 6px; font: inherit; font-weight: 600; cursor: pointer; }}
-  button:hover {{ background: #8ccfff; }}
-  p.what {{ color: #9a9aad; margin: 0 0 2.5rem; min-height: 1.6em; }}
+  a {{ color: #66bfff; text-decoration: none; }}
+  a:hover {{ text-decoration: underline; }}
   table {{ border-collapse: collapse; width: 100%; font-size: 13px; }}
   th, td {{ text-align: right; padding: .35rem .6rem; border-bottom: 1px solid #23232e; }}
   th:first-child, td:first-child {{ text-align: left; }}
+  tr.name td {{ border-bottom: 0; padding-bottom: 0; }}
+  td.what {{ text-align: left; color: #9a9aad; padding-top: 0; }}
   th {{ color: #9a9aad; font-weight: 500; }}
   caption {{ text-align: left; color: #9a9aad; padding-bottom: .6rem; }}
   noscript p {{ color: #ffb4b4; }}
@@ -210,36 +209,56 @@ SITE_INDEX = """<!doctype html>
 <p class="lede">wgrender compiled to wasm as the host, the game compiled to JS as the
 guest. The same sources build native through hxcpp.</p>
 
-<form onsubmit="go(event)">
-  <select id="ex" onchange="describe()" aria-label="example">
+<select id="ex" aria-label="example">
+  <option value="" selected disabled>run an example&hellip;</option>
 {options}
-  </select>
-  <button type="submit">Run</button>
-</form>
-<p class="what" id="what"></p>
+</select>
 
-<noscript><p>This picker needs JavaScript; the examples are at ./&lt;name&gt;/</p></noscript>
+<noscript><p>This picker needs JavaScript; the examples below are links.</p></noscript>
 
 {table}
 </main>
 <script>
-  const WHAT = {what};
   const sel = document.getElementById("ex");
-  // Remember the last pick, so a reload does not send you back to the top of the
-  // list. Storage can throw in a private window, and the default is fine then.
-  try {{
-    const last = localStorage.getItem("wgrender-hx:example");
-    if (last && [...sel.options].some((o) => o.value === last)) sel.value = last;
-  }} catch (e) {{}}
-  function describe() {{ document.getElementById("what").textContent = WHAT[sel.value] || ""; }}
-  function go(event) {{
-    event.preventDefault();
-    try {{ localStorage.setItem("wgrender-hx:example", sel.value); }} catch (e) {{}}
-    location.href = "./" + sel.value + "/";
-  }}
-  describe();
+  sel.addEventListener("change", () => {{ location.href = "./" + sel.value + "/"; }});
 </script>
 """
+
+
+# On each example's page in the site: a bar above the canvas, as wgrender's own site
+# has, with the way back, a picker that runs what it picks, and the example's source.
+SITE_BAR_STYLE = """<style>
+  #bar { position: fixed; inset: 0 0 auto 0; height: 38px; z-index: 10; display: flex;
+    align-items: center; gap: 12px; padding: 0 12px; background: #1e2128;
+    border-bottom: 1px solid #2c313c; color: #cdd3de; font: 14px/1.4 system-ui, sans-serif; }
+  #bar a { color: #7ea2ff; text-decoration: none; }
+  #bar a:hover { text-decoration: underline; }
+  #bar b a { color: #7ea2ff; }
+  #bar select { background: #0f1115; color: #cdd3de; border: 1px solid #3a4150;
+    border-radius: 6px; padding: 4px 8px; font: inherit; }
+  #canvas { inset: 38px 0 0 0; height: calc(100vh - 38px); }
+</style>
+"""
+SOURCE = 'https://github.com/whirlinggizmo/wgrender-hx/blob/main/examples/{name}/src/{main}.hx'
+
+
+def main_class(name):
+    """The example's main class, from its web hxml: the file its source link opens."""
+    import re
+    hxml = (HERE / name / 'build.web.hxml').read_text(encoding='utf-8')
+    found = re.search(r'^--main\s+(\S+)', hxml, re.MULTILINE)
+    if not found:
+        sys.exit(f'{name}/build.web.hxml: no --main')
+    return found.group(1).replace('.', '/')
+
+
+def site_bar(name, names):
+    options = ''.join(f'<option{" selected" if n == name else ""}>{n}</option>' for n in names)
+    return (f'<div id="bar"><b><a href="../">wgrender-hx</a></b>'
+            f'<label>example <select onchange="location.href = \'../\' + this.value + \'/\'">'
+            f'{options}</select></label>'
+            f'<a href="{SOURCE.format(name=name, main=main_class(name))}" target="_blank" '
+            f'rel="noopener">source</a></div>')
 
 
 def site(chosen=()):
@@ -257,7 +276,8 @@ def site(chosen=()):
     calls that guest makes, and they all have that name. The assets they load are
     wgrender's examples/assets, copied in once beside them (the benchmarks' models
     left out), and each page says so: <meta name="wgr-asset-base" content="../assets">,
-    which wgr.Assets reads.
+    which wgr.Assets reads. Each page also gets the site's bar (SITE_BAR_STYLE, site_bar):
+    the way back to the list, a picker, and the example's source.
     """
     import shutil
     out = HERE / 'out/web' / web_variant()
@@ -270,48 +290,54 @@ def site(chosen=()):
             print(f'{name}: not built, skipping (./build.py all)', file=sys.stderr)
             continue
         shutil.copytree(src, out / name)
-        page = out / name / 'index.html'
-        html = page.read_text(encoding='utf-8').replace(
-            '<meta charset="utf-8">', '<meta charset="utf-8">\n<meta name="wgr-asset-base" content="../assets">', 1)
-        if 'wgr-asset-base' not in html:
-            sys.exit(f'{page}: no <meta charset="utf-8"> to put the asset base after')
-        page.write_text(html, encoding='utf-8')
         built.append(name)
         size = sum(f.stat().st_size for f in (out / name).rglob('*') if f.is_file())
-        options.append(f'    <option value="{name}">{name} &mdash; {size:,} bytes</option>')
+        options.append(f'  <option value="{name}">{name} &mdash; {size:,} bytes</option>')
     if not built:
         sys.exit('nothing built: examples/build.py all')
+    for name in built:
+        page = out / name / 'index.html'
+        html = page.read_text(encoding='utf-8')
+        for old, new in (
+                ('<meta charset="utf-8">', '<meta charset="utf-8">\n<meta name="wgr-asset-base" content="../assets">'),
+                ('</head>', SITE_BAR_STYLE + '</head>'),
+                ('<body>', '<body>\n' + site_bar(name, built))):
+            if old not in html:
+                sys.exit(f'{page}: no {old} to put the site\'s additions at')
+            html = html.replace(old, new, 1)
+        page.write_text(html, encoding='utf-8')
     shutil.copytree(WGRENDER / 'examples/assets', out / 'assets', ignore=shutil.ignore_patterns('bench'))
     (out / 'index.html').write_text(SITE_INDEX.format(
         options='\n'.join(options),
-        what=json.dumps({n: WHAT.get(n, '') for n in built}),
-        table=size_table(built)), encoding='utf-8')
+        table=example_table(built)), encoding='utf-8')
     print(f'site -> {out} ({len(built)} examples)')
     return out
 
 
-def size_table(names):
-    """The comparison against wgrender's own C build, inlined into the page."""
+def example_table(names):
+    """Every example as a link to its page, with what it shows and, where wgrender's
+    own C build of it is there, what each weighs against that."""
     import gzip
-    if not C_BUILD.exists():
-        return ''
+    import html
+
+    def total(paths):
+        data = b''.join(p.read_bytes() for p in paths)
+        return sum(p.stat().st_size for p in paths), len(gzip.compress(data, 9))
+
     rows = []
     for name in names:
         site_dir = HERE / 'out/web' / web_variant() / name
         hx = [site_dir / 'wgrender-host.wasm', site_dir / 'wgrender-host.js', site_dir / f'{name}.js']
         c = [C_BUILD / f'{name}.wasm', C_BUILD / f'{name}.js']
-        if not all(p.exists() for p in hx + c):
-            continue
-        def total(paths):
-            data = b''.join(p.read_bytes() for p in paths)
-            return sum(p.stat().st_size for p in paths), len(gzip.compress(data, 9))
-        craw, cgz = total(c)
         hraw, hgz = total(hx)
-        rows.append(f'<tr><td>{name}</td><td>{craw:,}</td><td>{cgz:,}</td>'
-                    f'<td>{hraw:,}</td><td>{hgz:,}</td><td>{hgz / cgz:.2f}x</td></tr>')
-    if not rows:
-        return ''
-    return ('<table><caption>Against wgrender\'s own C build of the same example, same '
+        if all(p.exists() for p in c):
+            craw, cgz = total(c)
+            cells = f'<td>{craw:,}</td><td>{cgz:,}</td><td>{hraw:,}</td><td>{hgz:,}</td><td>{hgz / cgz:.2f}x</td>'
+        else:
+            cells = f'<td>&ndash;</td><td>&ndash;</td><td>{hraw:,}</td><td>{hgz:,}</td><td>&ndash;</td>'
+        rows.append(f'<tr class="name"><td><a href="./{name}/">{name}</a></td>{cells}</tr>'
+                    f'<tr><td class="what" colspan="6">{html.escape(WHAT.get(name, ""))}</td></tr>')
+    return ('<table><caption>Each example against wgrender\'s own C build of it, same '
             'backend and threading.</caption>'
             '<tr><th>example</th><th>C</th><th>C gzip</th><th>Haxe</th><th>Haxe gzip</th>'
             '<th>vs C</th></tr>' + ''.join(rows) + '</table>')
