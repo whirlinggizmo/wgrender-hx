@@ -224,10 +224,14 @@ the vendored one. That is the only difference between a checkout's build and an
 install's: both go through `project/Build.xml`, which compiles wgrender with the same
 toolchain as your program, so a checkout is not exercising a path nobody else runs.
 
+`project/wgrender.xml` carries wgrender's own flags for each build hxcpp can make:
+native per OS, `-D wgr-headless` for its headless build (no window, GPU or audio:
+`test/check.py` uses it), and hxcpp's emscripten target for the web (webgl2, or
+`-D wgr-webgpu`; `--debug` for wgrender's debug flags).
+
 `-D WGR_BUILD_XML=<file>` still exists for a build that needs more than a path — it
-names an hxcpp build-tool XML outright, and wins over everything above. `test/check.py`
-uses it, because the checks link a *headless* wgrender (`SOKOL_DUMMY_BACKEND`), which
-is a different build rather than a different directory.
+names an hxcpp build-tool XML outright, and wins over everything above. Nothing in
+this repository uses it.
 
 ### A web guest, from your own hxml
 

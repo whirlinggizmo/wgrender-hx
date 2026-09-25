@@ -102,23 +102,25 @@ built: `cmake --preset web-webgl2-nothreads && cmake --build --preset
 web-webgl2-nothreads` in wgrender-c.
 
 `examples/simple-hxcpp` is `simple` built all-in-one through hxcpp, for the web too:
-`./build.py desktop` or `./build.py web` (`out/linux/release/`, `out/web/webgl2-nothreads/`). It links wgrender's libraries rather than
-compiling it in: the desktop one from wgrender's `<os>-release` CMake preset, the web one
-from its `tools/buildweb.py` (`tools/wgrbuild.py` does both). `tools/hxcppweb.py
-<example>` builds any example that way for the web (`out/web/hxcpp-webgl2-nothreads/`),
-for the benchmarks.
+`./build.py desktop` or `./build.py web` (`out/linux/release/`, `out/web/webgl2-nothreads/`).
+Like every build of the binding it compiles wgrender in from its sources
+(`project/Build.xml`, with the flags `project/wgrender.xml` carries from wgrender's
+`build.json`), by whichever compiler hxcpp uses: MSVC or MinGW on Windows, emcc for the
+web. On Windows, `wgr.macros.NativeOut` tells hxcpp's emscripten target where emcc and
+emsdk's Python are. `tools/hxcppweb.py <example>` builds any example that way for the
+web (`out/web/hxcpp-webgl2-nothreads/`), for the benchmarks.
 
 ## Checks
 
 ```sh
 python3 test/check.py            # generators in --check mode, then the binding against
-                                 # headless wgrender (its `headless` CMake preset), native
-                                 # and js
+                                 # headless wgrender (-D wgr-headless, compiled in),
+                                 # native and js
 python3 tools/refusals.py --check --require-clang   # (CI) every refusal documented
 ```
 
-`test/check.py` needs CMake, since it links wgrender's headless library. After wgrender
-changes, regenerate what is generated from it: `tools/gen_raw.py` (the C surface),
+`test/check.py` builds in `build/<os>/headless/` and needs only Haxe, hxcpp and a C
+compiler. After wgrender changes, regenerate what is generated from it: `tools/gen_raw.py` (the C surface),
 `tools/gen_keys.py`, `tools/gen_sources.py` (`project/wgrender.xml`); `test/check.py`
 says which is stale.
 

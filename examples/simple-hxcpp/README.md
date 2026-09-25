@@ -24,19 +24,19 @@ Haxe, and what does Haxe cost in wasm.
 ../build.py drive simple-hxcpp   # headless-browser smoke test of the web build; writes build/web/webgl2-nothreads/check.png
 ```
 
-`./build.py` builds wgrender first, then writes `build.hxml` and `wgrender.xml` into
-the build's work directory, `build/<platform>/<variant>/` (`build/linux/release`,
-`build/web/webgl2-nothreads`): `build.hxml` or `web.hxml` from here, where wgrender is
-on this machine and how to compile and link against it, and the C++ output beside
-them. After that, `haxe build/linux/release/build.hxml` (say) works on its own; it just
-won't rebuild wgrender.
+`./build.py` runs `haxe build.hxml` or `haxe web.hxml` with `-D WGRENDER_DIR`, and
+hxcpp compiles wgrender in from its sources, as every build of the binding does
+(wgrender-hx's `project/Build.xml`), with whichever compiler it uses: MSVC or MinGW on
+Windows, emcc for the web. The C++ and objects are in `build/<platform>/<variant>/cpp`
+(`build/linux/release`, `build/web/webgl2-nothreads`), where `wgr.macros.NativeOut`
+puts them. `haxe build.hxml` works on its own too, against the binding's own wgrender.
 
 Web options are wgrender's own web build settings, read from the environment
 (`BACKEND=webgl2|webgpu`, `WEB_DEBUG=0|1`). `WGRENDER_DIR` overrides where wgrender
 is. Web builds are always `WEB_THREADS=0`: hxcpp's emscripten target is
-single-threaded, so its objects carry no atomics and can't link into shared memory.
+single-threaded.
 
-Needs Haxe 4.3, hxcpp, and Emscripten with `EMSDK` set.
+Needs Haxe 4.3, hxcpp, a C compiler, and for the web Emscripten (`emcc` on the path).
 
 ## The route to wasm
 
@@ -49,7 +49,7 @@ other route" below.
 
 ## Size
 
-`./build.py compare`, all linked against the same wgrender web library
+`./build.py compare`, all built with the same wgrender web flags
 (`BACKEND=webgl2 WEB_THREADS=0`, release):
 
 | port                   |       wasm |   gzipped |  vs C |        js |  gzipped |
@@ -325,7 +325,7 @@ exceptions the legacy exception glue references those symbols natively.
 ## Layout
 
 ```
-build.hxml  web.hxml               haxe invocations (build.py wraps them in build/<platform>/<variant>/)
+build.hxml  web.hxml               the builds (build.py adds -D WGRENDER_DIR)
 build.py                           builds wgrender, then haxe; serve / compare / clean
 src/Simple.hx                      the example
 src/Defines.hx                     reads a -D name=value define's value (needs a macro)

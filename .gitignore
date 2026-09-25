@@ -1,7 +1,7 @@
 /test/out/
 __pycache__/
 *.pyc
-test/build/
+/build/
 examples/*/out/
 examples/*/build/
 project/lib/*/build/

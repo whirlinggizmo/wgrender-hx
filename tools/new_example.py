@@ -126,10 +126,10 @@ def main():
     # the page's title defaults to the example's name, so only a different one is written
     (root / 'build.web.hxml').write_text(WEB_HXML.format(
         name=name, entry=entry, background=background,
-        title='' if title == name else f'-D wgr-title={title}\n'))
-    (root / 'build.desktop.hxml').write_text(DESKTOP_HXML.format(name=name, entry=entry))
-    (root / '.gitignore').write_text('out/\nbuild/\n')
-    (root / f'src/{entry}.hx').write_text(STUB.format(name=name, entry=entry))
+        title='' if title == name else f'-D wgr-title={title}\n'), encoding='utf-8')
+    (root / 'build.desktop.hxml').write_text(DESKTOP_HXML.format(name=name, entry=entry), encoding='utf-8')
+    (root / '.gitignore').write_text('out/\nbuild/\n', encoding='utf-8')
+    (root / f'src/{entry}.hx').write_text(STUB.format(name=name, entry=entry), encoding='utf-8')
 
     print(f'examples/{name}/')
     print(f'  src/{entry}.hx   the stub to replace')

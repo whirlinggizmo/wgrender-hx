@@ -60,6 +60,29 @@ def desktop_variant():
     return 'mingw' if os.environ.get('HXCPP_MINGW') else 'msvc'
 
 
+def check_library():
+    """Is `-lib wgrender-hx` the copy this script came from?
+
+    These are resolved separately and can disagree without saying so: this file is
+    found by path, while the Haxe compile asks haxelib. A `haxelib git` install
+    left over from testing an install, or a `dev` link that went away, and the
+    build compiles against a different copy of the binding than the one being
+    worked on -- which shows up much later as a type that does not exist, or worse,
+    as an old one that does.
+    """
+    asked = subprocess.run(['haxelib', 'libpath', 'wgrender-hx'], capture_output=True, text=True)
+    found = asked.stdout.strip()
+    # haxelib reports a missing library on stdout with a zero exit, so the text is
+    # what says whether it answered -- not the return code.
+    if asked.returncode != 0 or not found or found.startswith('Error'):
+        sys.exit(f'haxelib cannot resolve wgrender-hx:\n  {found or asked.stderr.strip()}\n'
+                 f'  haxelib dev wgrender-hx {LIB}')
+    if pathlib.Path(found).resolve() != LIB.resolve():
+        sys.exit(f'-lib wgrender-hx resolves to {found}\n'
+                 f'  but this build is running from {LIB}\n'
+                 f'  haxelib dev wgrender-hx {LIB}')
+
+
 class Project:
     def __init__(self, root, name):
         self.root = pathlib.Path(root).resolve()
@@ -82,26 +105,7 @@ class Project:
     # --------------------------------------------------------------- checks ---
 
     def check_library(self):
-        """Is `-lib wgrender-hx` the copy this script came from?
-
-        These are resolved separately and can disagree without saying so: this file is
-        found by path, while the Haxe compile asks haxelib. A `haxelib git` install
-        left over from testing an install, or a `dev` link that went away, and the
-        build compiles against a different copy of the binding than the one being
-        worked on -- which shows up much later as a type that does not exist, or worse,
-        as an old one that does.
-        """
-        asked = subprocess.run(['haxelib', 'libpath', 'wgrender-hx'], capture_output=True, text=True)
-        found = asked.stdout.strip()
-        # haxelib reports a missing library on stdout with a zero exit, so the text is
-        # what says whether it answered -- not the return code.
-        if asked.returncode != 0 or not found or found.startswith('Error'):
-            sys.exit(f'haxelib cannot resolve wgrender-hx:\n  {found or asked.stderr.strip()}\n'
-                     f'  haxelib dev wgrender-hx {LIB}')
-        if pathlib.Path(found).resolve() != LIB.resolve():
-            sys.exit(f'-lib wgrender-hx resolves to {found}\n'
-                     f'  but this build is running from {LIB}\n'
-                     f'  haxelib dev wgrender-hx {LIB}')
+        check_library()
 
     _checked = False
 
@@ -121,7 +125,7 @@ class Project:
     def build_web(self):
         self.check_binding()
         print(f'web -> out/web/{self.variant} ({self.name}.js and the host it calls)')
-        hxml = (self.root / 'build.web.hxml').read_text()
+        hxml = (self.root / 'build.web.hxml').read_text(encoding='utf-8')
         if self.variant != DEFAULT_WEB:
             # the committed hxml names the default variant; the web settings chose another
             hxml = hxml.replace(f'out/web/{DEFAULT_WEB}/', f'out/web/{self.variant}/')
@@ -129,7 +133,7 @@ class Project:
                 sys.exit(f'{self.root}/build.web.hxml: no --js out/web/{DEFAULT_WEB}/ to redirect')
             variant_hxml = self.root / 'build/web' / self.variant / 'build.web.hxml'
             variant_hxml.parent.mkdir(parents=True, exist_ok=True)
-            variant_hxml.write_text(hxml)
+            variant_hxml.write_text(hxml, encoding='utf-8')
             self.haxe_build(variant_hxml.relative_to(self.root))
         else:
             self.haxe_build('build.web.hxml')

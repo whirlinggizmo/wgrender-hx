@@ -271,11 +271,11 @@ def site(chosen=()):
             continue
         shutil.copytree(src, out / name)
         page = out / name / 'index.html'
-        html = page.read_text().replace(
+        html = page.read_text(encoding='utf-8').replace(
             '<meta charset="utf-8">', '<meta charset="utf-8">\n<meta name="wgr-asset-base" content="../assets">', 1)
         if 'wgr-asset-base' not in html:
             sys.exit(f'{page}: no <meta charset="utf-8"> to put the asset base after')
-        page.write_text(html)
+        page.write_text(html, encoding='utf-8')
         built.append(name)
         size = sum(f.stat().st_size for f in (out / name).rglob('*') if f.is_file())
         options.append(f'    <option value="{name}">{name} &mdash; {size:,} bytes</option>')
@@ -285,7 +285,7 @@ def site(chosen=()):
     (out / 'index.html').write_text(SITE_INDEX.format(
         options='\n'.join(options),
         what=json.dumps({n: WHAT.get(n, '') for n in built}),
-        table=size_table(built)))
+        table=size_table(built)), encoding='utf-8')
     print(f'site -> {out} ({len(built)} examples)')
     return out
 

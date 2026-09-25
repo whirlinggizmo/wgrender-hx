@@ -51,7 +51,7 @@ def host_os():
     """This OS's name in build output directories: linux, macos, windows.
 
     The examples' out/<platform>/<variant>/ directories use it, as wgrender's own builds
-    do (out/linux/release, out/web/webgl2-nothreads, ...: tools/wgrbuild.py knows them).
+    do (out/linux/release, out/web/webgl2-nothreads, ...).
 
     "desktop" still means native-not-web everywhere it is prose or a define; it is
     only the directories that name the OS.

@@ -58,7 +58,7 @@ API_OMISSIONS = {
 def c_functions():
     out = {}
     for h in sorted((WGRENDER / 'include').glob('*.h')):
-        text = re.sub(r'/\*.*?\*/', ' ', h.read_text(), flags=re.S)
+        text = re.sub(r'/\*.*?\*/', ' ', h.read_text(encoding='utf-8'), flags=re.S)
         for m in re.finditer(r'^\s*(?:const\s+)?(?:unsigned\s+)?\w+\s*\*?\s*(wgr_[a-z0-9_]+)\s*\(', text, re.M):
             out.setdefault(h.stem, set()).add(m.group(1))
     return out
@@ -68,16 +68,16 @@ def reached():
     """What the hand-written API layer calls, and what each generated Raw declares."""
     api = set()
     for f in list((ROOT / 'src/wgr').glob('*.hx')) + list((ROOT / 'src/wgr/impl').glob('GuestAbi*.hx')):
-        api |= set(re.findall(r'(?:Raw|GuestRaw)\.(wgr_[a-z0-9_]+)', f.read_text()))
+        api |= set(re.findall(r'(?:Raw|GuestRaw)\.(wgr_[a-z0-9_]+)', f.read_text(encoding='utf-8')))
     raw = {}
     for target, name in (('hxcpp', 'Raw.cpp.hx'), ('js', 'Raw.js.hx')):
         path = ROOT / 'src/wgr/impl' / name
-        raw[target] = set(re.findall(r'function (wgr_[a-z0-9_]+)\(', path.read_text())) if path.exists() else set()
+        raw[target] = set(re.findall(r'function (wgr_[a-z0-9_]+)\(', path.read_text(encoding='utf-8'))) if path.exists() else set()
     return api, raw
 
 
 def macros():
-    joined = '\n'.join(p.read_text() for p in (WGRENDER / 'include').glob('*.h'))
+    joined = '\n'.join(p.read_text(encoding='utf-8') for p in (WGRENDER / 'include').glob('*.h'))
     return set(re.findall(r'#\s*define\s+(wgr_\w+)\s*\(', joined))
 
 
@@ -118,7 +118,7 @@ def main():
     skip = macros() | OMISSIONS.keys() | API_OMISSIONS.keys()
     rows = []
     for c in sorted((WGRENDER / 'examples').glob('*.c')):
-        need = set(re.findall(r'\b(wgr_[a-z0-9_]+)\s*\(', c.read_text())) - skip - api
+        need = set(re.findall(r'\b(wgr_[a-z0-9_]+)\s*\(', c.read_text(encoding='utf-8'))) - skip - api
         rows.append((len(need), c.stem, sorted(need)))
     rows.sort()
     print(f'\nwgrender has {len(rows)} examples; what each still needs from the API layer:')

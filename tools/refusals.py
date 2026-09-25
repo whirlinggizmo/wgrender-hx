@@ -81,7 +81,7 @@ def documented_refusals(wgrender):
     """Every bool wgr_* whose header comment names a refusal, with that sentence."""
     out = {}
     for h in sorted((wgrender / 'include').glob('*.h')):
-        text = h.read_text()
+        text = h.read_text(encoding='utf-8')
         for m in re.finditer(
                 r'(/\*(?:[^*]|\*(?!/))*\*/)?\s*bool\s+(wgr_\w+)\s*\([^;]*?\);'
                 r'((?:[ \t]*/\*(?:[^*]|\*(?!/))*\*/)?)', text):
@@ -102,7 +102,7 @@ def binding(root):
     for f in sorted((root / 'src/wgr').glob('*.hx')):
         if f.suffixes[:1] in ([".cpp"], [".js"]):
             continue
-        text = f.read_text()
+        text = f.read_text(encoding='utf-8')
         for m in re.finditer(
                 r'(?:/\*\*((?:[^*]|\*(?!/))*)\*\*/\s*)?'
                 r'\tpublic static inline function (\w+)\([^)]*\)[^\n]*\n\s*'
@@ -175,7 +175,7 @@ def flags(wgrender):
     path = wgrender / 'compile_flags.txt'
     if not path.exists():
         sys.exit(f'no compile_flags.txt in {wgrender}')
-    return [line for line in path.read_text().splitlines() if line.strip()]
+    return [line for line in path.read_text(encoding='utf-8').splitlines() if line.strip()]
 
 
 def walk(node):

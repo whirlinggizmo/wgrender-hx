@@ -177,7 +177,7 @@ SCALARS = {  # C type -> (hxcpp, js), size, how JS reads it out of the heap
 
 
 def read_headers():
-    text = {h.name: h.read_text() for h in sorted((WGRENDER / 'include').glob('*.h'))}
+    text = {h.name: h.read_text(encoding='utf-8') for h in sorted((WGRENDER / 'include').glob('*.h'))}
     if not text:
         sys.exit(f'no headers under {WGRENDER}/include')
     everything = '\n'.join(text.values())
@@ -274,7 +274,7 @@ def provenance():
     """What wgrender this was generated from, and a digest that moves when it does."""
     digest, count = header_digest(WGRENDER)
     version = re.findall(r'#define WGR_VERSION_(?:MAJOR|MINOR|PATCH)\s+(\d+)',
-                         (WGRENDER / 'include/wgr_version.h').read_text())
+                         (WGRENDER / 'include/wgr_version.h').read_text(encoding='utf-8'))
     try:
         commit = subprocess.run(['git', '-C', str(WGRENDER), 'describe', '--always', '--dirty'],
                                 check=True, capture_output=True, text=True).stdout.strip()
@@ -393,14 +393,10 @@ def emit_cpp(enums, structs, functions):
         "// that touches wgrender at all reaches this class, so -dce full cannot strip it\n"
         "// out from under the build the way it can any class in the API layer.\n"
         "//\n"
-        "// A checkout defines WGR_BUILD_XML and points it at whatever wgrender it is\n"
-        "// working against -- the examples and test/check.py each write one. An install\n"
-        "// has none and falls through to project/Build.xml, which links the wgrender-c\n"
-        "// submodule under project/lib.\n"
-        "//\n"
-        "// The switch is on WGR_BUILD_XML rather than on the `wgrender_hx` define that\n"
-        "// -lib sets, because the in-repo examples use -lib too: that define says which\n"
-        "// binding is in use, not which wgrender to link against.\n"
+        "// project/Build.xml compiles wgrender's sources in, from the submodule under\n"
+        "// project/lib or -D WGRENDER_DIR, with whatever toolchain hxcpp chose; every build\n"
+        "// here goes that way. -D WGR_BUILD_XML=<file> replaces it outright, for a build\n"
+        "// that needs more than a different wgrender.\n"
         "@:buildXml('\n"
         '\t<include name="${WGR_BUILD_XML}" if="WGR_BUILD_XML" />\n'
         '\t<include name="${haxelib:wgrender-hx}/project/Build.xml" unless="WGR_BUILD_XML" />\n'
@@ -409,7 +405,7 @@ def emit_cpp(enums, structs, functions):
     lines.append('\n'.join(body))
     lines.append(MANUAL_CPP)
     lines.append('}')
-    (OUT / 'Raw.cpp.hx').write_text('\n'.join(lines) + '\n')
+    (OUT / 'Raw.cpp.hx').write_text('\n'.join(lines) + '\n', encoding='utf-8')
     return len(body), skipped
 
 
@@ -597,7 +593,7 @@ def check():
         if not path.exists():
             stale.append(f'{name}: missing')
             continue
-        found = re.search(re.escape(DIGEST_TAG) + r'(\w+)', path.read_text())
+        found = re.search(re.escape(DIGEST_TAG) + r'(\w+)', path.read_text(encoding='utf-8'))
         if not found:
             stale.append(f'{name}: no digest — generated before this was recorded')
         elif found.group(1) != digest:
@@ -653,7 +649,7 @@ class BuiltVersion {{
 	/** A digest of the headers; `tools/gen_raw.py --check` compares it. **/
 	public static inline final HEADERS = "{digest}";
 }}
-""")
+""", encoding='utf-8')
 
 
 def main():
@@ -668,7 +664,7 @@ def main():
     layouts = emit_layouts(structs, js_opaque)
     (OUT / 'Raw.js.hx').write_text(header_comment() + JS_PREAMBLE + '\n' + '\n\n'.join(js_body)
                                    + '\n' + MANUAL_JS + '\n}\n'
-                                   + ''.join('\n' + c + '\n' for c in layouts))
+                                   + ''.join('\n' + c + '\n' for c in layouts), encoding='utf-8')
 
     print(f'  Raw.cpp.hx  {n_cpp} externs')
     print(f'  Raw.js.hx   {len(js_body)} wrappers')

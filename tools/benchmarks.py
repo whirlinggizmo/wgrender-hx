@@ -94,7 +94,7 @@ def main():
             'costs are wgrender\'s baseline (its `bench/results.json`); every binding is '
             'collected in wgrender\'s `docs/benchmarks.md`.')
     DOC.write_text(measure.render_doc('wgrender-hx benchmarks', lead, [baseline, ours], baseline,
-                                      'tools/benchmarks.py', measure.read_notes(ROOT)))
+                                      'tools/benchmarks.py', measure.read_notes(ROOT)), encoding='utf-8')
     print(f'wrote {DOC}')
 
 

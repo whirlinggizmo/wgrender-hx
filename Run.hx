@@ -22,8 +22,8 @@
 	not come down, or an archive install once this is published, since a haxelib zip
 	is flat and carries no submodule.
 
-	Nothing here is needed in a checkout of this repo: the examples and test/check.py
-	define WGR_BUILD_XML and point at whatever wgrender they are working against.
+	Nothing here is needed in a checkout of this repo: its builds pass -D WGRENDER_DIR
+	to point at whatever wgrender they are working against.
 **/
 class Run {
 	static var root:String;
@@ -71,7 +71,7 @@ class Run {
 		if (!sys.FileSystem.exists(haxe.io.Path.join([dir, "include/wgr.h"]))) {
 			Sys.println('no wgrender under $dir.\n'
 				+ "If this is a source checkout rather than a haxelib install, there is\n"
-				+ "nothing to set up: point -D WGR_BUILD_XML at your own wgrender instead.");
+				+ "nothing to set up: point -D WGRENDER_DIR at your own wgrender instead.");
 			Sys.exit(1);
 		}
 		Sys.println('wgrender is here: $dir');

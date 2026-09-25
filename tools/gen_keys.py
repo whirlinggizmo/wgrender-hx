@@ -36,7 +36,7 @@ def haxe_name(macro):
 def main():
     header = (WGRENDER / 'include/wgr_keys.h').resolve()
     keys = [(haxe_name(m), int(v), m) for m, v in
-            re.findall(r'^\s*(WGR_KEY_[A-Z0-9_]+)\s*=\s*(\d+)', header.read_text(), re.M)]
+            re.findall(r'^\s*(WGR_KEY_[A-Z0-9_]+)\s*=\s*(\d+)', header.read_text(encoding='utf-8'), re.M)]
     if not keys:
         sys.exit(f'no WGR_KEY_* found in {header}')
 
@@ -80,14 +80,14 @@ class KeyCheck {{
 '''
 
     if '--check' in sys.argv:
-        current = SOURCE.read_text() if SOURCE.exists() else ''
+        current = SOURCE.read_text(encoding='utf-8') if SOURCE.exists() else ''
         if current != block:
             print(f'{SOURCE.relative_to(ROOT)} is stale ({len(keys)} keys in the header)\n'
                   '  run tools/gen_keys.py')
             return 1
         print(f'keys: current ({len(keys)} from wgr_keys.h)')
         return 0
-    SOURCE.write_text(block)
+    SOURCE.write_text(block, encoding='utf-8')
     print(f'{SOURCE.relative_to(ROOT)}: {len(keys)} keys from {header}')
     return 0
 
