@@ -54,12 +54,13 @@ other route" below.
 
 | port                   |       wasm |   gzipped |  vs C |        js |  gzipped |
 |------------------------|-----------:|----------:|------:|----------:|---------:|
-| C (wgrender's example) |    690,116 |   292,002 | 1.00x |    64,910 |   23,186 |
-| Nim                    |    713,584 |   301,782 | 1.03x |    65,138 |   23,280 |
-| Beef                   |    846,131 |   368,843 | 1.23x |    66,674 |   23,985 |
-| Haxe (this)            |  1,685,600 |   458,622 | 2.44x |    69,587 |   25,048 |
+| C (wgrender's example) |    695,714 |   293,621 | 1.00x |    65,959 |   23,382 |
+| Nim                    |    720,009 |   306,801 | 1.03x |    54,980 |   20,771 |
+| Beef                   |    719,533 |   304,723 | 1.03x |    67,595 |   24,111 |
+| Haxe (this)            |  1,706,364 |   469,575 | 2.45x |    70,894 |   25,307 |
 
-Roughly a megabyte of wasm over C, 162 KB of it after gzip. Almost all of it is the
+Roughly a megabyte of wasm over C, 176 KB of it after gzip (measured with hxcpp from
+robknopf/hxcpp; the 4.3.2 release makes 1,072,316 bytes, without the GC pass below). Almost all of it is the
 hxcpp runtime rather than anything this example does: a Haxe hello-world through the
 same toolchain is already 677 KB of wasm on its own — hxcpp ships a mark/sweep GC
 (with binaryen's `--spill-pointers` so it can scan the wasm stack), reference-counted
@@ -145,23 +146,23 @@ text *changes*, not by how much of it you draw.
 (Only the JS→wasm direction was measured. The other way, `addFunction` for the frame
 and asset callbacks, is once a frame plus a handful at startup.)
 
-### It was built — see ../simple-js
+### It was built — see ../simple
 
 The estimates below turned out close, so the section now reports results instead.
-[../simple-js](../simple-js) is the same scene with wgrender as a wasm host and this
+[../simple](../simple) is the same scene with wgrender as a wasm host and this
 example's code compiled to JS as a guest module, verified in a browser down to the
 pick message.
 
 | port | wasm | js | total | gzipped | vs C |
 |---|---:|---:|---:|---:|---:|
-| C (wgrender's example) |   690,116 | 64,910 |   755,026 | 315,188 | 1.00x |
-| Nim |   713,584 | 65,138 |   778,722 | 325,062 | 1.03x |
-| Beef |   846,131 | 66,674 |   912,805 | 392,828 | 1.21x |
-| Haxe, in the wasm (this) | 1,685,600 | 69,587 | 1,755,187 | 483,670 | 2.32x |
-| Haxe, as a guest (../simple-js) |   701,424 | 86,179 |   787,603 | 328,744 | **1.04x** |
+| C (wgrender's example) |   695,714 | 65,959 |   761,673 | 317,003 | 1.00x |
+| Nim |   720,009 | 54,980 |   774,989 | 327,572 | 1.02x |
+| Beef |   719,533 | 67,595 |   787,128 | 328,834 | 1.03x |
+| Haxe, in the wasm (this) | 1,706,364 | 70,894 | 1,777,258 | 494,882 | 2.33x |
+| Haxe, as a guest (../simple) |   694,791 | 90,156 |   784,947 | 321,396 | **1.03x** |
 
-The guest route's 86,179 of JS is 67,424 of Emscripten glue, **18,184 for the whole
-game**, and a 571-byte boot shim. So Haxe costs about 4% over writing it in C, rather
+The guest route's 90,156 of JS is 67,477 of Emscripten glue, **22,213 for the whole
+game**, and a 466-byte boot shim. So Haxe costs about 3% over writing it in C, rather
 than 2.3x, once its runtime stops being compiled into the wasm.
 
 Two things the estimates got right and one they missed:
@@ -170,11 +171,11 @@ Two things the estimates got right and one they missed:
   to compile for both — 3.9% of the file, against the 39-of-1,119 guessed here.
 - **The five struct returns** do come back through a hidden out-pointer; confirmed
   against the wasm C ABI before the JS layer trusted it.
-- **Missed:** that the host ABI would be nearly free. `wgr_guest.c` plus exporting 104
-  functions costs 11,308 bytes of wasm over wgrender's own C `simple`.
+- **Missed:** that the host ABI would be nearly free. `wgr_guest.c` plus the 52 calls
+  the guest makes, exported, is 923 bytes *less* wasm than wgrender's own C `simple`.
 
-What it does *not* yet show is the half that motivated it: `../simple-js` has no
-desktop build, so "one source, JS for web and native for desktop" is still a claim.
+The half that motivated it holds too: `../simple` builds the same source to JS for the
+web and through hxcpp for the desktop, so one source serves both.
 
 ## The bindings
 
