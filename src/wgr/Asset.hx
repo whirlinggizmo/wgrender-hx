@@ -96,7 +96,9 @@ class Asset {
 		return Raw.wgr_asset_set_cache_dir(dir);
 
 	/**
-		Forget a cached asset, so the next ensure fetches it again. A cache can hold a
+		Forget a cached asset, so the next ensure fetches it again. False when there
+		was no such file, or for a path that isn't under the host (as `ensureAsync`
+		reads one). A cache can hold a
 		file that is wrong rather than old — a host that compresses once served gzip
 		bytes under an asset's name — and since the host says it hasn't changed,
 		revalidation keeps it: only something that drops it helps. wgrender drops an entry itself when
@@ -159,8 +161,9 @@ class Asset {
 		isn't an error, just the next rule (on the web that costs a request). Download
 		rules don't stack — the newest one matching wins. Prefixes are plain text
 		matched at the start of the path, not globs. Up to 32 rules; false when full,
-		given an empty prefix or target, or a prefix over 255 or target over 511
-		characters. Both refusals are logged. Adding the same prefix twice keeps both
+		given an empty prefix or target, a prefix over 255 or target over 511
+		characters, or a prefix or path target that isn't under the host (as
+		`ensureAsync` reads a path; a trailing "/" is kept). Every refusal is logged. Adding the same prefix twice keeps both
 		rules rather than replacing the first.
 	**/
 	public static inline function addRedirect(prefix:String, target:String):Bool
@@ -197,7 +200,9 @@ class Asset {
 		or none on failure.
 
 		`path` is the logical key: the cache path on the web, the read path under the
-		host on desktop, and where a fetched file lands. `fetchUrl` overrides only where
+		host on desktop, and where a fetched file lands. It stays under the host: "\\"
+		is read as "/", and "." and ".." are resolved; a path that is absolute, names a
+		drive, or climbs above the host is refused (no task). `fetchUrl` overrides only where
 		it downloads *from* — a mirror or a signed link, used verbatim — and leaving it
 		null means the host plus the path, with redirects and per-device variants
 		applied. Null is not the same as "": passing a URL tells wgrender the caller
