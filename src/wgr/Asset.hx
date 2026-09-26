@@ -21,8 +21,9 @@ class Asset {
 	/**
 		Where relative asset paths resolve from. A URL ("https://host/assets") is a
 		fetch origin on both platforms: a missing file is downloaded from it and cached,
-		by the browser on the web and by your fetcher on desktop. Anything else is a
-		local directory. Pass the same logical paths everywhere; only the base differs.
+		on the web in the browser's storage (IndexedDB, checked as `setCacheMode` says)
+		and on desktop in the cache directory, by your fetcher. Anything else is a local
+		directory. Pass the same logical paths everywhere; only the base differs.
 	**/
 	public static inline function getHost():String
 		return Raw.wgr_asset_get_host();
@@ -96,9 +97,9 @@ class Asset {
 
 	/**
 		Forget a cached asset, so the next ensure fetches it again. A cache can hold a
-		file that is wrong rather than missing — a host that compresses once served gzip
-		bytes under an asset's name — and a wrong file is read in preference to the
-		network for good unless something drops it. wgrender drops an entry itself when
+		file that is wrong rather than old — a host that compresses once served gzip
+		bytes under an asset's name — and since the host says it hasn't changed,
+		revalidation keeps it: only something that drops it helps. wgrender drops an entry itself when
 		a loader rejects a cached file, so this is for a program that knows better: a
 		new version of an asset, or a user asking to free the space.
 	**/
