@@ -25,11 +25,11 @@ class ForceFetch {
 	static inline final SCREEN_WIDTH = 720;
 	static inline final SCREEN_HEIGHT = 240;
 
-	static inline final MUSIC_PATH = "music/ethernight_club.mp3";
+	static inline final MUSIC_PATH = "music/a_hero_is_born.mp3";
 	/** Deliberately wrong: nothing is served at host + this, so only the override works. **/
-	static inline final INVALID_MUSIC_PATH = "music/ethernight_club_invalid.mp3";
+	static inline final INVALID_MUSIC_PATH = "music/invalid.mp3";
 	/** Where the bytes really are, under the asset base. **/
-	static inline final MUSIC_FETCH_PATH = "music/ethernight_club.mp3";
+	static inline final MUSIC_FETCH_PATH = "music/a_hero_is_born.mp3";
 
 	static inline final ASSET_MUSIC = 1;
 

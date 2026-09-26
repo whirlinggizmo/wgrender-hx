@@ -18,7 +18,7 @@ import wgr.*;
 class Quit {
 	static inline final SCREEN_WIDTH = 640;
 	static inline final SCREEN_HEIGHT = 200;
-	static inline final BGM_PATH = "music/ethernight_club.mp3";
+	static inline final MUSIC_PATH = "music/a_hero_is_born.mp3";
 	static inline final ENV_A_PATH = "environments/venice_sunset_1k.hdr";
 	static inline final ENV_B_PATH = "environments/studio_small_09_1k.hdr";
 
@@ -50,8 +50,8 @@ class Quit {
 		background = Color.rgba(30, 36, 48, 255);
 		// Soon enough that a headless check sees the quit happen.
 		quitAt = Wgr.getTime() + 1.0;
-		if (!GuestAbi.loadAsset(BGM_PATH, ASSET_BGM))
-			Log.error('failed to queue asset: $BGM_PATH');
+		if (!GuestAbi.loadAsset(MUSIC_PATH, ASSET_BGM))
+			Log.error('failed to queue asset: $MUSIC_PATH');
 	}
 
 	static function onAsset(id:Int, path:String, ok:Bool):Void {

@@ -11,7 +11,7 @@ class Simple {
 	static inline final KOMIKA_FONT_PATH = "fonts/Komika/KOMIKAH_.ttf";
 	static inline final CHARACTER_PATH = "models/woman_casual/woman_casual.glb";
 	static inline final SPRITE_PATH = "sprites/logo/wg-logo-bw-alpha.png";
-	static inline final BGM_PATH = "music/ethernight_club.mp3";
+	static inline final MUSIC_PATH = "music/a_hero_is_born.mp3";
 
 	static inline final SCREEN_WIDTH = 1024;
 	static inline final SCREEN_HEIGHT = 1280;
@@ -45,7 +45,7 @@ class Simple {
 	}
 
 	static function loadAssets():Void {
-		load(BGM_PATH, path -> {
+		load(MUSIC_PATH, path -> {
 			final audio = Audio.create(path);
 			bgm = Sound.create(audio);
 			Audio.release(audio); // the sound holds its own reference

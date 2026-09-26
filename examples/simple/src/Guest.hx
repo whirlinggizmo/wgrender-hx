@@ -13,7 +13,7 @@ class Guest {
 	static inline final KOMIKA_FONT_PATH = "fonts/Komika/KOMIKAH_.ttf";
 	static inline final CHARACTER_PATH = "models/woman_casual/woman_casual.glb";
 	static inline final SPRITE_PATH = "sprites/logo/wg-logo-bw-alpha.png";
-	static inline final BGM_PATH = "music/ethernight_club.mp3";
+	static inline final MUSIC_PATH = "music/a_hero_is_born.mp3";
 
 	// The host hands these back on the asset op, in place of a callback.
 	static inline final ASSET_BGM = 1;
@@ -97,7 +97,7 @@ class Guest {
 		backgroundColor = Color.rgba(245, 245, 245, 255);
 		greyAlpha = Color.rgba(0, 0, 0, 128);
 
-		load(BGM_PATH, ASSET_BGM);
+		load(MUSIC_PATH, ASSET_BGM);
 		load(CHARACTER_PATH, ASSET_MODEL);
 		load(SPRITE_PATH, ASSET_SPRITE);
 		load(DEBUG_FONT_PATH, ASSET_DEBUG_FONT);

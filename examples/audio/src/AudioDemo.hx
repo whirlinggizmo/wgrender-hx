@@ -1,7 +1,7 @@
 // wgrender's audio example, as a Haxe guest: looping mp3 music and a one-shot ogg.
 //
 // A port of examples/audio.c. Each file is made local, then `Audio.create(path)`
-// makes the shared resource and a `Sound` plays it -- the 6 MB music streamed, the
+// makes the shared resource and a `Sound` plays it -- the music (over 1 MB) streamed, the
 // small click decoded up front.
 //
 // S is the interesting key. On desktop the mixer runs on the audio device's thread,
@@ -23,7 +23,7 @@ import wgr.*;
 class AudioDemo {
 	static inline final SCREEN_WIDTH = 720;
 	static inline final SCREEN_HEIGHT = 240;
-	static inline final MUSIC_PATH = "music/ethernight_club.mp3";
+	static inline final MUSIC_PATH = "music/a_hero_is_born.mp3";
 	static inline final CLICK_PATH = "sounds/click_004.ogg";
 
 	static inline final ASSET_MUSIC = 1;
