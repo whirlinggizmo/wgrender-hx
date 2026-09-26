@@ -39,8 +39,7 @@ src/wgr/impl/         the generated C surface, chosen by target. Nothing outside
   Raw.js.hx             calls the host module's exports, and marshals
   GuestRaw.cpp.hx       externs for host/wgr_guest.h, which is this binding's own C
 host/wgr_guest.{c,h}  the guest ABI: wgrender as a host, five ops
-test/                 the binding's own suite: 317 assertions against headless wgrender
-examples/             thirty-two guests, and simple-hxcpp the other way (all-in-one)
+examples/             the guests, and simple-hxcpp the other way (all-in-one)
 project/              how an installed copy links wgrender, and the submodule it uses
 Run.hx                `haxelib run wgrender-hx setup`
 
@@ -57,8 +56,9 @@ tools/hxcppweb.py     an example all-in-one through hxcpp for the web, for the b
 tools/drive.py        run a built example and fail on anything the console calls an error
 tools/webstart.py     startup timing of any web build (--site=DIR); tools/waterfall.py, its requests
 tools/wgrweb.py       what the browser checks share: weblib, the wgrender they run against, serving
-tools/serve.py        the dev server (wgrender's assets at /assets); weblib.py, webwatch.py and
-                      webdeploy.py beside it: taken from wgrender's tools, this library's own now
+tools/serve.py        the dev server (wgrender's assets at /assets); weblib.py, webwatch.py,
+                      webdeploy.py and gen_manifest.py (the site's asset manifests) beside it:
+                      taken from wgrender's tools, this library's own now
 web/index.html        the page for the all-in-one hxcpp builds (the JS guests' pages are WebHost's)
 ```
 
@@ -291,7 +291,7 @@ examples/build.py all      build each one, web and native
 examples/build.py drive    run each web build in a headless browser
 examples/build.py site     collect them under one page, with wgrender's assets: any static host
 examples/build.py compare  sizes against wgrender's own C build of each
-test/check.py              the binding's 362 assertions
+test/check.py              the binding's own checks, against headless wgrender
 ```
 
 Each example is what you would write yourself: `src/`, a `build.web.hxml` and a

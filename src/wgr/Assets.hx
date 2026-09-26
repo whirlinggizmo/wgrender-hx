@@ -16,6 +16,15 @@ class Assets {
 	public static inline final BESIDE = "assets";
 
 	/**
+		The manifest under the asset base, for `Asset.setManifest`: the published site's
+		assets have one (examples/build.py site writes it with tools/gen_manifest.py),
+		so a returning visitor fetches only what changed. Where there is none, as under
+		tools/serve.py, the cache asks the host about each file instead; natively the
+		base is a directory and it's ignored.
+	**/
+	public static inline final MANIFEST = "manifest.json";
+
+	/**
 		On the web — either web build — `assets` beside the page, relative, as wgrender's
 		own web examples have it, so a site works at a domain root or under a path
 		(GitHub Pages serves a project at /<repo>/). tools/serve.py mounts wgrender's

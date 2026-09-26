@@ -73,6 +73,7 @@ class LightsDemo {
 
 	static function onInit():Void {
 		Asset.setHost(Assets.defaultBase());
+		Asset.setManifest(Assets.MANIFEST);
 		background = Color.rgba(12, 13, 18, 255);
 		gridColor = Color.rgba(40, 42, 50, 255);
 		lampColor = Color.rgba(60, 220, 255, 255);

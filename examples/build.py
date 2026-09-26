@@ -340,7 +340,7 @@ def site(chosen=()):
     a directory: every example has its own wgrender-host.wasm, exporting exactly the
     calls that guest makes, and they all have that name. The assets they load are
     wgrender's examples/assets, copied in once beside them (the benchmarks' models
-    left out), and each page says so: <meta name="wgr-asset-base" content="../assets">,
+    left out) with their manifests (tools/gen_manifest.py), and each page says so: <meta name="wgr-asset-base" content="../assets">,
     which wgr.Assets reads. Each page also gets the site's bar (SITE_BAR_STYLE, site_bar):
     the way back to the list, a picker, the example's source, and a console (SITE_CONSOLE).
     """
@@ -373,6 +373,9 @@ def site(chosen=()):
             html = html.replace(old, new, 1)
         page.write_text(html, encoding='utf-8')
     shutil.copytree(WGRENDER / 'examples/assets', out / 'assets', ignore=shutil.ignore_patterns('bench'))
+    # the manifests the examples set (Assets.MANIFEST): a returning visitor then fetches
+    # only the assets that changed since the last deploy
+    subprocess.run([sys.executable, str(LIB / 'tools/gen_manifest.py'), str(out / 'assets')], check=True)
     (out / 'index.html').write_text(SITE_INDEX.format(
         options='\n'.join(options),
         table=example_table(built)), encoding='utf-8')

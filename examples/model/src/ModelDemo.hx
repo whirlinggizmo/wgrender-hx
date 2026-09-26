@@ -47,6 +47,7 @@ class ModelDemo {
 
 	static function onInit():Void {
 		Asset.setHost(Assets.defaultBase());
+		Asset.setManifest(Assets.MANIFEST);
 		background = Color.rgba(30, 32, 40, 255);
 		target = new Vec3(0, 3, 0);
 

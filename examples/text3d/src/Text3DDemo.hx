@@ -53,6 +53,7 @@ class Text3DDemo {
 
 	static function onInit():Void {
 		Asset.setHost(Assets.defaultBase());
+		Asset.setManifest(Assets.MANIFEST);
 		background = Color.rgba(22, 24, 30, 255);
 		grey = Color.rgba(60, 64, 76, 255);
 		gold = Color.rgba(230, 180, 60, 255);

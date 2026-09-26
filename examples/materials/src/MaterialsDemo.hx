@@ -59,6 +59,7 @@ class MaterialsDemo {
 
 	static function onInit():Void {
 		Asset.setHost(Assets.defaultBase());
+		Asset.setManifest(Assets.MANIFEST);
 		background = Color.rgba(20, 22, 28, 255);
 
 		camera = Camera3D.create(Perspective);

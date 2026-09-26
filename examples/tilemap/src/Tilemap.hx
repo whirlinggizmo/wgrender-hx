@@ -77,6 +77,7 @@ class Tilemap {
 
 	static function onInit():Void {
 		Asset.setHost(Assets.defaultBase());
+		Asset.setManifest(Assets.MANIFEST);
 		background = Color.rgba(24, 28, 38, 255);
 		shade = Color.rgba(18, 20, 28, 190);
 		textColor = Color.rgba(235, 238, 245, 255);

@@ -50,6 +50,7 @@ class ForceFetch {
 	static function onInit():Void {
 		Log.setLevel(Info);
 		Asset.setHost(Assets.defaultBase());
+		Asset.setManifest(Assets.MANIFEST);
 		background = Color.rgba(18, 20, 28, 255);
 
 		if (Wgr.getPlatform() == "web") {

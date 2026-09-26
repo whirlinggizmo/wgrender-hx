@@ -53,6 +53,7 @@ class TouchDemo {
 
 	static function onInit():Void {
 		Asset.setHost(Assets.defaultBase());
+		Asset.setManifest(Assets.MANIFEST);
 		final screen = Window.getScreenSize();
 		logo = Handle.NONE;
 		tile = Handle.NONE;

@@ -117,6 +117,37 @@ class Asset {
 		Raw.wgr_asset_clear_cache();
 
 	/**
+		How a cached asset is treated on a later visit: checked with the host unless
+		still fresh (`Revalidate`, the default), used as it is (`Trust`), or not kept
+		between visits (`Off`). The web only, for now; see `AssetCacheMode`. A mode
+		applies to every file checked after it is set. False for a value that isn't
+		one of the modes.
+	**/
+	public static inline function setCacheMode(mode:AssetCacheMode):Bool
+		return Raw.wgr_asset_set_cache_mode(mode);
+
+	public static inline function getCacheMode():AssetCacheMode
+		return AssetCacheMode.of(Raw.wgr_asset_get_cache_mode());
+
+	/**
+		An asset manifest: a hash of each file's contents, so a cached copy whose hash
+		still matches is used with no request at all, and one that changed is fetched
+		once. `path` is the root manifest's logical path under the host
+		("manifest.json"); tools/gen_manifest.py writes the manifests, one per
+		directory. The root is asked about once per run; a directory's manifest only
+		when a file under it is first ensured, and only if it changed. A listed file is
+		hashed before it is kept, and bytes that don't match fail the load. What no
+		manifest lists is cached as the cache mode says. Natively it needs a URL host
+		and a fetcher; a directory host ignores it.
+
+		`null` or "" for none. False for a path that isn't relative (one starting with
+		"/" or holding "://"), or is 512 bytes or longer. Set it after `setHost` and
+		before the ensures it should cover.
+	**/
+	public static inline function setManifest(path:String):Bool
+		return Raw.wgr_asset_set_manifest(path);
+
+	/**
 		Load files whose path starts with `prefix` from under `target` instead — mods,
 		translations, a CDN. A `target` containing "://" is where the file downloads
 		from — the browser on the web, your fetcher on desktop — and it is still cached

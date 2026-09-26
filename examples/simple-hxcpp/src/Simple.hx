@@ -84,6 +84,7 @@ class Simple {
 
 	static function onInit():Void {
 		Asset.setHost(Assets.defaultBase());
+		Asset.setManifest(Assets.MANIFEST);
 		Log.setLevel(Warn);
 		Wgr.setTargetFps(60);
 

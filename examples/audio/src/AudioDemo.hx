@@ -48,6 +48,7 @@ class AudioDemo {
 
 	static function onInit():Void {
 		Asset.setHost(Assets.defaultBase());
+		Asset.setManifest(Assets.MANIFEST);
 		background = Color.rgba(18, 20, 28, 255);
 		load(MUSIC_PATH, ASSET_MUSIC);
 		load(CLICK_PATH, ASSET_CLICK);

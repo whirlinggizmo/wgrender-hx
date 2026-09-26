@@ -44,6 +44,7 @@ class Instancing {
 
 	static function onInit():Void {
 		Asset.setHost(Assets.defaultBase());
+		Asset.setManifest(Assets.MANIFEST);
 		target = new Vec3(0, 1.0, 0);
 		camera = Camera3D.create(Perspective);
 		scene = Scene.create();

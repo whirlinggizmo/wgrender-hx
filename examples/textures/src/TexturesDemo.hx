@@ -41,6 +41,7 @@ class TexturesDemo {
 
 	static function onInit():Void {
 		Asset.setHost(Assets.defaultBase());
+		Asset.setManifest(Assets.MANIFEST);
 		for (t in 0...NAMES.length) {
 			for (k in 0...KINDS) {
 				final slot = new Slot();

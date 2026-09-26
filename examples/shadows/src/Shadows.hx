@@ -73,6 +73,7 @@ class Shadows {
 
 	static function onInit():Void {
 		Asset.setHost(Assets.defaultBase());
+		Asset.setManifest(Assets.MANIFEST);
 		TINTS = [Color.rgba(0, 0, 0, 255), Color.rgba(30, 60, 100, 255), Color.rgba(100, 50, 30, 255)];
 		target = new Vec3(0, 1.2, 0);
 		camera = Camera3D.create(Perspective);

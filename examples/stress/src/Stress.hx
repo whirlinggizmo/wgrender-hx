@@ -96,6 +96,7 @@ class Stress {
 
 	static function onInit():Void {
 		Asset.setHost(Assets.defaultBase());
+		Asset.setManifest(Assets.MANIFEST);
 		Log.setLevel(Warn);
 		Wgr.setTargetFps(60);
 		rng = 0x92D68CA2; // 2463534242

@@ -94,6 +94,7 @@ class UiDemo {
 
 	static function onInit():Void {
 		Asset.setHost(Assets.defaultBase());
+		Asset.setManifest(Assets.MANIFEST);
 		theme = new UiTheme();
 		background = Color.rgba(30, 34, 44, 255);
 		highlight = Color.rgba(255, 220, 120, 255);

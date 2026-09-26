@@ -65,6 +65,7 @@ class Sprite2DDemo {
 
 	static function onInit():Void {
 		Asset.setHost(Assets.defaultBase());
+		Asset.setManifest(Assets.MANIFEST);
 		background = Color.rgba(28, 30, 38, 255);
 		// A colour is immutable, so the cycling tint walks a palette built up front
 		// rather than being recoloured each frame.

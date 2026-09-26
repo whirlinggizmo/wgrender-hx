@@ -47,6 +47,7 @@ class Quit {
 
 	static function onInit():Void {
 		Asset.setHost(Assets.defaultBase());
+		Asset.setManifest(Assets.MANIFEST);
 		background = Color.rgba(30, 36, 48, 255);
 		// Soon enough that a headless check sees the quit happen.
 		quitAt = Wgr.getTime() + 1.0;

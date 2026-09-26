@@ -47,6 +47,7 @@ class PickDemo {
 
 	static function onInit():Void {
 		Asset.setHost(Assets.defaultBase());
+		Asset.setManifest(Assets.MANIFEST);
 		background = Color.rgba(24, 26, 34, 255);
 
 		camera = Camera3D.create(Perspective);

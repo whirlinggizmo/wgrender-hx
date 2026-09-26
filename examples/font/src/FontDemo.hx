@@ -46,6 +46,7 @@ class FontDemo {
 
 	static function onInit():Void {
 		Asset.setHost(Assets.defaultBase());
+		Asset.setManifest(Assets.MANIFEST);
 		background = Color.rgba(248, 248, 250, 255);
 		load(MONO_PATH, ASSET_MONO);
 		load(KOMIKA_PATH, ASSET_KOMIKA);

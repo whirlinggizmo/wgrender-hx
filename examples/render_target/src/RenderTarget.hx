@@ -64,6 +64,7 @@ class RenderTarget {
 
 	static function onInit():Void {
 		Asset.setHost(Assets.defaultBase());
+		Asset.setManifest(Assets.MANIFEST);
 		background = Color.rgba(24, 26, 34, 255);
 		labelBackground = Color.rgba(30, 60, 140, 255);
 		minimapBackground = Color.rgba(12, 14, 18, 255);

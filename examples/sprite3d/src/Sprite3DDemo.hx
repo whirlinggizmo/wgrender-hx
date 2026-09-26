@@ -45,6 +45,7 @@ class Sprite3DDemo {
 
 	static function onInit():Void {
 		Asset.setHost(Assets.defaultBase());
+		Asset.setManifest(Assets.MANIFEST);
 		background = Color.rgba(20, 22, 30, 255);
 		target = new Vec3(0, 2.5, 0);
 		up = new Vec3(0, 1, 0);

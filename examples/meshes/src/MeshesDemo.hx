@@ -59,6 +59,7 @@ class MeshesDemo {
 
 	static function onInit():Void {
 		Asset.setHost(Assets.defaultBase());
+		Asset.setManifest(Assets.MANIFEST);
 		target = new Vec3(0, 0.4, 0);
 
 		camera = Camera3D.create(Perspective);

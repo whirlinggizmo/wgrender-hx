@@ -748,6 +748,15 @@ class CheckBindings {
 		Asset.setUploadBudget(8);
 		check(Asset.setCacheDir(".wgr-cache"), "a cache directory is accepted");
 
+		eq(Asset.getCacheMode(), AssetCacheMode.Revalidate, "the cache revalidates by default");
+		check(Asset.setCacheMode(AssetCacheMode.Trust), "a cache mode is accepted");
+		eq(Asset.getCacheMode(), AssetCacheMode.Trust, "the cache mode round-trips");
+		check(Asset.setCacheMode(AssetCacheMode.Revalidate), "the default mode is accepted back");
+		check(Asset.setManifest(Assets.MANIFEST), "a relative manifest path is accepted");
+		check(!Asset.setManifest("/manifest.json"), "an absolute manifest path is refused");
+		check(!Asset.setManifest("https://example.invalid/manifest.json"), "a URL manifest path is refused");
+		check(Asset.setManifest(null), "no manifest is accepted");
+
 		final group = Asset.createGroup();
 		check(!AssetTask.isNone(group), "an asset group is created");
 		eq(Handle.getKind(((group : Handle))), HandleKind.AssetTask, "and it is a task handle");

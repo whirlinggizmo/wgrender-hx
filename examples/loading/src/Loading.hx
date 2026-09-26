@@ -79,6 +79,7 @@ class Loading {
 
 	static function onInit():Void {
 		Asset.setHost(Assets.defaultBase());
+		Asset.setManifest(Assets.MANIFEST);
 		background = Color.rgba(20, 22, 28, 255);
 		bar = Color.rgba(0, 0, 0, 170);
 		graphOk = Color.rgba(90, 200, 120, 255);
