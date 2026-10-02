@@ -13,10 +13,9 @@ targets from one API:
 - **js** — wgrender is a wasm *host* and your game is a guest module, so the Haxe
   runtime never enters the binary
 
-**The examples run in a browser: https://whirlinggizmo.github.io/wgrender-hx/** —
-every one as a JS guest, published from `main` by `.github/workflows/pages.yml`, with
-each one's size against wgrender's own C build of it. No threads (GitHub Pages can't
-send the headers a threaded page needs), WebGL2.
+The examples, built from the binding's current home, run in a browser on wgrender-c's
+site, under [`/haxe/`](https://whirlinggizmo.github.io/wgrender-c/haxe/). This
+repository's own site is unpublished.
 
 ```haxe
 import wgr.*;
