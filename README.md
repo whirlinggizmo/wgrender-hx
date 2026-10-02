@@ -1,5 +1,11 @@
 # wgrender-hx
 
+> **Archived (2026-10-02).** This binding moved into wgrender-c, with its history:
+> [`bindings/haxe`](https://github.com/whirlinggizmo/wgrender-c/tree/main/bindings/haxe),
+> still the `wgrender-hx` haxelib. Development continues there. This repository stays as
+> it was, its `project/lib/wgrender-c` submodule pinned to wgrender-c `7b39581`, an API
+> wgrender-c's main has since moved past (callbacks became polled tasks).
+
 Haxe bindings for [wgrender](https://github.com/whirlinggizmo/wgrender-c), over two
 targets from one API:
 
